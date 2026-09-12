@@ -1,0 +1,205 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .en { font-family: 'Literata', Georgia, serif; font-style: italic; color: #79848c; }
+    .chip { font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #2a241d; color: #a49a89; white-space: nowrap; }
+    .row { display: grid; grid-template-columns: 200px 22px 1fr 108px 96px; align-items: center; gap: 14px;
+           padding: 12px 16px; border-radius: 9px; border: 1px solid transparent; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 900px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Шапка -->
+  <div style="display: flex; align-items: center; gap: 18px; height: 68px; padding: 0 28px; border-bottom: 1px solid #262019; background: #17140f; flex-shrink: 0">
+    <button style="display: grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid #2c261f; color: #c4b9a8; cursor: pointer">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3 5 8l5 5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div style="display: flex; flex-direction: column; gap: 1px">
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px; color: #f6f0e5">Глоссарий</span>
+      <span style="font-size: 11.5px; color: #8a806f">Путь Пепельного Клинка · 142 термина</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <div style="display: flex; align-items: center; gap: 9px; width: 260px; height: 36px; padding: 0 13px; border-radius: 9px; background: #1c1813; border: 1px solid #2c261f">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.6" stroke="#5c5346" stroke-width="1.5"/><path d="m10.6 10.6 3 3" stroke="#5c5346" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span style="font-size: 13px; color: #5c5346">Найти термин</span>
+    </div>
+    <button style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 9px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      Добавить термин
+    </button>
+  </div>
+
+  <div style="display: flex; gap: 26px; padding: 22px 28px 28px; flex-grow: 1; overflow: hidden">
+
+    <!-- Список -->
+    <div style="display: flex; flex-direction: column; gap: 14px; flex-grow: 1; min-width: 0">
+
+      <div style="display: flex; gap: 7px">
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #2a2119; border: 1px solid #d4502e; color: #f2ece0; font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer">Все 142</button>
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: inherit; font-size: 12.5px; cursor: pointer">Имена 48</button>
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: inherit; font-size: 12.5px; cursor: pointer">Техники 37</button>
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: inherit; font-size: 12.5px; cursor: pointer">Места 22</button>
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: inherit; font-size: 12.5px; cursor: pointer">Обращения 19</button>
+        <button style="height: 32px; padding: 0 13px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: inherit; font-size: 12.5px; cursor: pointer">Прочее 16</button>
+      </div>
+
+      <div class="row" style="padding-top: 0; padding-bottom: 6px">
+        <span class="lbl">В оригинале</span>
+        <span></span>
+        <span class="lbl">По-русски</span>
+        <span class="lbl">Откуда</span>
+        <span class="lbl" style="text-align: right">Упоминаний</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 3px; overflow: auto; padding-right: 4px">
+
+        <div class="row" style="background: #241f18; border-color: #4a3527">
+          <span class="en" style="font-size: 14px">Lin Wei</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #f2ece0; font-weight: 500">Лин Вэй</span>
+          <span class="chip" style="background: rgba(212,80,46,.15); color: #e08160">закреплено вами</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">1 902</span>
+        </div>
+
+        <div class="row">
+          <span class="en" style="font-size: 14px">Master Gu</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">наставник Гу</span>
+          <span class="chip" style="background: rgba(212,80,46,.15); color: #e08160">закреплено вами</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">640</span>
+        </div>
+
+        <div class="row">
+          <span class="en" style="font-size: 14px">Ninefold Breath Seal</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">Печать Девяти Вдохов</span>
+          <span class="chip" style="background: rgba(212,80,46,.15); color: #e08160">закреплено вами</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">214</span>
+        </div>
+
+        <div class="row">
+          <span class="en" style="font-size: 14px">Silent Fang Sect</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">секта Безмолвного Клыка</span>
+          <span class="chip">из общего</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">173</span>
+        </div>
+
+        <div class="row">
+          <span class="en" style="font-size: 14px">Elder Sister Xiao</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">старшая сестра Сяо</span>
+          <span class="chip">из общего</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">96</span>
+        </div>
+
+        <div class="row">
+          <span class="en" style="font-size: 14px">spirit stone</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">духовный камень</span>
+          <span class="chip">из общего</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">431</span>
+        </div>
+
+        <div class="row" style="background: #1a1712">
+          <span class="en" style="font-size: 14px">Gu Lan</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">Гу Лань</span>
+          <span class="chip" style="background: rgba(201,162,74,.14); color: #c9a24a">Толмач предложил</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">12</span>
+        </div>
+
+        <div class="row" style="background: #1a1712">
+          <span class="en" style="font-size: 14px">Cloudfall Ridge</span>
+          <svg width="16" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span style="font-size: 14px; color: #e4dbcb">Хребет Облачного Паденья</span>
+          <span class="chip" style="background: rgba(201,162,74,.14); color: #c9a24a">Толмач предложил</span>
+          <span style="font-size: 13px; color: #8a806f; text-align: right; font-variant-numeric: tabular-nums">54</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Карточка термина -->
+    <div style="width: 372px; flex-shrink: 0; display: flex; flex-direction: column; gap: 18px; overflow: auto">
+
+      <div style="display: flex; flex-direction: column; gap: 16px; padding: 22px; border-radius: 13px; background: #1c1813; border: 1px solid #2c261f">
+        <div style="display: flex; flex-direction: column; gap: 5px">
+          <span class="en" style="font-size: 14px">Lin Wei</span>
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 26px; color: #f6f0e5">Лин Вэй</span>
+        </div>
+
+        <p style="font-size: 13px; line-height: 1.55; color: #9a8f80; margin: 0">Мужское имя. Ученик наставника Гу, главный герой. Склоняется: Лин Вэя, Лин Вэю.</p>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span class="lbl">Другие написания, что встречались</span>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px">
+            <span class="chip" style="text-decoration: line-through; color: #6b6459">Линь Вэй</span>
+            <span class="chip" style="text-decoration: line-through; color: #6b6459">Лин Уэй</span>
+            <span class="chip" style="text-decoration: line-through; color: #6b6459">Lin Wei</span>
+          </div>
+        </div>
+
+        <button style="display: flex; align-items: center; justify-content: center; gap: 8px; height: 40px; border-radius: 9px; background: #2a2119; border: 1px solid #4a3527; color: #e08160; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9M13.5 2v3h-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Переписать в 147 главах
+        </button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 13px; padding: 22px; border-radius: 13px; background: #1c1813; border: 1px solid #2c261f">
+        <span class="lbl">Кто к кому как обращается</span>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+            <span style="color: #e4dbcb">наставник Гу</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">ты</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">наставник Гу</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">вы</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h11m0 0-3-3M12 5l-3 3M15 5h-1" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">Сяо Мэй</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">ты</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">старейшина секты</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">вы</span>
+          </div>
+        </div>
+        <span style="font-size: 11.5px; color: #6b6459; line-height: 1.45">Толмач вывел это из текста. Если ошибся — поправьте, и он переспросит себя во всех главах.</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px 22px; border-radius: 13px; background: #191510; border: 1px solid #262019">
+        <span class="lbl">Общий глоссарий</span>
+        <p style="font-size: 13px; line-height: 1.55; color: #9a8f80; margin: 0">Другие читатели этой новеллы поправили 38 терминов, которых у вас ещё нет — в основном названия техник.</p>
+        <button style="height: 36px; border-radius: 9px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer">Посмотреть и забрать</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

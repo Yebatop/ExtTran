@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500;0,600;1,400&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .grain::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity: .05; mix-blend-mode: overlay; }
+    .rd { font-family: 'Literata', Georgia, 'Times New Roman', serif; font-size: 19px;
+          line-height: 1.78; color: #ece4d6; margin: 0 0 26px; text-wrap: pretty; }
+    .term { border-bottom: 1px dashed #8f5b45; padding-bottom: 1px; cursor: default; }
+    .orig { font-family: 'Literata', Georgia, serif; font-style: italic; font-size: 15px;
+            line-height: 1.66; color: #79848c; margin: 0 0 8px; padding-left: 14px;
+            border-left: 2px solid #2b3238; }
+    .lbl { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-thumb { background: #322c25; border-radius: 4px; }
+  </style>
+</helmet>
+
+<div class="grain" style="position: relative; width: 1440px; height: 980px; overflow: hidden; background: #14120f; display: flex; flex-direction: column">
+
+  <!-- Верхняя панель -->
+  <div style="display: flex; align-items: center; gap: 20px; height: 60px; padding: 0 28px; border-bottom: 1px solid #262019; background: #17140f; flex-shrink: 0; position: relative; z-index: 3">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="22" height="22" viewBox="0 0 26 26" fill="none" style="display: block">
+        <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px; letter-spacing: .01em">Толмач</span>
+    </div>
+
+    <div style="width: 1px; height: 22px; background: #2c261f"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 1px; min-width: 0">
+      <span style="font-size: 13px; font-weight: 500; color: #e4dbcb; white-space: nowrap">Путь Пепельного Клинка</span>
+      <span style="font-size: 11px; color: #8a806f">Глава 147 из 1 204</span>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <button onClick="{{ toggle }}" style="display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 13px; border-radius: 7px; border: 1px solid; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s; {{ toggleStyle }}">
+      <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+        <path d="M2 10s2.9-5 8-5 8 5 8 5-2.9 5-8 5-8-5-8-5z" stroke="currentColor" stroke-width="1.5"/>
+        <circle cx="10" cy="10" r="2.2" stroke="currentColor" stroke-width="1.5"/>
+      </svg>
+      <span>{{ toggleLabel }}</span>
+    </button>
+
+    <div style="display: flex; align-items: center; gap: 8px; height: 34px; padding: 0 12px; border-radius: 7px; background: #1f1b15; border: 1px solid #2c261f">
+      <span style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: #e4dbcb">73</span>
+      <span style="font-size: 12px; color: #8a806f">из 100 глав</span>
+    </div>
+
+    <button style="display: grid; place-items: center; width: 34px; height: 34px; border-radius: 7px; background: transparent; border: 1px solid #2c261f; color: #c4b9a8; cursor: pointer">
+      <svg width="17" height="17" viewBox="0 0 20 20" fill="none">
+        <path d="M3 6h14M3 10h14M3 14h9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Тело -->
+  <div style="display: flex; gap: 56px; padding: 44px 150px 0; flex-grow: 1; overflow: auto; position: relative; z-index: 2">
+
+    <!-- Колонка чтения -->
+    <div style="flex-grow: 1; max-width: 700px; padding-bottom: 120px">
+      <div class="lbl" style="margin-bottom: 14px">Глава 147</div>
+      <h1 style="font-family: 'Prata', Georgia, serif; font-size: 38px; line-height: 1.22; font-weight: 400; margin: 0 0 16px; color: #f6f0e5">Тот, кто считает шаги</h1>
+
+      <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 40px; padding-bottom: 22px; border-bottom: 1px solid #262019">
+        <span style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #8a806f">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #7a9468"></span>
+          Переведено 8 секунд назад
+        </span>
+        <span style="color: #3a332a">·</span>
+        <span style="font-size: 12.5px; color: #8a806f">регистр: возвышенный</span>
+        <span style="color: #3a332a">·</span>
+        <span style="font-size: 12.5px; color: #8a806f">3 412 слов</span>
+      </div>
+
+      <sc-if value="{{ showOriginal }}" hint-placeholder-val="{{ true }}">
+        <p class="orig">The master did not turn around. He stood at the edge of the drop, where the wind stripped dry dust from the stones, and counted his breaths — the same way he had counted them thirty years ago, climbing this path himself.</p>
+      </sc-if>
+      <p class="rd" style="position: relative">
+        <span style="float: left; font-family: 'Prata', Georgia, serif; font-size: 68px; line-height: .82; color: #d4502e; margin: 6px 12px 0 0">Н</span>аставник не обернулся. Он стоял у края обрыва, где ветер срывал с камней сухую пыль, и считал вдохи — так же, как считал их тридцать лет назад, поднимаясь по этой тропе сам.
+      </p>
+
+      <sc-if value="{{ showOriginal }}" hint-placeholder-val="{{ true }}">
+        <p class="orig">«You are four heartbeats late,» he said.</p>
+      </sc-if>
+      <p class="rd">— Ты опоздал на четыре удара сердца, — сказал он.</p>
+
+      <sc-if value="{{ showOriginal }}" hint-placeholder-val="{{ true }}">
+        <p class="orig">Lin Wei said nothing. Arguing with a man who could hear another's heart through three layers of cloth would have been foolish, and the Ninefold Breath Seal on his wrist had not yet cooled from the climb.</p>
+      </sc-if>
+      <p class="rd" style="position: relative">
+        <span class="term">Лин Вэй</span> промолчал. Спорить с человеком, который слышит чужое сердце сквозь три слоя ткани, было бы глупо, а <span class="term" style="border-bottom-color: #d4502e; background: rgba(212,80,46,.09); border-radius: 3px; padding: 1px 3px">Печать Девяти Вдохов</span> на его запястье ещё не остыла после подъёма.
+
+        <!-- Всплывающая карточка термина -->
+        <span style="position: absolute; left: 236px; top: 62px; width: 292px; padding: 14px 16px; border-radius: 11px; background: #211c16; border: 1px solid #3a3129; box-shadow: 0 18px 40px rgba(0,0,0,.55); font-family: 'Golos Text', system-ui, sans-serif; display: block; z-index: 5">
+          <span style="display: block; font-size: 12px; color: #79848c; font-style: italic; font-family: 'Literata', Georgia, serif">Ninefold Breath Seal</span>
+          <span style="display: flex; align-items: center; gap: 7px; margin: 5px 0 9px">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v14M3 10h14" stroke="#d4502e" stroke-width="2" stroke-linecap="round" transform="rotate(45 10 10)"/></svg>
+            <span style="font-size: 15px; font-weight: 600; color: #f2ece0">Печать Девяти Вдохов</span>
+          </span>
+          <span style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px">
+            <span style="font-size: 11px; padding: 3px 8px; border-radius: 5px; background: #2c251d; color: #c4b9a8">техника</span>
+            <span style="font-size: 11px; padding: 3px 8px; border-radius: 5px; background: rgba(212,80,46,.14); color: #e08160">закреплено вами</span>
+          </span>
+          <span style="display: block; font-size: 12px; color: #8a806f; line-height: 1.5">Встречается в 214 главах. Изменение перепишет все переведённые.</span>
+        </span>
+      </p>
+
+      <sc-if value="{{ showOriginal }}" hint-placeholder-val="{{ true }}">
+        <p class="orig">«Then you will count for me,» said Master Gu. «Until you can tell me how many steps lie between the gate and this stone.»</p>
+      </sc-if>
+      <p class="rd">— Тогда считать будешь ты, — сказал <span class="term">наставник Гу</span>. — Пока не скажешь мне, сколько шагов от ворот до этого камня.</p>
+
+      <sc-if value="{{ showOriginal }}" hint-placeholder-val="{{ true }}">
+        <p class="orig">The boy took the first step before he understood that he had already begun.</p>
+      </sc-if>
+      <p class="rd">Мальчик сделал первый шаг прежде, чем понял, что уже начал.</p>
+    </div>
+
+    <!-- Правая колонка -->
+    <div style="width: 264px; flex-shrink: 0; display: flex; flex-direction: column; gap: 26px; padding-top: 4px">
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div class="lbl">Новое в этой главе</div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: 8px; background: #1c1813; border: 1px solid #262019">
+            <span style="font-size: 13px; color: #e4dbcb">Печать Девяти Вдохов</span>
+            <span style="font-size: 11px; color: #8a806f; white-space: nowrap">техника</span>
+          </div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 9px 11px; border-radius: 8px; background: #1c1813; border: 1px solid #262019">
+            <span style="font-size: 13px; color: #e4dbcb">Гу Лань</span>
+            <span style="font-size: 11px; color: #8a806f; white-space: nowrap">имя</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div class="lbl">Кто кому «ты»</div>
+        <div style="display: flex; flex-direction: column; gap: 7px; padding: 13px 14px; border-radius: 10px; background: #1c1813; border: 1px solid #262019">
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #c4b9a8">
+            <span style="color: #e4dbcb">Гу</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">ты</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #c4b9a8">
+            <span style="color: #e4dbcb">Лин Вэй</span>
+            <svg width="15" height="10" viewBox="0 0 16 10" fill="none"><path d="M1 5h13m0 0-3.5-3.5M14 5l-3.5 3.5" stroke="#5c5346" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="color: #e4dbcb">Гу</span>
+            <span style="margin-left: auto; font-weight: 600; color: #d4502e">вы</span>
+          </div>
+          <div style="height: 1px; background: #262019; margin: 3px 0"></div>
+          <span style="font-size: 11.5px; color: #79726a; line-height: 1.45">В оригинале этого различия нет — Толмач вывел его из отношений и держит до конца книги.</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div class="lbl">Оформление</div>
+        <div style="display: flex; gap: 6px">
+          <button style="flex-grow: 1; height: 36px; border-radius: 8px; background: #241f18; border: 1px solid #d4502e; color: #f2ece0; font-family: 'Literata', Georgia, serif; font-size: 15px; cursor: pointer">Aa</button>
+          <button style="flex-grow: 1; height: 36px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-family: 'Golos Text', sans-serif; font-size: 15px; cursor: pointer">Aa</button>
+          <button style="flex-grow: 1; height: 36px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-size: 13px; cursor: pointer">A−</button>
+          <button style="flex-grow: 1; height: 36px; border-radius: 8px; background: #1c1813; border: 1px solid #262019; color: #8a806f; font-size: 13px; cursor: pointer">A+</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Нижняя плашка -->
+  <div style="position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; padding: 11px 12px 11px 20px; border-radius: 13px; background: #221d17; border: 1px solid #3a3129; box-shadow: 0 20px 48px rgba(0,0,0,.6); z-index: 4">
+    <span style="display: flex; align-items: center; gap: 9px">
+      <span style="width: 7px; height: 7px; border-radius: 50%; background: #7a9468"></span>
+      <span style="font-size: 13.5px; color: #c4b9a8">Глава 148 переведена заранее, пока вы читали эту</span>
+    </span>
+    <button style="display: flex; align-items: center; gap: 8px; height: 38px; padding: 0 17px; border-radius: 9px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">
+      Читать дальше
+      <svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M2 8h11m0 0-4-4m4 4-4 4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { showOriginal: false };
+  }
+  renderVals() {
+    const on = !!this.state.showOriginal;
+    return {
+      showOriginal: on,
+      toggleLabel: on ? 'Скрыть оригинал' : 'Показать оригинал',
+      toggleStyle: on
+        ? 'background:#d4502e;border-color:#d4502e;color:#17130f'
+        : 'background:transparent;border-color:#2c261f;color:#c4b9a8',
+      toggle: () => this.setState({ showOriginal: !on })
+    };
+  }
+}
+</script>
+</body>
+</html>
