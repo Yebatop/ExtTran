@@ -4,6 +4,9 @@
   "private": true,
   "type": "module",
   "description": "Перевод англоязычных веб-новелл на русский",
+  "workspaces": [
+    "web"
+  ],
   "scripts": {
     "check": "tsx src/check.ts",
     "selftest": "tsx src/selftest.ts",
@@ -18,7 +21,7 @@
     "tolmach": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit",
     "build:core": "tsc -p tsconfig.core.json",
-    "web:deps": "[ -d web/node_modules/next ] || npm install --prefix web",
+    "web:deps": "[ -x node_modules/.bin/next ] || npm install",
     "web": "npm run build:core && npm run web:deps && npm run dev --prefix web",
     "сайт": "npm run build:core && npm run web:deps && npm run dev --prefix web",
     "web:webpack": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack",
