@@ -1,0 +1,136 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .num { font-variant-numeric: tabular-nums; }
+    .card { padding: 18px; border-radius: 13px; background: #1a1611; border: 1px solid #262019; }
+    .track { flex-grow: 1; height: 9px; border-radius: 5px; background: #221d17; display: block; }
+    .fill { display: block; height: 100%; border-radius: 0 5px 5px 0; background: #d4502e; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 11px; padding: 14px 18px 10px; flex-shrink: 0">
+    <div style="width: 34px; height: 34px; border-radius: 50%; background: #2a241d; border: 1px solid #4a3527; flex-shrink: 0"></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+      <span style="font-size: 14px; color: #e4dbcb; font-weight: 500">Читатель</span>
+      <span style="font-size: 11.5px; color: #79726a; overflow: hidden; text-overflow: ellipsis">furia@почта.рф</span>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 8px 18px 0; flex-grow: 1; overflow: auto">
+
+    <!-- Квота -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 12px">
+      <span class="lbl">Осталось в этом месяце</span>
+      <div style="display: flex; align-items: baseline; gap: 9px">
+        <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 44px; line-height: 1; color: #f8f3e9">73</span>
+        <span class="num" style="font-size: 14.5px; color: #8a806f">из 100 глав</span>
+      </div>
+      <span class="track" style="height: 10px"><span class="fill" style="width: 73%"></span></span>
+      <span style="font-size: 12px; color: #79726a">Обновится 3 октября</span>
+      <button style="height: 46px; border-radius: 10px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 2px">Докупить 50 глав — 250 ₽</button>
+    </div>
+
+    <!-- Расход -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 14px">
+      <span class="lbl">Куда ушли 27 глав</span>
+      <div style="display: flex; flex-direction: column; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Путь Пепельного Клинка</span>
+            <span class="num" style="font-size: 12.5px; color: #c4b9a8; flex-shrink: 0">15</span>
+          </div>
+          <span class="track"><span class="fill" style="width: 100%"></span></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Сорок седьмой контракт</span>
+            <span class="num" style="font-size: 12.5px; color: #c4b9a8; flex-shrink: 0">9</span>
+          </div>
+          <span class="track"><span class="fill" style="width: 60%"></span></span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Дом, который считает гостей</span>
+            <span class="num" style="font-size: 12.5px; color: #c4b9a8; flex-shrink: 0">3</span>
+          </div>
+          <span class="track"><span class="fill" style="width: 20%"></span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- История -->
+    <div class="card" style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span class="lbl">Последние переводы</span>
+        <span style="font-size: 12px; color: #8a806f">Все</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 11px">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="flex-grow: 1; min-width: 0; font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Пепельный Клинок · 148</span>
+          <span class="num" style="font-size: 12.5px; color: #c4b9a8; flex-shrink: 0">1</span>
+          <span style="font-size: 11.5px; color: #6b6459; width: 62px; text-align: right; flex-shrink: 0">21:05</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="flex-grow: 1; min-width: 0; font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Сорок седьмой · 62 <span style="color: #c9a24a">сильная</span></span>
+          <span class="num" style="font-size: 12.5px; color: #c4b9a8; flex-shrink: 0">3</span>
+          <span style="font-size: 11.5px; color: #6b6459; width: 62px; text-align: right; flex-shrink: 0">вчера</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <span style="flex-grow: 1; min-width: 0; font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Дом · 9 <span style="color: #79726a">заново</span></span>
+          <span style="font-size: 12px; color: #7a9468; flex-shrink: 0">даром</span>
+          <span style="font-size: 11.5px; color: #6b6459; width: 62px; text-align: right; flex-shrink: 0">8 сент.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Подписка -->
+    <div class="card" style="display: flex; align-items: center; gap: 12px">
+      <span style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1; min-width: 0">
+        <span style="font-size: 13.5px; color: #e4dbcb"><span style="color: #e08160; font-weight: 600">Читатель</span> — 490 ₽ в месяц</span>
+        <span style="font-size: 11.5px; color: #79726a">Следующее списание 3 октября</span>
+      </span>
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink: 0"><path d="M6 3l5 5-5 5" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+
+    <div style="height: 8px"></div>
+  </div>
+
+  <!-- Нижняя навигация -->
+  <div style="display: flex; padding: 8px 10px 22px; border-top: 1px solid #221d17; background: #17140f; flex-shrink: 0">
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#6b6459" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 14.5h9M8 18h6" stroke="#6b6459" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Читать</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><path d="M5 5h5v16H5zM12 5h4v16h-4zM18.5 5.8l3.4 15.6" stroke="#6b6459" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Книги</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><circle cx="12" cy="12" r="7.5" stroke="#6b6459" stroke-width="1.8"/><path d="m17.5 17.5 4 4" stroke="#6b6459" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Каталог</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="9" r="4" stroke="#d4502e" stroke-width="1.8"/><path d="M5 22c0-3.9 3.6-6.5 8-6.5s8 2.6 8 6.5" stroke="#d4502e" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #d4502e; font-weight: 600">Я</span>
+    </button>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

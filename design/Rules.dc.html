@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .h2 { font-family: 'Prata', Georgia, serif; font-size: 23px; font-weight: 400; margin: 0; color: #f6f0e5; line-height: 1.26; }
+    .p { font-size: 14.5px; line-height: 1.62; color: #b0a693; margin: 0; }
+    .blk { display: flex; gap: 22px; padding: 26px 0; border-top: 1px solid #221d17; }
+    .n { font-family: 'Prata', Georgia, serif; font-size: 20px; color: #4a4238; width: 34px; flex-shrink: 0; padding-top: 2px; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1240px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Навигация -->
+  <div style="display: flex; align-items: center; gap: 26px; height: 66px; padding: 0 40px; border-bottom: 1px solid #221d17; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none">
+        <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px">Толмач</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <a href="#" style="font-size: 13.5px; color: #8a806f">Каталог</a>
+    <a href="#" style="font-size: 13.5px; color: #8a806f">Тарифы</a>
+  </div>
+
+  <div style="flex-grow: 1; overflow: auto; padding: 40px 40px 44px">
+    <div style="max-width: 800px">
+
+      <span class="lbl">Правила</span>
+      <h1 style="font-family: 'Prata', Georgia, serif; font-size: 40px; font-weight: 400; line-height: 1.16; margin: 16px 0 18px; color: #f8f3e9">Что мы делаем с чужим текстом</h1>
+      <p class="p" style="font-size: 16px; margin-bottom: 8px">Толмач переводит книги, которые написали другие люди. Разумно объяснить прямо, что при этом происходит, кто что видит и что будет, если автор напишет нам письмо.</p>
+
+      <div class="blk">
+        <span class="n">1</span>
+        <div style="display: flex; flex-direction: column; gap: 11px">
+          <h2 class="h2">Когда вы даёте ссылку</h2>
+          <p class="p">Мы открываем страницу, забираем текст главы, переводим и кладём перевод в вашу библиотеку. Оригинал нужен нам на те секунды, пока идёт перевод, — после этого мы его не храним и нигде не показываем. На карточке книги в каталоге стоит ссылка на первоисточник: читать по-английски вы идёте туда, а не к нам.</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <span class="n">2</span>
+        <div style="display: flex; flex-direction: column; gap: 11px">
+          <h2 class="h2">Перевод виден только вам</h2>
+          <p class="p">Он не открывается по ссылке, не попадает в поиск и не достаётся другому читателю — если ту же главу возьмёт кто-то ещё, она переведётся для него отдельно и спишется с его квоты. Мы не собираем библиотеку переводов: у каждого своя.</p>
+          <p class="p" style="font-size: 13.5px; color: #79726a">Так дороже и для вас, и для нас. Мы выбрали этот путь сознательно: общая на всех копия чужой книги — это уже не перевод для читателя, а её издание, и на него нужно разрешение автора.</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <span class="n">3</span>
+        <div style="display: flex; flex-direction: column; gap: 11px">
+          <h2 class="h2">Сколько перевод у нас лежит</h2>
+          <p class="p">Сто восемьдесят дней с того дня, когда вы открывали его в последний раз. Потом он удаляется — чтобы перечитать, главу надо будет перевести заново. Удалить раньше можно в любой момент кнопкой в кабинете, вместе со всей книгой или целиком с аккаунтом.</p>
+          <p class="p" style="font-size: 13.5px; color: #79726a">Глоссарий — имена, названия техник, кто кому «ты» — остаётся: это наш с вами справочник, а не текст книги. Его мы храним и показываем открыто.</p>
+        </div>
+      </div>
+
+      <div class="blk">
+        <span class="n">4</span>
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <h2 class="h2">Если вы автор или правообладатель</h2>
+          <p class="p">Напишите нам — форма ниже или <a href="#">rights@толмач.рф</a>. Мы отвечаем в течение трёх рабочих дней и по обоснованному обращению делаем всё сразу:</p>
+          <div style="display: flex; flex-direction: column; gap: 9px; padding-left: 2px">
+            <div style="display: flex; gap: 11px; font-size: 14px; line-height: 1.5; color: #b0a693"><span style="color: #d4502e; flex-shrink: 0">—</span><span>убираем карточку книги из каталога и из поиска;</span></div>
+            <div style="display: flex; gap: 11px; font-size: 14px; line-height: 1.5; color: #b0a693"><span style="color: #d4502e; flex-shrink: 0">—</span><span>закрываем перевод этой книги для новых заказов;</span></div>
+            <div style="display: flex; gap: 11px; font-size: 14px; line-height: 1.5; color: #b0a693"><span style="color: #d4502e; flex-shrink: 0">—</span><span>удаляем переводы, которые читатели уже успели заказать;</span></div>
+            <div style="display: flex; gap: 11px; font-size: 14px; line-height: 1.5; color: #b0a693"><span style="color: #d4502e; flex-shrink: 0">—</span><span>вносим книгу в открытый список изъятых — он ниже на этой странице.</span></div>
+          </div>
+          <p class="p" style="font-size: 13.5px; color: #79726a">Если мы ошиблись и книга ваша, а обращение пришло от постороннего, — напишите, вернём. Решение всегда можно оспорить, и переписку мы храним.</p>
+        </div>
+      </div>
+
+      <!-- Предложение автору -->
+      <div style="display: flex; gap: 20px; padding: 26px 28px; border-radius: 14px; background: #201b15; border: 1px solid #4a3527; margin: 26px 0 34px">
+        <svg width="26" height="26" viewBox="0 0 26 26" fill="none" style="flex-shrink: 0; margin-top: 2px"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#d4502e" stroke-width="1.7" stroke-linejoin="round"/><path d="M15.5 3.5V10H22" stroke="#d4502e" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 14.5h9M8 18h6" stroke="#8a806f" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <div style="display: flex; flex-direction: column; gap: 11px">
+          <h2 class="h2" style="font-size: 20px">А можно и наоборот</h2>
+          <p class="p" style="font-size: 14px">Если вы автор и хотели бы, чтобы вашу книгу читали по-русски, — у нас есть другой путь. Разрешите перевод, и мы сделаем его один раз и хорошо: общий для всех читателей, с вашим именем на карточке и долей с каждой подписки, которая пришла за вашей книгой. Вам это не стоит ничего, а нам обходится тем дешевле, чем больше у книги читателей: перевести один раз хорошо дешевле, чем переводить каждому заново.</p>
+          <a href="#" style="font-size: 14px; font-weight: 600">Написать про разрешение →</a>
+        </div>
+      </div>
+
+      <!-- Список изъятых -->
+      <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 30px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span class="lbl">Изъято по обращению правообладателя</span>
+          <span style="font-size: 12.5px; color: #6b6459">обновляется в день решения</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <div style="display: grid; grid-template-columns: 1fr 200px 150px; gap: 16px; padding: 11px 14px; border-radius: 8px">
+            <span class="lbl" style="font-size: 10px">Книга</span>
+            <span class="lbl" style="font-size: 10px">Кто обратился</span>
+            <span class="lbl" style="font-size: 10px; text-align: right">Когда</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 200px 150px; gap: 16px; padding: 12px 14px; border-radius: 8px; background: #191510">
+            <span style="font-size: 13.5px; color: #c4b9a8">[название книги]</span>
+            <span style="font-size: 13px; color: #79726a">[автор или издатель]</span>
+            <span style="font-size: 13px; color: #79726a; text-align: right">[дата]</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 200px 150px; gap: 16px; padding: 12px 14px; border-radius: 8px; background: #191510">
+            <span style="font-size: 13.5px; color: #c4b9a8">[название книги]</span>
+            <span style="font-size: 13px; color: #79726a">[автор или издатель]</span>
+            <span style="font-size: 13px; color: #79726a; text-align: right">[дата]</span>
+          </div>
+        </div>
+        <span style="font-size: 12px; color: #6b6459">Пока список пуст — строки выше показывают, как он будет выглядеть.</span>
+      </div>
+
+      <p style="font-size: 12.5px; color: #6b6459; margin: 0; padding-top: 22px; border-top: 1px solid #221d17">Редакция от [дата]. Прошлые редакции — <a href="#" style="color: #8a806f">здесь</a>: мы не меняем правила задним числом и оставляем видимой каждую версию.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .scr { width: 390px; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column;
+           border: 1px solid #2c261f; }
+    .rd { font-family: 'Literata', Georgia, serif; font-size: 17px; line-height: 1.8; margin: 0 0 18px; }
+    .cap { font-family: 'Prata', Georgia, serif; font-size: 52px; line-height: .82; float: left; margin: 4px 10px 0 0; }
+    .note { font-size: 12.5px; line-height: 1.55; color: #79726a; margin: 0; }
+  </style>
+</helmet>
+
+<div style="width: 1290px; height: 900px; background: #14120f; padding: 28px 30px; overflow: hidden">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 22px">
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <span class="lbl">Оформление</span>
+      <h1 style="font-family: 'Prata', Georgia, serif; font-size: 29px; font-weight: 400; margin: 0; color: #f8f3e9">Три темы, одна типографика</h1>
+    </div>
+    <p style="font-size: 13px; line-height: 1.55; color: #79726a; margin: 0; max-width: 460px; text-align: right">Меняются только цвета — размер, интерлиньяж и ширина строки везде одинаковые. Тему выбирает читатель; по умолчанию идёт та, что стоит в системе.</p>
+  </div>
+
+  <div style="display: flex; gap: 30px">
+
+    <!-- Тёмная -->
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <span style="width: 13px; height: 13px; border-radius: 4px; background: #14120f; border: 1px solid #4a4238"></span>
+        <span style="font-size: 13.5px; color: #e4dbcb; font-weight: 600">Ночная</span>
+        <span style="font-size: 11.5px; padding: 2px 8px; border-radius: 5px; background: rgba(212,80,46,.15); color: #e08160">по умолчанию</span>
+      </div>
+      <div class="scr" style="height: 624px; background: #14120f">
+        <div style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px">
+          <span style="font-size: 11.5px; color: #79726a">Путь Пепельного Клинка</span>
+        </div>
+        <div style="padding: 4px 22px 0; flex-grow: 1">
+          <div style="font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; margin-bottom: 8px">Глава 147</div>
+          <div style="font-family: 'Prata', Georgia, serif; font-size: 24px; line-height: 1.24; color: #f6f0e5; margin-bottom: 18px">Тот, кто считает шаги</div>
+          <p class="rd" style="color: #ece4d6"><span class="cap" style="color: #d4502e">Н</span>аставник не обернулся. Он стоял у края обрыва, где ветер срывал с камней сухую пыль, и считал вдохи — так же, как считал их тридцать лет назад.</p>
+          <p class="rd" style="color: #ece4d6">— Ты опоздал на четыре удара сердца, — сказал он.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 16px; border-top: 1px solid #221d17">
+          <span style="flex-grow: 1; height: 4px; border-radius: 2px; background: #2c261f; display: block"><span style="display: block; width: 34%; height: 100%; border-radius: 2px; background: #d4502e"></span></span>
+          <span style="font-size: 11.5px; color: #79726a">34%</span>
+        </div>
+      </div>
+      <p class="note">Для чтения в темноте. Тёплая чернь, а не синеватая: синий экран ночью бодрит сильнее.</p>
+    </div>
+
+    <!-- Сепия -->
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <span style="width: 13px; height: 13px; border-radius: 4px; background: #f0e4cf; border: 1px solid #d6c6a8"></span>
+        <span style="font-size: 13.5px; color: #e4dbcb; font-weight: 600">Сепия</span>
+      </div>
+      <div class="scr" style="height: 624px; background: #f0e4cf">
+        <div style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px">
+          <span style="font-size: 11.5px; color: #8a7a60">Путь Пепельного Клинка</span>
+        </div>
+        <div style="padding: 4px 22px 0; flex-grow: 1">
+          <div style="font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: #8a7a60; font-weight: 600; margin-bottom: 8px">Глава 147</div>
+          <div style="font-family: 'Prata', Georgia, serif; font-size: 24px; line-height: 1.24; color: #2e2820; margin-bottom: 18px">Тот, кто считает шаги</div>
+          <p class="rd" style="color: #3a3129"><span class="cap" style="color: #a83a1f">Н</span>аставник не обернулся. Он стоял у края обрыва, где ветер срывал с камней сухую пыль, и считал вдохи — так же, как считал их тридцать лет назад.</p>
+          <p class="rd" style="color: #3a3129">— Ты опоздал на четыре удара сердца, — сказал он.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 16px; border-top: 1px solid #ddd0b6">
+          <span style="flex-grow: 1; height: 4px; border-radius: 2px; background: #ddd0b6; display: block"><span style="display: block; width: 34%; height: 100%; border-radius: 2px; background: #a83a1f"></span></span>
+          <span style="font-size: 11.5px; color: #8a7a60">34%</span>
+        </div>
+      </div>
+      <p class="note">Для долгого чтения при лампе. Бумажный тон гасит контраст, от которого к третьему часу устают глаза.</p>
+    </div>
+
+    <!-- Светлая -->
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <span style="width: 13px; height: 13px; border-radius: 4px; background: #f8f6f1; border: 1px solid #ddd8cd"></span>
+        <span style="font-size: 13.5px; color: #e4dbcb; font-weight: 600">Дневная</span>
+      </div>
+      <div class="scr" style="height: 624px; background: #f8f6f1">
+        <div style="display: flex; align-items: center; gap: 10px; height: 42px; padding: 0 14px">
+          <span style="font-size: 11.5px; color: #837d71">Путь Пепельного Клинка</span>
+        </div>
+        <div style="padding: 4px 22px 0; flex-grow: 1">
+          <div style="font-size: 10px; letter-spacing: .15em; text-transform: uppercase; color: #837d71; font-weight: 600; margin-bottom: 8px">Глава 147</div>
+          <div style="font-family: 'Prata', Georgia, serif; font-size: 24px; line-height: 1.24; color: #1c1a16; margin-bottom: 18px">Тот, кто считает шаги</div>
+          <p class="rd" style="color: #26231e"><span class="cap" style="color: #b8452a">Н</span>аставник не обернулся. Он стоял у края обрыва, где ветер срывал с камней сухую пыль, и считал вдохи — так же, как считал их тридцать лет назад.</p>
+          <p class="rd" style="color: #26231e">— Ты опоздал на четыре удара сердца, — сказал он.</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 12px 16px 16px; border-top: 1px solid #e4e0d7">
+          <span style="flex-grow: 1; height: 4px; border-radius: 2px; background: #e0dbd0; display: block"><span style="display: block; width: 34%; height: 100%; border-radius: 2px; background: #b8452a"></span></span>
+          <span style="font-size: 11.5px; color: #837d71">34%</span>
+        </div>
+      </div>
+      <p class="note">Для улицы и яркого света. Киноварь тут темнее, иначе на белом она выцветает и перестаёт читаться.</p>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
