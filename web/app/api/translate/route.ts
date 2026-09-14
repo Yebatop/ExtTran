@@ -4,6 +4,7 @@ import {
   chooseStore,
   extractTerms,
   fetchPage,
+  findNextLink,
   isRegister,
   isTier,
   looksLocked,
@@ -47,6 +48,15 @@ type Frame =
       bookKey: string;
       bookSlug: string;
       terms: number;
+      /** Ссылка на следующую главу, если нашлась на странице. */
+      next: string | null;
+      /** Оригинал целиком — чтобы «показать оригинал» работал без второго запроса. */
+      original: string;
+      /**
+       * Термины книги для подсветки: только английская и русская стороны да
+       * короткая помета. Остальное браузеру ни к чему.
+       */
+      glossary: Array<{ en: string; ru: string; note?: string }>;
     }
   | { type: "text"; chunk: string }
   | {
@@ -153,6 +163,13 @@ export async function POST(request: Request): Promise<Response> {
           bookKey: ref.key,
           bookSlug: storageKey(ref.key),
           terms: known.terms.length,
+          next: findNextLink(html, checked.url),
+          original: chapter.text,
+          glossary: known.terms.map((t) => ({
+            en: t.en,
+            ru: t.ru,
+            ...(t.note ? { note: t.note } : {}),
+          })),
         });
 
         const result = await translateChapter({

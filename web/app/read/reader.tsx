@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { highlight, type HighlightTerm } from "@/lib/highlight";
 
 interface Meta {
   title: string;
@@ -11,6 +12,9 @@ interface Meta {
   bookKey: string;
   bookSlug: string;
   terms: number;
+  next: string | null;
+  original: string;
+  glossary: HighlightTerm[];
 }
 
 interface Done {
@@ -51,7 +55,16 @@ export default function Reader({
   const [done, setDone] = useState<Done | null>(null);
   const [glossary, setGlossary] = useState<GlossaryNews | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [picked, setPicked] = useState<HighlightTerm | null>(null);
   const started = useRef(false);
+
+  useEffect(() => {
+    // Переход к следующей главе — это тот же компонент с другим src:
+    // всё, что осталось от прошлой главы, надо убрать руками.
+    setShowOriginal(false);
+    setPicked(null);
+  }, [src]);
 
   useEffect(() => {
     // В строгом режиме разработки эффект запускается дважды — перевод стоит
@@ -140,15 +153,31 @@ export default function Reader({
     return () => controller.abort();
   }, [src, register, tier]);
 
-  const paragraphs = text.split(/\n{2,}/).filter((p) => p.trim() !== "");
+  const shown = showOriginal ? meta?.original ?? "" : text;
+  const paragraphs = shown.split(/\n{2,}/).filter((p) => p.trim() !== "");
+  const terms = showOriginal ? [] : meta?.glossary ?? [];
 
   return (
     <main style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(20px, 5vw, 56px) 16px 96px" }}>
-      <nav style={{ marginBottom: 36, display: "flex", justifyContent: "space-between", gap: 16, fontSize: 13 }}>
+      <nav style={{ marginBottom: 36, display: "flex", justifyContent: "space-between", gap: 16, fontSize: 13, alignItems: "center" }}>
         <Link href="/">← Другая глава</Link>
-        <a href={src} target="_blank" rel="noopener noreferrer" style={{ color: "var(--dim)" }}>
-          Оригинал
-        </a>
+        {meta && (
+          <button
+            type="button"
+            onClick={() => setShowOriginal((v) => !v)}
+            style={{
+              border: "1px solid var(--line)",
+              background: showOriginal ? "var(--bg-raised)" : "transparent",
+              color: showOriginal ? "var(--ink)" : "var(--dim)",
+              borderRadius: 8,
+              padding: "7px 12px",
+              fontSize: 13,
+              cursor: "pointer",
+            }}
+          >
+            {showOriginal ? "Показать перевод" : "Показать оригинал"}
+          </button>
+        )}
       </nav>
 
       {meta && (
@@ -183,9 +212,30 @@ export default function Reader({
       )}
 
       {paragraphs.length > 0 && (
-        <article className="reading">
+        <article className={showOriginal ? "reading original" : "reading"}>
           {paragraphs.map((p, i) => (
-            <p key={i}>{p}</p>
+            <p key={i}>
+              {terms.length === 0
+                ? p
+                : highlight(p, terms).map((seg, j) =>
+                    seg.term ? (
+                      <span
+                        key={j}
+                        className="term"
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => setPicked(seg.term ?? null)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" || e.key === " ") setPicked(seg.term ?? null);
+                        }}
+                      >
+                        {seg.text}
+                      </span>
+                    ) : (
+                      <span key={j}>{seg.text}</span>
+                    ),
+                  )}
+            </p>
           ))}
         </article>
       )}
@@ -205,6 +255,75 @@ export default function Reader({
           }}
         >
           {problem}
+        </div>
+      )}
+
+      {state === "done" && meta?.next && (
+        <nav style={{ marginTop: 44, display: "flex", justifyContent: "center" }}>
+          <Link
+            href={`/read?src=${encodeURIComponent(meta.next)}&register=${encodeURIComponent(register)}&tier=${encodeURIComponent(tier)}`}
+            style={{
+              display: "inline-block",
+              padding: "14px 30px",
+              borderRadius: 10,
+              background: "var(--accent)",
+              color: "#14120f",
+              fontWeight: 600,
+              fontSize: 16,
+            }}
+          >
+            Следующая глава →
+          </Link>
+        </nav>
+      )}
+
+      {state === "done" && meta && !meta.next && (
+        <p style={{ marginTop: 40, textAlign: "center", color: "var(--dim)", fontSize: 14 }}>
+          Ссылки на следующую главу на этой странице нет — видимо, книга кончилась
+          или сайт устроен иначе.
+        </p>
+      )}
+
+      {picked && (
+        <div
+          style={{
+            position: "fixed",
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "var(--bg-raised)",
+            borderTop: "1px solid var(--line)",
+            padding: "16px 18px calc(16px + env(safe-area-inset-bottom))",
+            display: "flex",
+            gap: 14,
+            alignItems: "flex-start",
+          }}
+        >
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, marginBottom: 4 }}>
+              <strong style={{ fontWeight: 600 }}>{picked.ru}</strong>
+              <span style={{ color: "var(--muted)" }}> · {picked.en}</span>
+            </div>
+            <div style={{ fontSize: 13, color: "var(--dim)", lineHeight: 1.5 }}>
+              {picked.note ?? "Из глоссария книги — пишется так во всех главах."}
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPicked(null)}
+            aria-label="Закрыть"
+            style={{
+              border: "none",
+              background: "transparent",
+              color: "var(--muted)",
+              fontSize: 22,
+              lineHeight: 1,
+              cursor: "pointer",
+              padding: 4,
+            }}
+          >
+            ×
+          </button>
         </div>
       )}
 
