@@ -110,6 +110,17 @@ export interface Store {
     owner: string,
     bookKey: string,
   ): Promise<Array<Omit<TranslationRecord, "text">>>;
+  /**
+   * Последние главы читателя по всем книгам сразу — от новых к старым.
+   *
+   * Отдельный вопрос к хранилищу, а не сложение ответов на сайте: «продолжить
+   * читать» на главной иначе спрашивало бы по разу на каждую книгу, и на
+   * десятке книг это десяток запросов к базе ради одной строки.
+   */
+  recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>>;
 }
 
 /** Ключ перевода: читатель, глава, регистр, модель. Всё это меняет текст. */
@@ -175,6 +186,17 @@ export class MemoryStore implements Store {
       .filter((t) => t.owner === owner && t.bookKey === bookKey)
       .map(({ text: _text, ...rest }) => rest)
       .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
+  }
+
+  async recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    return [...this.translations.values()]
+      .filter((t) => t.owner === owner)
+      .map(({ text: _text, ...rest }) => rest)
+      .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt))
+      .slice(0, limit);
   }
 }
 
@@ -278,9 +300,16 @@ export class FileStore implements Store {
     );
   }
 
-  async listTranslations(
+  /**
+   * Все переводы читателя, от новых к старым.
+   *
+   * Папка обходится целиком: имя файла — свёртка ключа, по нему не видно ни
+   * книги, ни владельца. Для файлового хранилища это нормально — оно и так
+   * только для «посмотреть, как работает», а в настоящей работе под сайтом
+   * база.
+   */
+  private async allTranslations(
     owner: string,
-    bookKey: string,
   ): Promise<Array<Omit<TranslationRecord, "text">>> {
     let names: string[];
     try {
@@ -293,11 +322,27 @@ export class FileStore implements Store {
       const record = await this.readJson<TranslationRecord>(
         path.join(this.root, "переводы", name),
       );
-      if (!record || record.owner !== owner || record.bookKey !== bookKey) continue;
+      if (!record || record.owner !== owner) continue;
       const { text: _text, ...rest } = record;
       found.push(rest);
     }
     return found.sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
+  }
+
+  async listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    const all = await this.allTranslations(owner);
+    return all.filter((t) => t.bookKey === bookKey);
+  }
+
+  async recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    const all = await this.allTranslations(owner);
+    return all.slice(0, limit);
   }
 }
 

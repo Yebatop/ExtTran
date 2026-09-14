@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Nav } from "../nav";
 import { chooseStore, storageKey } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -8,11 +9,9 @@ export default async function Books() {
   const books = await (await chooseStore()).listBooks();
 
   return (
+    <>
+    <Nav here="книги" />
     <main style={{ maxWidth: 660, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
-      <nav style={{ marginBottom: 36, fontSize: 13 }}>
-        <Link href="/">← На главную</Link>
-      </nav>
-
       <h1 className="display" style={{ fontSize: "clamp(28px, 6.5vw, 42px)", margin: "0 0 28px", lineHeight: 1.12 }}>
         Книги
       </h1>
@@ -40,5 +39,6 @@ export default async function Books() {
         </ul>
       )}
     </main>
+    </>
   );
 }
