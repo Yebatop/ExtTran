@@ -24,6 +24,7 @@ import {
 import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
 import { bookRef, storageKey } from "./book.js";
+import { polish } from "./polish.js";
 import { MemoryStore } from "./store.js";
 import { missingFileMessage } from "./files.js";
 
@@ -381,6 +382,29 @@ check("хранилище отдаёт то, что в него положили
   void store
     .readGlossary("site.invalid/novel/другая")
     .then((g) => assert(g === null, "чужой глоссарий нашёлся там, где его нет"));
+});
+
+check("типографика правится, а текст не страдает", () => {
+  // Ровно то, что пришло с живого сайта: шесть точек вместо многоточия.
+  // В корейских и английских веб-новеллах так принято, и модель послушно
+  // переносит это в русский текст.
+  const fromSite = ["\u2014 \u0414\u0430. \u041a\u0443\u0434\u0430 \u043c\u044b \u043f\u043e\u0435\u0434\u0435\u043c?", "", "\u2014 ......\u0412 \u0431\u0438\u0431\u043b\u0438\u043e\u0442\u0435\u043a\u0443."].join("\n");
+  const fixed = polish(fromSite);
+  assert(!fixed.includes("...."), `\u0440\u044f\u0434 \u0442\u043e\u0447\u0435\u043a \u043e\u0441\u0442\u0430\u043b\u0441\u044f: ${fixed}`);
+  assert(fixed.includes("..."), "\u043c\u043d\u043e\u0433\u043e\u0442\u043e\u0447\u0438\u0435 \u0441\u044a\u0435\u043b\u0438 \u0446\u0435\u043b\u0438\u043a\u043e\u043c");
+
+  // Дефис в начале реплики — это тире.
+  assert(polish("- \u0414\u0430.").startsWith("\u2014 "), "\u0434\u0435\u0444\u0438\u0441 \u0432 \u043d\u0430\u0447\u0430\u043b\u0435 \u0440\u0435\u043f\u043b\u0438\u043a\u0438 \u043d\u0435 \u0441\u0442\u0430\u043b \u0442\u0438\u0440\u0435");
+
+  // А вот чего правка делать не должна.
+  const dash = "\u041e\u043d \u2014 \u0447\u0435\u043b\u043e\u0432\u0435\u043a \u0441\u043b\u043e\u0432\u0430.";
+  assert(polish(dash) === dash, `\u0442\u0438\u0440\u0435 \u0432\u043d\u0443\u0442\u0440\u0438 \u0444\u0440\u0430\u0437\u044b \u043f\u043e\u0441\u0442\u0440\u0430\u0434\u0430\u043b\u043e: ${polish(dash)}`);
+
+  const paragraphs = "\u041f\u0435\u0440\u0432\u044b\u0439.\n\n\u0412\u0442\u043e\u0440\u043e\u0439.";
+  assert(polish(paragraphs) === paragraphs, "\u0430\u0431\u0437\u0430\u0446\u044b \u0441\u043b\u0438\u043f\u043b\u0438\u0441\u044c");
+
+  const three = "\u041d\u0443... \u043b\u0430\u0434\u043d\u043e.";
+  assert(polish(three) === three, "\u043e\u0431\u044b\u0447\u043d\u043e\u0435 \u043c\u043d\u043e\u0433\u043e\u0442\u043e\u0447\u0438\u0435 \u0442\u0440\u043e\u043d\u0443\u043b\u0438");
 });
 
 check("регистры перевода на месте", () => {

@@ -5,6 +5,7 @@ import {
   extractTerms,
   fetchPage,
   isRegister,
+  isTier,
   looksLocked,
   mergeIntoGlossary,
   storageKey,
@@ -54,7 +55,7 @@ type Frame =
   | { type: "error"; message: string };
 
 export async function POST(request: Request): Promise<Response> {
-  let body: { src?: unknown; register?: unknown };
+  let body: { src?: unknown; register?: unknown; tier?: unknown };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -70,6 +71,14 @@ export async function POST(request: Request): Promise<Response> {
     typeof body.register === "string" && isRegister(body.register)
       ? body.register
       : "ровный";
+
+  // Дорогая модель наружу не выставляется: замер показал 14.58 ₽ за главу
+  // против 4.76 ₽ выручки, то есть она убыточна при любом множителе, который
+  // читатель согласится нажать. Выбор — между дешёвой и средней.
+  const tier =
+    typeof body.tier === "string" && isTier(body.tier) && body.tier !== "strong"
+      ? body.tier
+      : "fast";
 
   if (!process.env.ANTHROPIC_API_KEY) {
     return Response.json(
@@ -134,7 +143,7 @@ export async function POST(request: Request): Promise<Response> {
           chapter,
           glossary: known,
           register,
-          tier: "fast",
+          tier,
           onText: (chunk) => send({ type: "text", chunk }),
         });
 

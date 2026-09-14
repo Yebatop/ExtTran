@@ -82,6 +82,28 @@ export default function Home() {
                 <option value="возвышенный">Возвышенный — сянься и уся</option>
               </select>
             </div>
+            <div style={{ flex: "1 1 200px" }}>
+              <label htmlFor="tier" className="label" style={{ display: "block", marginBottom: 10 }}>
+                Перевод
+              </label>
+              <select
+                id="tier"
+                name="tier"
+                defaultValue="fast"
+                style={{
+                  width: "100%",
+                  padding: "13px 14px",
+                  borderRadius: 10,
+                  border: "1px solid var(--line)",
+                  background: "#100e0b",
+                  color: "var(--ink)",
+                  fontSize: 15,
+                }}
+              >
+                <option value="fast">Обычный — быстро</option>
+                <option value="middle">Получше — точнее в трудных местах</option>
+              </select>
+            </div>
             <button
               type="submit"
               style={{

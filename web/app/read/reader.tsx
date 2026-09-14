@@ -35,7 +35,15 @@ type State = "loading" | "translating" | "done" | "failed";
  * от минуты до двух, и пустой экран всё это время читатель не простит. Пока
  * текст идёт, под ним мигает курсор: видно, что работа не встала.
  */
-export default function Reader({ src, register }: { src: string; register: string }) {
+export default function Reader({
+  src,
+  register,
+  tier,
+}: {
+  src: string;
+  register: string;
+  tier: string;
+}) {
   const [state, setState] = useState<State>("loading");
   const [meta, setMeta] = useState<Meta | null>(null);
   const [text, setText] = useState("");
@@ -57,7 +65,7 @@ export default function Reader({ src, register }: { src: string; register: strin
         const response = await fetch("/api/translate", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ src, register }),
+          body: JSON.stringify({ src, register, tier }),
           signal: controller.signal,
         });
 
@@ -125,7 +133,7 @@ export default function Reader({ src, register }: { src: string; register: strin
     })();
 
     return () => controller.abort();
-  }, [src, register]);
+  }, [src, register, tier]);
 
   const paragraphs = text.split(/\n{2,}/).filter((p) => p.trim() !== "");
 
