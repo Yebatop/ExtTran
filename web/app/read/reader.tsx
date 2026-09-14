@@ -35,6 +35,23 @@ interface GlossaryNews {
 
 type State = "loading" | "translating" | "done" | "failed";
 
+/** Три темы с холста ReaderThemes. */
+const THEMES = ["ночная", "сепия", "дневная"] as const;
+type Theme = (typeof THEMES)[number];
+
+/** Как тема выглядит в переключателе: квадратик цвета страницы. */
+const SWATCH: Record<Theme, string> = {
+  ночная: "#14120f",
+  сепия: "#f0e4cf",
+  дневная: "#f8f6f1",
+};
+
+const THEME_KEY = "толмач-тема";
+
+function isTheme(value: string): value is Theme {
+  return (THEMES as readonly string[]).includes(value);
+}
+
 /**
  * Ридер.
  *
@@ -61,7 +78,10 @@ export default function Reader({
   const [force, setForce] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [picked, setPicked] = useState<HighlightTerm | null>(null);
-  const started = useRef(-1);
+  const [theme, setTheme] = useState<Theme>("ночная");
+  const [read, setRead] = useState(0);
+  const started = useRef("");
+  const inflight = useRef<AbortController | null>(null);
 
   useEffect(() => {
     // Переход к следующей главе — это тот же компонент с другим src:
@@ -70,17 +90,79 @@ export default function Reader({
     setPicked(null);
   }, [src]);
 
+  /**
+   * Тема: своя, если выбрана, иначе та, что стоит в системе.
+   *
+   * Читаем уже после первой отрисовки, а не при ней: на сервере ни хранилища,
+   * ни системной настройки нет, и выбранная там тема разошлась бы с
+   * отрисованной здесь. Поэтому первый кадр всегда ночной.
+   */
   useEffect(() => {
-    // В строгом режиме разработки эффект запускается дважды — перевод стоит
-    // денег, так что второй запуск нам обойдётся ровно в цену главы.
-    if (started.current === attempt) return;
-    started.current = attempt;
+    let saved: string | null = null;
+    try {
+      saved = localStorage.getItem(THEME_KEY);
+    } catch {
+      // Приватное окно или закрытые данные сайта — возьмём системную.
+    }
+    if (saved && isTheme(saved)) {
+      setTheme(saved);
+      return;
+    }
+    if (window.matchMedia("(prefers-color-scheme: light)").matches) setTheme("дневная");
+  }, []);
+
+  /** Сколько главы позади. Считаем по окну: важно то, что видно глазами. */
+  useEffect(() => {
+    const measure = () => {
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      setRead(height > 40 ? Math.min(1, Math.max(0, window.scrollY / height)) : 0);
+    };
+    measure();
+    window.addEventListener("scroll", measure, { passive: true });
+    window.addEventListener("resize", measure);
+    return () => {
+      window.removeEventListener("scroll", measure);
+      window.removeEventListener("resize", measure);
+    };
+  }, [text, showOriginal]);
+
+  const chooseTheme = (next: Theme) => {
+    setTheme(next);
+    try {
+      localStorage.setItem(THEME_KEY, next);
+    } catch {
+      // Не сохранилось — тема всё равно сменится, просто до конца сеанса.
+    }
+  };
+
+  useEffect(() => {
+    /*
+     * Сторож от второго запроса той же главы. В строгом режиме разработки
+     * эффект запускается дважды, а перевод стоит денег — второй запуск
+     * обошёлся бы ровно в цену главы.
+     *
+     * Сторож считает по самому запросу, а не по счётчику попыток. Раньше он
+     * смотрел только на попытку — и переход к следующей главе, то есть тот же
+     * компонент с другим адресом при той же попытке, принимался за повтор:
+     * кнопка нажималась, адрес в строке менялся, а на экране оставалась
+     * прежняя глава. Проверено на собранном сайте: со старым сторожем адрес
+     * становится вторым, а заголовок и текст остаются от первой главы.
+     */
+    const key = [src, register, tier, attempt, force].join("\u0000");
+    if (started.current === key) return;
+    started.current = key;
     setProblem(null);
     setText("");
     setDone(null);
     setState("loading");
 
+    // Прошлый запрос отменяем здесь, а не в уборке эффекта: уборка в строгом
+    // режиме случается сразу после первого запуска и убивала запрос, который
+    // сторож потом не пускал повторить, — экран навсегда оставался
+    // на «открываем страницу».
+    inflight.current?.abort();
     const controller = new AbortController();
+    inflight.current = controller;
 
     void (async () => {
       try {
@@ -165,8 +247,6 @@ export default function Reader({
         setState("failed");
       }
     })();
-
-    return () => controller.abort();
   }, [src, register, tier, attempt, force]);
 
   const shown = showOriginal ? meta?.original ?? "" : text;
@@ -174,9 +254,15 @@ export default function Reader({
   const terms = showOriginal ? [] : meta?.glossary ?? [];
 
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(20px, 5vw, 56px) 16px 96px" }}>
-      <nav style={{ marginBottom: 36, display: "flex", justifyContent: "space-between", gap: 16, fontSize: 13, alignItems: "center" }}>
+    <div
+      data-reader-theme={theme}
+      style={{ background: "var(--bg)", color: "var(--ink)", minHeight: "100dvh" }}
+    >
+      <main style={{ maxWidth: 720, margin: "0 auto", padding: "clamp(20px, 5vw, 56px) 16px 96px" }}>
+      <nav style={{ marginBottom: 36, display: "flex", justifyContent: "space-between", gap: 16, fontSize: 13, alignItems: "center", flexWrap: "wrap" }}>
         <Link href="/">← Другая глава</Link>
+        <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+        <Themes value={theme} onPick={chooseTheme} />
         {meta && (
           <button
             type="button"
@@ -194,6 +280,7 @@ export default function Reader({
             {showOriginal ? "Показать перевод" : "Показать оригинал"}
           </button>
         )}
+        </div>
       </nav>
 
       {meta && (
@@ -281,7 +368,7 @@ export default function Reader({
               padding: "14px 30px",
               borderRadius: 10,
               background: "var(--accent)",
-              color: "#14120f",
+              color: "var(--on-accent)",
               fontWeight: 600,
               fontSize: 16,
             }}
@@ -370,7 +457,49 @@ export default function Reader({
           )}
         </footer>
       )}
-    </main>
+      </main>
+
+      {paragraphs.length > 0 && !picked && (
+        <div className="progress">
+          <span className="bar">
+            <span style={{ width: `${Math.round(read * 100)}%` }} />
+          </span>
+          <span className="pct">{Math.round(read * 100)}%</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Переключатель тем: три квадратика цвета страницы.
+ *
+ * Подписей нет намеренно — цвет говорит сам, а места в шапке ридера нет.
+ * Название остаётся в подсказке и для читалок с экрана.
+ */
+function Themes({ value, onPick }: { value: Theme; onPick: (theme: Theme) => void }) {
+  return (
+    <div style={{ display: "flex", gap: 6 }} role="group" aria-label="Тема ридера">
+      {THEMES.map((name) => (
+        <button
+          key={name}
+          type="button"
+          title={name}
+          aria-label={`Тема: ${name}`}
+          aria-pressed={value === name}
+          onClick={() => onPick(name)}
+          style={{
+            width: 22,
+            height: 22,
+            padding: 0,
+            borderRadius: 6,
+            cursor: "pointer",
+            background: SWATCH[name],
+            border: value === name ? "2px solid var(--accent)" : "1px solid var(--line)",
+          }}
+        />
+      ))}
+    </div>
   );
 }
 

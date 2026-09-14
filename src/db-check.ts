@@ -14,10 +14,18 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { connectionString, PostgresStore } from "./store-pg.js";
-import { SOLE_READER } from "./store.js";
 
 const KEY = "проверка-толмача.invalid/книга";
 const OTHER = "проверка-толмача.invalid/другая-книга";
+/**
+ * Читатель у проверки свой, не тот, под которым живут настоящие переводы.
+ *
+ * Иначе проверка ломается от чужих данных: «последние главы по всем книгам»
+ * у настоящего читателя вернут и его собственные, а сколько их — проверке
+ * знать неоткуда. Свой читатель делает счёт предсказуемым и заодно не даёт
+ * прогону на рабочей базе смешаться с чужим чтением.
+ */
+const READER = "проверка-читателя";
 
 let failed = 0;
 
@@ -92,16 +100,16 @@ async function main(): Promise<void> {
     const stamp = new Date().toISOString();
     check(
       "непереведённой главы в хранилище нет",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "middle")) === null,
     );
     await store.writeTranslation({
-      owner: SOLE_READER, source: "https://проверка.invalid/c/1", bookKey: KEY,
+      owner: READER, source: "https://проверка.invalid/c/1", bookKey: KEY,
       register: "ровный", tier: "middle", title: "Глава 1", words: 1738,
       text: "Первый абзац.\n\nВторой абзац.", model: "claude-sonnet-5",
       rub: 5.75, published: false, nextUrl: "https://проверка.invalid/c/2",
       createdAt: stamp, lastReadAt: stamp,
     });
-    const back = await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle");
+    const back = await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "middle");
     check("перевод читается обратно целиком", back?.text.includes("Второй абзац") === true);
     check("цена сохранилась", back?.rub === 5.75);
     check(
@@ -111,16 +119,45 @@ async function main(): Promise<void> {
     check("галочка публикации выключена", back?.published === false);
     check(
       "другой регистр — другой перевод, а не этот же",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "живой", "middle")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "живой", "middle")) === null,
     );
     check(
       "другая модель — другой перевод",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "strong")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "strong")) === null,
     );
     check(
       "чужому читателю перевод не отдаётся",
       (await store.readTranslation("кто-то-другой", "https://проверка.invalid/c/1", "ровный", "middle")) === null,
     );
+
+    // Списки глав: по ним работают карточка книги и «продолжить» на главной.
+    await store.writeTranslation({
+      owner: READER, source: "https://проверка.invalid/другая/c/1", bookKey: OTHER,
+      register: "ровный", tier: "middle", title: "Другая книга, глава 1", words: 900,
+      text: "Текст другой книги.", model: "claude-sonnet-5",
+      rub: 3.1, published: false, nextUrl: null,
+      createdAt: stamp, lastReadAt: new Date(Date.now() + 1000).toISOString(),
+    });
+    const ofBook = await store.listTranslations(READER, KEY);
+    check("главы книги перечисляются", ofBook.length === 1);
+    check("чужая книга в список не попала", ofBook.every((t) => t.bookKey === KEY));
+    check(
+      "текст в списке не тянется",
+      ofBook.every((t) => !("text" in t)),
+    );
+    const recent = await store.recentTranslations(READER, 10);
+    check("последние главы видны по всем книгам сразу", recent.length === 2);
+    check("сверху та, что читали позже", recent[0]?.bookKey === OTHER);
+    check(
+      "чужие главы в «последние» не попадают",
+      (await store.recentTranslations("кто-то-другой", 10)).length === 0,
+    );
+    check("счёт последних глав ограничен", (await store.recentTranslations(READER, 1)).length === 1);
+
+    // Размеры глоссариев: по ним каталог сортирует и фильтрует.
+    const counts = await store.termCounts();
+    check("размер глоссария считает база", counts.get(KEY) === 2);
+    check("пустой глоссарий считается нулём, а не пропадает", counts.get(OTHER) === 0);
   } finally {
     await store.removeBook(KEY).catch(() => undefined);
     await store.removeBook(OTHER).catch(() => undefined);

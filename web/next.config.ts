@@ -15,6 +15,12 @@ const config: NextConfig = {
    * в одном файле с клиентским кодом.
    */
   serverExternalPackages: ["jsdom", "@mozilla/readability", "@anthropic-ai/sdk", "pg"],
+  /**
+   * `next dev` при каждом запуске кладёт в папку AGENTS.md и CLAUDE.md со
+   * своей справкой. Нам туда писать нечего: в дереве от этого каждый раз два
+   * лишних неотслеженных файла, которые к сайту отношения не имеют.
+   */
+  agentRules: false,
 };
 
 export default config;
