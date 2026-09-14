@@ -8,6 +8,8 @@
  * который выяснит то же самое за деньги.
  */
 
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
 import { readFile } from "node:fs/promises";
 import { attempts, fetchPage, linkDensity } from "./extract.js";
 import { MODELS, USD_RUB } from "./config.js";

@@ -10,6 +10,8 @@
  * Файл сохраняется после каждой главы — оборванный прогон не теряет работу.
  */
 
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
 import { readFile, writeFile } from "node:fs/promises";
 import Anthropic from "@anthropic-ai/sdk";
 import { MODELS, USD_RUB, type Tier } from "./config.js";

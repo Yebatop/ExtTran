@@ -11,6 +11,8 @@
  * Ни оригиналы, ни переводы в отчёт не попадают: только цифры.
  */
 
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";

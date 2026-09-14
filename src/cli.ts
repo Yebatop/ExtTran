@@ -7,6 +7,8 @@
  * главы не измерена на настоящих текстах, любой разговор о тарифах гадание.
  */
 
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
 import { writeFile } from "node:fs/promises";
 import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.js";
 import { formatSpend } from "./cost.js";

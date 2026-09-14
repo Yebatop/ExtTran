@@ -9,6 +9,8 @@
  * только на время прогона.
  */
 
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
 import { writeFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 
