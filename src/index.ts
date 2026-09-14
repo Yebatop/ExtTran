@@ -36,10 +36,13 @@ export { connectionString, PostgresStore } from "./store-pg.js";
 
 export {
   chooseStore,
+  translationKey,
   FileStore,
   MemoryStore,
+  SOLE_READER,
   type BookRecord,
   type Store,
+  type TranslationRecord,
 } from "./store.js";
 
 export {

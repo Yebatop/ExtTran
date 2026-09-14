@@ -14,6 +14,7 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { connectionString, PostgresStore } from "./store-pg.js";
+import { SOLE_READER } from "./store.js";
 
 const KEY = "проверка-толмача.invalid/книга";
 const OTHER = "проверка-толмача.invalid/другая-книга";
@@ -86,6 +87,40 @@ async function main(): Promise<void> {
     await store.writeGlossary(OTHER, { novel: "Книга «Ёлка»", terms: [], addresses: [] });
     check("кириллица в ключе и названии цела", (await store.readGlossary(OTHER)) !== null);
     check("книги не смешались", (await store.readGlossary(OTHER))?.terms.length === 0);
+
+    // Переводы: ради них половина смысла базы — не платить дважды.
+    const stamp = new Date().toISOString();
+    check(
+      "непереведённой главы в хранилище нет",
+      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle")) === null,
+    );
+    await store.writeTranslation({
+      owner: SOLE_READER, source: "https://проверка.invalid/c/1", bookKey: KEY,
+      register: "ровный", tier: "middle", title: "Глава 1", words: 1738,
+      text: "Первый абзац.\n\nВторой абзац.", model: "claude-sonnet-5",
+      rub: 5.75, published: false, nextUrl: "https://проверка.invalid/c/2",
+      createdAt: stamp, lastReadAt: stamp,
+    });
+    const back = await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle");
+    check("перевод читается обратно целиком", back?.text.includes("Второй абзац") === true);
+    check("цена сохранилась", back?.rub === 5.75);
+    check(
+      "ссылка на следующую главу сохранилась",
+      back?.nextUrl === "https://проверка.invalid/c/2",
+    );
+    check("галочка публикации выключена", back?.published === false);
+    check(
+      "другой регистр — другой перевод, а не этот же",
+      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "живой", "middle")) === null,
+    );
+    check(
+      "другая модель — другой перевод",
+      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "strong")) === null,
+    );
+    check(
+      "чужому читателю перевод не отдаётся",
+      (await store.readTranslation("кто-то-другой", "https://проверка.invalid/c/1", "ровный", "middle")) === null,
+    );
   } finally {
     await store.removeBook(KEY).catch(() => undefined);
     await store.removeBook(OTHER).catch(() => undefined);

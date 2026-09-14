@@ -23,6 +23,7 @@ interface Done {
   model: string;
   seconds: number;
   text: string;
+  cached: boolean;
 }
 
 interface GlossaryNews {
@@ -208,7 +209,7 @@ export default function Reader({
       {state === "loading" && <Waiting note="Открываем страницу и снимаем текст…" />}
 
       {state === "translating" && paragraphs.length === 0 && (
-        <Waiting note="Переводим. Первые абзацы появятся через несколько секунд." />
+        <Waiting note="Этой главы у нас ещё нет — переводим. Первые абзацы появятся через несколько секунд." />
       )}
 
       {paragraphs.length > 0 && (
@@ -341,7 +342,11 @@ export default function Reader({
           }}
         >
           <span>{done.seconds.toFixed(0)} с</span>
-          <span>{done.rub.toFixed(2)} ₽ себестоимости</span>
+          <span>
+            {done.cached
+              ? "из хранилища — заново не переводили"
+              : `${done.rub.toFixed(2)} ₽ себестоимости`}
+          </span>
           <span>{done.model}</span>
           {glossary && (
             <span style={{ color: "var(--muted)" }}>

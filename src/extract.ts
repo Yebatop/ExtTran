@@ -26,15 +26,56 @@ export interface Chapter {
 /** Ниже этого числа слов результат Readability считаем неудачей. */
 const TOO_SHORT_WORDS = 200;
 
+/**
+ * Почему не удалось соединиться — по-человечески.
+ *
+ * fetch при обрыве связи бросает одно и то же «fetch failed», а настоящая
+ * причина лежит внутри, в cause. Показывать читателю «fetch failed» — всё
+ * равно что не показывать ничего: по такому тексту нельзя понять, лёг ли
+ * сайт, опечатка ли в адресе или дело в сети.
+ */
+function describeNetworkError(error: unknown, url: string): Error {
+  const host = (() => {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return url;
+    }
+  })();
+  const cause = (error as { cause?: { code?: string } } | undefined)?.cause;
+  const code = cause?.code ?? "";
+
+  const reason =
+    code === "ENOTFOUND" || code === "EAI_AGAIN"
+      ? `адрес ${host} не находится — возможно, в нём опечатка`
+      : code === "ECONNREFUSED"
+        ? `${host} отказал в соединении`
+        : code === "ETIMEDOUT" || code === "UND_ERR_CONNECT_TIMEOUT"
+          ? `${host} не ответил вовремя`
+          : code.startsWith("ERR_TLS") || code.startsWith("CERT_")
+            ? `у ${host} не в порядке сертификат`
+            : `до ${host} не достучались`;
+
+  return new Error(
+    `Страница не открылась: ${reason}. ` +
+      "Проверьте ссылку или попробуйте позже.",
+  );
+}
+
 export async function fetchPage(url: string): Promise<string> {
-  const response = await fetch(url, {
-    headers: {
-      "user-agent": USER_AGENT,
-      accept: "text/html,application/xhtml+xml",
-      "accept-language": "en-US,en;q=0.9",
-    },
-    redirect: "follow",
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        "user-agent": USER_AGENT,
+        accept: "text/html,application/xhtml+xml",
+        "accept-language": "en-US,en;q=0.9",
+      },
+      redirect: "follow",
+    });
+  } catch (error) {
+    throw describeNetworkError(error, url);
+  }
   if (!response.ok) {
     throw new Error(
       `Сайт ответил ${response.status} ${response.statusText}. ` +
