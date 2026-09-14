@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cover, Nav } from "./nav";
+import { chapters as chapterWords } from "./words";
 import { chooseStore, storageKey, storageMode, SOLE_READER } from "@/lib/core";
 
 /**
@@ -134,7 +135,7 @@ export default async function Home() {
                   flexWrap: "wrap",
                 }}
               >
-                <Cover height={74} width={54} />
+                <Cover height={74} width={54} title={lastBook?.title} seed={last.bookKey} />
                 <div style={{ flex: "1 1 240px", minWidth: 0, display: "grid", gap: 6 }}>
                   <div style={{ fontSize: 16, fontWeight: 600 }}>
                     {lastBook ? (
@@ -191,10 +192,10 @@ export default async function Home() {
                     href={`/book/${encodeURIComponent(storageKey(b.key))}`}
                     style={{ display: "grid", gap: 10, color: "var(--ink-read)" }}
                   >
-                    <Cover height={152} />
+                    <Cover height={152} title={b.title} seed={b.key} />
                     <span style={{ fontSize: 13.5, lineHeight: 1.35 }}>{b.title}</span>
                     <span style={{ fontSize: 11.5, color: "var(--dim)", marginTop: -4 }}>
-                      {chapters(b.chaptersTranslated)}
+                      {`переведено: ${chapterWords(b.chaptersTranslated)}`}
                     </span>
                   </Link>
                 ))}
@@ -323,15 +324,6 @@ function Choice({
 function readHref(src: string, like: { register: string; tier: string }): string {
   const q = new URLSearchParams({ src, register: like.register, tier: like.tier });
   return `/read?${q.toString()}`;
-}
-
-/** «переведено глав: 62» — числительное по-русски, а не «62 глав». */
-function chapters(count: number): string {
-  const last2 = count % 100;
-  const last1 = count % 10;
-  const word =
-    last2 >= 11 && last2 <= 14 ? "глав" : last1 === 1 ? "глава" : last1 >= 2 && last1 <= 4 ? "главы" : "глав";
-  return `переведено: ${count} ${word}`;
 }
 
 /**

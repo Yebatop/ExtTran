@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Cover, Nav } from "../nav";
+import { terms as termWords } from "../words";
 import { chooseStore, storageKey, type BookRecord } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -172,7 +173,7 @@ export default async function Books({ searchParams }: { searchParams: Promise<Qu
             ) : (
               books.map((b) => (
                 <Link key={b.key} className="row" href={`/book/${encodeURIComponent(storageKey(b.key))}`}>
-                  <Cover height={94} width={68} />
+                  <Cover height={94} width={68} title={b.title} seed={b.key} />
                   <span style={{ display: "grid", gap: 7, flexGrow: 1, minWidth: 0, alignContent: "start" }}>
                     <span style={{ fontSize: 16, fontWeight: 600 }}>{b.title}</span>
                     <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
@@ -180,7 +181,7 @@ export default async function Books({ searchParams }: { searchParams: Promise<Qu
                     </span>
                   </span>
                   <span style={{ flexShrink: 0, fontSize: 12.5, color: "#e08160", fontWeight: 500 }}>
-                    {termWord(terms.get(b.key) ?? 0)}
+                    {(terms.get(b.key) ?? 0) === 0 ? "глоссария нет" : termWords(terms.get(b.key) ?? 0)}
                   </span>
                 </Link>
               ))
@@ -208,20 +209,4 @@ function Filter({ href, on, name, n }: { href: string; on: boolean; name: string
       {n !== undefined && <span className="n">{n}</span>}
     </Link>
   );
-}
-
-/** «142 термина» — числительное по-русски, а не «142 терминов». */
-function termWord(count: number): string {
-  if (count === 0) return "глоссария нет";
-  const last2 = count % 100;
-  const last1 = count % 10;
-  const word =
-    last2 >= 11 && last2 <= 14
-      ? "терминов"
-      : last1 === 1
-        ? "термин"
-        : last1 >= 2 && last1 <= 4
-          ? "термина"
-          : "терминов";
-  return `${count} ${word}`;
 }

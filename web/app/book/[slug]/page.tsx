@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Nav } from "../../nav";
+import { renameBook } from "./actions";
 import { chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -69,9 +70,29 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
 
       <header style={{ marginBottom: 36 }}>
         <div className="label" style={{ marginBottom: 12 }}>{book.host}</div>
-        <h1 className="display" style={{ fontSize: "clamp(30px, 7vw, 46px)", margin: 0, lineHeight: 1.1 }}>
+        <h1 className="display" style={{ fontSize: "clamp(30px, 7vw, 46px)", margin: "0 0 12px", lineHeight: 1.1 }}>
           {book.title}
         </h1>
+        {/*
+          Название взято из заголовка первой главы, и это догадка: на одних
+          сайтах там имя книги, на других — имя главы, а на третьих и то и
+          другое сразу. Догадку должно быть чем поправить.
+        */}
+        <details className="term-row" style={{ borderBottom: "none", paddingBottom: 0 }}>
+          <summary style={{ gridTemplateColumns: "minmax(0, 1fr)", fontSize: 13, color: "var(--dim)" }}>
+            Название не то? Поправить
+          </summary>
+          <form action={renameBook} className="edit">
+            <input type="hidden" name="slug" value={slug} />
+            <label>
+              Как называть эту книгу
+              <input name="title" defaultValue={book.title} required />
+            </label>
+            <div className="buttons">
+              <button type="submit">Сохранить</button>
+            </div>
+          </form>
+        </details>
       </header>
 
       <div
