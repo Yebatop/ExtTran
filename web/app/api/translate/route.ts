@@ -49,7 +49,23 @@ type Frame =
       terms: number;
     }
   | { type: "text"; chunk: string }
-  | { type: "done"; rub: number; usd: number; model: string; seconds: number }
+  | {
+      type: "done";
+      rub: number;
+      usd: number;
+      model: string;
+      seconds: number;
+      /**
+       * Готовый текст целиком.
+       *
+       * Поток идёт сырым, как его отдаёт модель, — иначе читателю пришлось бы
+       * ждать конца главы. Но механическая правка (ряды точек, тире в начале
+       * реплики) работает по всему тексту сразу и на куске потока сделать её
+       * нельзя: многоточие может разорваться между кусками. Поэтому в конце
+       * присылаем правленый текст целиком, и страница его подменяет.
+       */
+      text: string;
+    }
   | { type: "glossary"; added: number; total: number; rub: number }
   | { type: "refusal"; category: string | null; explanation: string | null }
   | { type: "error"; message: string };
@@ -160,6 +176,7 @@ export async function POST(request: Request): Promise<Response> {
             usd: result.spend.usd,
             model: result.model,
             seconds: (Date.now() - started) / 1000,
+            text: result.text,
           });
 
           const book: BookRecord = (await store.readBook(ref.key)) ?? {
