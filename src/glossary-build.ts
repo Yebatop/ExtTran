@@ -138,12 +138,20 @@ async function main(): Promise<void> {
   );
 
   for (const [index, source] of planned.entries()) {
-    if (args.ceiling !== undefined && spentRub >= args.ceiling.rub) {
-      process.stderr.write(
-        `\nОстановились: потрачено ${spentRub.toFixed(2)} ₽ ` +
-          `($${(spentRub / USD_RUB).toFixed(2)}), это предел.\n`,
-      );
-      break;
+    // Останавливаемся ДО главы, которая перелетит через предел, а не после.
+    // Цену главы заранее не знаем, поэтому берём среднюю по уже пройденным:
+    // иначе потолок систематически превышается на стоимость одной главы.
+    if (args.ceiling !== undefined) {
+      const done = index;
+      const expected = done > 0 ? spentRub / done : 0;
+      if (spentRub + expected > args.ceiling.rub) {
+        process.stderr.write(
+          `\nОстановились на ${spentRub.toFixed(2)} ₽ ($${(spentRub / USD_RUB).toFixed(2)}): ` +
+            `следующая глава примерно за ${expected.toFixed(2)} ₽ вывела бы за предел ` +
+            `${args.ceiling.rub.toFixed(0)} ₽.\n`,
+        );
+        break;
+      }
     }
 
     try {

@@ -286,9 +286,14 @@ async function main(): Promise<void> {
     }
 
     for (const tier of args.tiers) {
-      if (args.ceiling !== undefined && spentRub >= args.ceiling.rub) {
-        stoppedByCeiling = true;
-        break outer;
+      // Как и в сборке глоссария: тормозим до главы, которая перелетит.
+      if (args.ceiling !== undefined) {
+        const done = rows.filter((r) => r.outcome !== "ошибка").length;
+        const expected = done > 0 ? spentRub / done : 0;
+        if (spentRub + expected > args.ceiling.rub) {
+          stoppedByCeiling = true;
+          break outer;
+        }
       }
 
       const started = Date.now();

@@ -101,12 +101,19 @@ export async function extractTerms(options: {
     },
   ];
 
+  // Усердие низкое намеренно. Выписать имена из главы — работа не думательная,
+  // а на моделях с обдумыванием оно включено по умолчанию и работает на полную:
+  // разбор главы выходил дороже её перевода. Модели без поддержки усердия
+  // ключ не отправляем, они на нём падают.
   const response = await client.messages.parse({
     model: model.id,
     max_tokens: 8000,
     system,
     messages: [{ role: "user", content: chapter.text }],
-    output_config: { format: zodOutputFormat(ExtractionSchema) },
+    output_config: {
+      format: zodOutputFormat(ExtractionSchema),
+      ...(model.supportsEffort ? { effort: "low" as const } : {}),
+    },
   });
 
   const spend = priceUsage(response.usage, model);
