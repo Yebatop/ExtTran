@@ -30,6 +30,16 @@ export {
   type Tier,
 } from "./config.js";
 
+export { bookRef, storageKey, type BookRef } from "./book.js";
+
+export {
+  chooseStore,
+  FileStore,
+  MemoryStore,
+  type BookRecord,
+  type Store,
+} from "./store.js";
+
 export {
   priceUsage,
   formatSpend,

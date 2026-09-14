@@ -124,9 +124,11 @@ export default function Home() {
           fontSize: 13,
         }}
       >
+        <Link href="/books">Книги</Link>
+        <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
         <Link href="/rules">Что мы делаем с чужим текстом</Link>
         <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
-        Пока работает только перевод главы по ссылке: ни каталога, ни кабинета,
+        Пока работает перевод главы по ссылке и глоссарий книги: ни кабинета,
         ни оплаты ещё нет.
       </footer>
     </main>
