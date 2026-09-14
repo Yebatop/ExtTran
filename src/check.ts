@@ -54,6 +54,8 @@ interface Judgement {
   best: ExtractionAttempt | null;
   tries: ExtractionAttempt[];
   density: number;
+  /** Почему не годится — чтобы было что чинить, а не просто «ноль слов». */
+  why?: string;
 }
 
 function estimateRub(words: number, tier: "fast" | "strong"): number {
@@ -78,12 +80,23 @@ function judge(html: string, source: string): Judgement {
   );
 
   let verdict: Verdict;
-  if (!best || best.wordCount < 100) verdict = "не годится";
-  else if (density > 0.5) verdict = "оглавление";
-  else if (best.wordCount < 600) verdict = "коротко";
-  else verdict = "годится";
+  let why: string | undefined;
+  if (!best || best.wordCount < 100) {
+    verdict = "не годится";
+    why =
+      Buffer.byteLength(html, "utf8") < 20_000
+        ? "страница почти пустая — текст рисует скрипт"
+        : "текста много, но связного куска нет";
+  } else if (density > 0.5) {
+    verdict = "оглавление";
+    why = `${(density * 100).toFixed(0)}% текста в ссылках`;
+  } else if (best.wordCount < 600) {
+    verdict = "коротко";
+  } else {
+    verdict = "годится";
+  }
 
-  return { verdict, words: best?.wordCount ?? 0, best, tries, density };
+  return { verdict, words: best?.wordCount ?? 0, best, tries, density, ...(why ? { why } : {}) };
 }
 
 async function one(source: string): Promise<void> {
@@ -184,26 +197,54 @@ async function batch(listPath: string, limit: number): Promise<void> {
   );
 
   const words: number[] = [];
-  let failures = 0;
+  const failed: { source: string; why: string }[] = [];
 
   for (const [index, source] of sources.entries()) {
     if (index > 0) await new Promise((r) => setTimeout(r, PAUSE_MS));
+    // У ссылки убираем имя сайта, у файла оставляем только имя: иначе строки
+    // отличаются только хвостом длинного общего пути и неразличимы.
+    const tail = /^https?:\/\//i.test(source)
+      ? source.replace(/^https?:\/\/[^/]+/, "")
+      : (source.split("/").pop() ?? source);
     try {
       const html = await loadHtml(source);
-      const { verdict, words: w } = judge(html, source);
-      if (verdict === "годится" || verdict === "коротко") words.push(w);
-      else failures += 1;
+      const { verdict, words: w, why } = judge(html, source);
+      if (verdict === "годится" || verdict === "коротко") {
+        words.push(w);
+      } else {
+        failed.push({ source: tail, why: why ?? verdict });
+      }
       const mark = verdict === "годится" ? "✓" : verdict === "коротко" ? "~" : "✗";
       process.stderr.write(
-        `  ${String(index + 1).padStart(3)}. ${mark} ${w.toLocaleString("ru").padStart(6)} слов  ${verdict}\n`,
+        `  ${String(index + 1).padStart(3)}. ${mark} ${w.toLocaleString("ru").padStart(6)} слов  ` +
+          `${verdict.padEnd(11)} ${tail.slice(0, 52)}\n`,
       );
-    } catch {
-      failures += 1;
-      process.stderr.write(`  ${String(index + 1).padStart(3)}. ✗ не открылась\n`);
+    } catch (error) {
+      const why = error instanceof Error ? error.message : String(error);
+      failed.push({ source: tail, why });
+      process.stderr.write(
+        `  ${String(index + 1).padStart(3)}. ✗ ${"".padStart(6)} не открылась ${tail.slice(0, 52)}\n`,
+      );
     }
   }
 
   const out: string[] = ["", "─".repeat(60), ""];
+
+  if (failed.length > 0) {
+    out.push(`Не подошли — ${failed.length}:`);
+    for (const f of failed.slice(0, 12)) {
+      out.push(`  ${f.source.slice(0, 46).padEnd(48)} ${f.why.slice(0, 60)}`);
+    }
+    if (failed.length > 12) out.push(`  …и ещё ${failed.length - 12}`);
+    out.push(
+      "",
+      "Если непригодных большинство — почти наверняка в список попали не главы.",
+      "Посмотрите адреса выше: это могут быть страницы комментариев, оглавление",
+      "или ссылки «следующая глава», ведущие в никуда. Уточните --содержит,",
+      "или откройте список.txt и вычистите лишнее руками.",
+      "",
+    );
+  }
 
   if (words.length === 0) {
     out.push(
@@ -221,7 +262,7 @@ async function batch(listPath: string, limit: number): Promise<void> {
   const max = Math.max(...words);
 
   out.push(
-    `Пригодных глав: ${words.length} из ${sources.length}${failures > 0 ? ` (не открылось или не глава: ${failures})` : ""}`,
+    `Пригодных глав: ${words.length} из ${sources.length}`,
     `Медиана длины:  ${Math.round(med).toLocaleString("ru")} слов`,
     `Среднее:        ${Math.round(avg).toLocaleString("ru")} слов`,
     `Разброс:        ${min.toLocaleString("ru")} — ${max.toLocaleString("ru")} слов`,

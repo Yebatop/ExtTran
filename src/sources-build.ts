@@ -11,7 +11,7 @@
 
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
-import { writeFile } from "node:fs/promises";
+import { readFile, writeFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 import { USER_AGENT } from "./config.js";
 
@@ -23,7 +23,8 @@ const USAGE = `Сборка списка глав.
 
 Ключи:
   --шаблон <строка>    адрес с диапазоном в фигурных скобках: {147..196}
-  --оглавление <url>   страница со списком глав
+  --оглавление <url>   страница со списком глав (или сохранённый файл)
+  --база <url>         имя сайта, если оглавление читается из файла
   --содержит <кусок>   какие ссылки с неё брать (например /chapter-)
   --в <файл>           куда записать; иначе печатается в консоль
   --сколько <N>        обрезать список до N ссылок
@@ -59,19 +60,43 @@ function expandPattern(pattern: string): string[] {
   return out;
 }
 
+/**
+ * Ссылки из оглавления — со страницы или из сохранённого файла.
+ *
+ * Файл нужен не для тестов: если список глав на сайте рисует скрипт, со
+ * страницы его не снять, и единственный способ — сохранить её браузером.
+ * Тогда для разбора относительных адресов понадобится --база.
+ */
 async function fromTableOfContents(
-  url: string,
+  source: string,
   contains: string,
+  base?: string,
 ): Promise<string[]> {
-  const response = await fetch(url, {
-    headers: { "user-agent": USER_AGENT },
-    redirect: "follow",
-  });
-  if (!response.ok) {
-    throw new Error(`Оглавление ответило ${response.status} ${response.statusText}.`);
+  const isUrl = /^https?:\/\//i.test(source);
+  let html: string;
+
+  if (isUrl) {
+    const response = await fetch(source, {
+      headers: { "user-agent": USER_AGENT },
+      redirect: "follow",
+    });
+    if (!response.ok) {
+      throw new Error(`Оглавление ответило ${response.status} ${response.statusText}.`);
+    }
+    html = await response.text();
+  } else {
+    html = await readFile(source, "utf8");
+    if (base === undefined) {
+      process.stderr.write(
+        "Читаем сохранённый файл без --база: относительные адреса разобрать не выйдет.\n" +
+          "Если в списке окажутся куски вроде /novel/x/chapter-1 без имени сайта —\n" +
+          "добавьте --база https://имя-сайта.\n\n",
+      );
+    }
   }
 
-  const dom = new JSDOM(await response.text(), { url });
+  const url = isUrl ? source : (base ?? "https://example.invalid/");
+  const dom = new JSDOM(html, { url });
   const anchors = [...dom.window.document.querySelectorAll("a[href]")];
   const seen = new Set<string>();
   const out: string[] = [];
@@ -81,7 +106,10 @@ async function fromTableOfContents(
     if (!href) continue;
     let absolute: string;
     try {
-      absolute = new URL(href, url).toString();
+      const parsed = new URL(href, url);
+      // Якорь ведёт на ту же страницу: /глава-1#comments это та же глава-1.
+      parsed.hash = "";
+      absolute = parsed.toString();
     } catch {
       continue;
     }
@@ -92,6 +120,32 @@ async function fromTableOfContents(
   }
 
   return out;
+}
+
+/**
+ * Показать, что набралось. Список без просмотра — источник половины бед:
+ * в него легко попадают страницы комментариев, оглавление и ссылки
+ * «следующая глава», и выясняется это только на прогоне.
+ */
+function preview(links: string[]): void {
+  const tail = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
+  const show = links.length <= 8 ? links : [...links.slice(0, 5), "…", ...links.slice(-2)];
+  process.stderr.write("Что набралось:\n");
+  for (const link of show) {
+    process.stderr.write(link === "…" ? "  …\n" : `  ${tail(link)}\n`);
+  }
+  process.stderr.write(
+    "\nПробегитесь глазами: адреса должны отличаться только номером главы.\n" +
+      "Если среди них видно оглавление, комментарии или что-то постороннее —\n" +
+      "уточните --содержит или вычистите файл руками.\n",
+  );
+  if (links.length < 20) {
+    process.stderr.write(
+      "\nСсылок мало для книги. Обычно это значит, что список глав на странице\n" +
+        "подгружается скриптом или разбит на страницы — тогда со страницы\n" +
+        "оглавления его не снять, и адреса придётся собирать иначе.\n",
+    );
+  }
 }
 
 async function main(): Promise<void> {
@@ -117,9 +171,14 @@ async function main(): Promise<void> {
     return;
   }
 
+  const base = flags.get("база") ?? flags.get("base");
   let links = pattern
     ? expandPattern(pattern)
-    : await fromTableOfContents(toc ?? "", flags.get("содержит") ?? flags.get("contains") ?? "");
+    : await fromTableOfContents(
+        toc ?? "",
+        flags.get("содержит") ?? flags.get("contains") ?? "",
+        base,
+      );
 
   const limit = flags.get("сколько") ?? flags.get("limit");
   if (limit !== undefined) links = links.slice(0, Number(limit));
@@ -141,7 +200,8 @@ async function main(): Promise<void> {
   const out = flags.get("в") ?? flags.get("out");
   if (out) {
     await writeFile(out, body, "utf8");
-    process.stderr.write(`Ссылок: ${links.length}. Записано в ${out}\n`);
+    process.stderr.write(`Ссылок: ${links.length}. Записано в ${out}\n\n`);
+    preview(links);
   } else {
     process.stdout.write(body);
     process.stderr.write(`\nСсылок: ${links.length}\n`);
