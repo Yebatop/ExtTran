@@ -18,10 +18,7 @@ export default async function Read({
   const checked = checkSource(params.src ?? "");
   const register =
     params.register && isRegister(params.register) ? params.register : "ровный";
-  const tier =
-    params.tier && isTier(params.tier) && params.tier !== "strong"
-      ? params.tier
-      : "fast";
+  const tier = params.tier && isTier(params.tier) ? params.tier : "middle";
 
   if (!checked.ok) {
     return (
