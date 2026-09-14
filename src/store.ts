@@ -99,6 +99,17 @@ export interface Store {
     tier: string,
   ): Promise<TranslationRecord | null>;
   writeTranslation(record: TranslationRecord): Promise<void>;
+  /**
+   * Главы книги, которые этот читатель уже переводил, — от новых к старым.
+   *
+   * Без этого к прочитанной главе нельзя вернуться: адрес её у первоисточника,
+   * и по каталогу до неё не дойти. Текст сюда не тянем — на карточке книги
+   * он не нужен, а глава весит пятнадцать килобайт.
+   */
+  listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>>;
 }
 
 /** Ключ перевода: читатель, глава, регистр, модель. Всё это меняет текст. */
@@ -154,6 +165,16 @@ export class MemoryStore implements Store {
       translationKey(record.owner, record.source, record.register, record.tier),
       record,
     );
+  }
+
+  async listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    return [...this.translations.values()]
+      .filter((t) => t.owner === owner && t.bookKey === bookKey)
+      .map(({ text: _text, ...rest }) => rest)
+      .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
   }
 }
 
@@ -255,6 +276,28 @@ export class FileStore implements Store {
       this.translationFile(record.owner, record.source, record.register, record.tier),
       record,
     );
+  }
+
+  async listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    let names: string[];
+    try {
+      names = await readdir(path.join(this.root, "переводы"));
+    } catch {
+      return [];
+    }
+    const found: Array<Omit<TranslationRecord, "text">> = [];
+    for (const name of names) {
+      const record = await this.readJson<TranslationRecord>(
+        path.join(this.root, "переводы", name),
+      );
+      if (!record || record.owner !== owner || record.bookKey !== bookKey) continue;
+      const { text: _text, ...rest } = record;
+      found.push(rest);
+    }
+    return found.sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
   }
 }
 

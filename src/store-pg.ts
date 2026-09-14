@@ -281,6 +281,45 @@ export class PostgresStore implements Store {
     );
   }
 
+  async listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    await this.init();
+    // Текст не выбираем намеренно: на карточке книги он не нужен, а глава
+    // весит около пятнадцати килобайт — на сотне глав это лишние полтора
+    // мегабайта через сеть на каждое открытие страницы.
+    const { rows } = await this.pool.query<{
+      reader: string; source: string; register: string; tier: string;
+      book_key: string; title: string; words: number;
+      model: string; rub: string; published: boolean; next_url: string | null;
+      created_at: Date; last_read_at: Date;
+    }>(
+      `select reader, source, register, tier, book_key, title, words,
+              model, rub, published, next_url, created_at, last_read_at
+         from translations
+        where reader = $1 and book_key = $2
+        order by last_read_at desc
+        limit 500`,
+      [owner, bookKey],
+    );
+    return rows.map((row) => ({
+      owner: row.reader,
+      source: row.source,
+      bookKey: row.book_key,
+      register: row.register,
+      tier: row.tier,
+      title: row.title,
+      words: row.words,
+      model: row.model,
+      rub: Number(row.rub),
+      published: row.published,
+      nextUrl: row.next_url,
+      createdAt: row.created_at.toISOString(),
+      lastReadAt: row.last_read_at.toISOString(),
+    }));
+  }
+
   /** Убрать книгу вместе с её глоссарием. Нужно уборке после проверки базы. */
   async removeBook(key: string): Promise<void> {
     await this.init();
