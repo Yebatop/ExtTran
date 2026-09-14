@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { highlight, type HighlightTerm } from "@/lib/highlight";
+import ProblemScreen, { type Problem } from "./problem";
 
 interface Meta {
   title: string;
@@ -55,10 +56,12 @@ export default function Reader({
   const [text, setText] = useState("");
   const [done, setDone] = useState<Done | null>(null);
   const [glossary, setGlossary] = useState<GlossaryNews | null>(null);
-  const [problem, setProblem] = useState<string | null>(null);
+  const [problem, setProblem] = useState<Problem | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const [force, setForce] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [picked, setPicked] = useState<HighlightTerm | null>(null);
-  const started = useRef(false);
+  const started = useRef(-1);
 
   useEffect(() => {
     // Переход к следующей главе — это тот же компонент с другим src:
@@ -70,8 +73,12 @@ export default function Reader({
   useEffect(() => {
     // В строгом режиме разработки эффект запускается дважды — перевод стоит
     // денег, так что второй запуск нам обойдётся ровно в цену главы.
-    if (started.current) return;
-    started.current = true;
+    if (started.current === attempt) return;
+    started.current = attempt;
+    setProblem(null);
+    setText("");
+    setDone(null);
+    setState("loading");
 
     const controller = new AbortController();
 
@@ -80,7 +87,7 @@ export default function Reader({
         const response = await fetch("/api/translate", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ src, register, tier }),
+          body: JSON.stringify({ src, register, tier, force }),
           signal: controller.signal,
         });
 
@@ -88,7 +95,10 @@ export default function Reader({
           const payload = (await response.json().catch(() => null)) as
             | { error?: string }
             | null;
-          setProblem(payload?.error ?? `Сервер ответил ${response.status}.`);
+          setProblem({
+            kind: "прочее",
+            message: payload?.error ?? `Сервер ответил ${response.status}.`,
+          });
           setState("failed");
           return;
         }
@@ -130,15 +140,17 @@ export default function Reader({
                 setGlossary(frame as unknown as GlossaryNews);
                 break;
               case "refusal":
-                setProblem(
-                  "Модель отказалась переводить эту главу" +
-                    (frame.category ? ` (${String(frame.category)})` : "") +
-                    ". Это её решение, а не сбой.",
-                );
+                setProblem({
+                  kind: "отказ",
+                  message:
+                    "Это её решение, а не сбой" +
+                    (frame.category ? `: ${String(frame.category)}` : "") +
+                    ". Такие главы будут, и это не поломка сайта.",
+                });
                 setState("failed");
                 break;
               case "error":
-                setProblem(String(frame.message));
+                setProblem(frame as unknown as Problem);
                 setState("failed");
                 break;
             }
@@ -146,13 +158,16 @@ export default function Reader({
         }
       } catch (error) {
         if (controller.signal.aborted) return;
-        setProblem(error instanceof Error ? error.message : String(error));
+        setProblem({
+          kind: "прочее",
+          message: error instanceof Error ? error.message : String(error),
+        });
         setState("failed");
       }
     })();
 
     return () => controller.abort();
-  }, [src, register, tier]);
+  }, [src, register, tier, attempt, force]);
 
   const shown = showOriginal ? meta?.original ?? "" : text;
   const paragraphs = shown.split(/\n{2,}/).filter((p) => p.trim() !== "");
@@ -244,19 +259,17 @@ export default function Reader({
       {state === "translating" && paragraphs.length > 0 && <Cursor />}
 
       {problem && (
-        <div
-          style={{
-            border: "1px solid #4a2a22",
-            background: "#1d1410",
-            borderRadius: 12,
-            padding: 20,
-            color: "#e0b6a6",
-            lineHeight: 1.6,
-            fontSize: 15,
+        <ProblemScreen
+          problem={problem}
+          src={src}
+          register={register}
+          tier={tier}
+          onRetry={() => setAttempt((n) => n + 1)}
+          onForce={() => {
+            setForce(true);
+            setAttempt((n) => n + 1);
           }}
-        >
-          {problem}
-        </div>
+        />
       )}
 
       {state === "done" && meta?.next && (

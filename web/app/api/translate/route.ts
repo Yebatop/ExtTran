@@ -7,6 +7,7 @@ import {
   findNextLink,
   isRegister,
   isTier,
+  linkDensity,
   looksLocked,
   nextFromIndex,
   mergeIntoGlossary,
@@ -82,10 +83,30 @@ type Frame =
     }
   | { type: "glossary"; added: number; total: number; rub: number }
   | { type: "refusal"; category: string | null; explanation: string | null }
-  | { type: "error"; message: string };
+  | {
+      type: "error";
+      /**
+       * Какая это беда. По ней страница выбирает, что показать и что
+       * предложить: у каждой из них в макете свой экран, свои кнопки и
+       * своя строка про списание.
+       */
+      kind:
+        | "не-открылась"
+        | "не-глава"
+        | "платная"
+        | "оборвался"
+        | "отказ"
+        | "нет-ключа"
+        | "прочее";
+      message: string;
+      /** Адрес книги — чтобы предложить выбрать главу из оглавления. */
+      bookUrl?: string;
+      /** Сколько абзацев успело прийти, если перевод оборвался. */
+      paragraphs?: number;
+    };
 
 export async function POST(request: Request): Promise<Response> {
-  let body: { src?: unknown; register?: unknown; tier?: unknown };
+  let body: { src?: unknown; register?: unknown; tier?: unknown; force?: unknown };
   try {
     body = (await request.json()) as typeof body;
   } catch {
@@ -109,6 +130,10 @@ export async function POST(request: Request): Promise<Response> {
   // наконец окупает.
   const tier =
     typeof body.tier === "string" && isTier(body.tier) ? body.tier : "middle";
+
+  // «Всё равно перевести» с экрана «это не похоже на главу»: человек
+  // посмотрел и решил, что мы ошиблись. Спорить не с чем — он видит страницу.
+  const force = body.force === true;
 
   const encoder = new TextEncoder();
   const started = Date.now();
@@ -149,6 +174,7 @@ export async function POST(request: Request): Promise<Response> {
         if (html && looksLocked(html)) {
           send({
             type: "error",
+            kind: "платная",
             message:
               "Похоже, это платная глава. Такие мы не переводим: они куплены " +
               "у автора или переводчика, и наше дело туда не лезть.",
@@ -219,8 +245,35 @@ export async function POST(request: Request): Promise<Response> {
           return;
         }
 
+        // Оглавление, список новинок, страница комментариев — всё это
+        // переведётся как текст и спишет деньги, а читателю не нужно.
+        // Отличается оно долей ссылок: у главы это единицы процентов, у
+        // списка — половина и больше.
+        if (chapter && !force && !saved) {
+          const density = html ? linkDensity(html, checked.url) : 0;
+          if (density > 0.5 || chapter.wordCount < 300) {
+            send({
+              type: "error",
+              kind: "не-глава",
+              message:
+                density > 0.5
+                  ? "На странице больше ссылок, чем текста — похоже, это оглавление, " +
+                    "а не глава."
+                  : `Текста на странице всего ${chapter.wordCount} слов — для главы мало.`,
+              bookUrl: `https://${ref.key}`,
+            });
+            controller.close();
+            return;
+          }
+        }
+
         if (!chapter) {
-          send({ type: "error", message: "Страница не открылась, а перевода у нас ещё нет." });
+          send({
+            type: "error",
+            kind: "не-открылась",
+            message: "Страница не открылась, а перевода у нас ещё нет.",
+            bookUrl: `https://${ref.key}`,
+          });
           controller.close();
           return;
         }
@@ -228,6 +281,7 @@ export async function POST(request: Request): Promise<Response> {
         if (!process.env.ANTHROPIC_API_KEY) {
           send({
             type: "error",
+            kind: "нет-ключа",
             message:
               "На сервере не выставлен ключ ANTHROPIC_API_KEY — переводить нечем. " +
               "Это наша беда, а не ваша.",
@@ -315,9 +369,23 @@ export async function POST(request: Request): Promise<Response> {
           }
         }
       } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        // Вид беды важен: у каждой в макете свой экран и свои кнопки. Обрыв
+        // отличается от прочего тем, что его можно дописать, а не начинать
+        // заново; недоступная страница — тем, что главу можно выбрать из
+        // оглавления. Ядро для обоих случаев говорит узнаваемо.
+        const kind = message.includes("упёрся в потолок")
+          ? "оборвался"
+          : message.startsWith("Страница не открылась") || message.startsWith("Сайт ответил")
+            ? "не-открылась"
+            : "прочее";
+
         send({
           type: "error",
-          message: error instanceof Error ? error.message : String(error),
+          kind,
+          message,
+          ...(kind === "не-открылась" ? { bookUrl: `https://${bookRef(checked.url).key}` } : {}),
         });
       }
       controller.close();
