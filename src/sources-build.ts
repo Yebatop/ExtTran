@@ -13,6 +13,7 @@
 import "./env.js";
 import { writeFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
+import { USER_AGENT } from "./config.js";
 
 const USAGE = `Сборка списка глав.
 
@@ -30,9 +31,6 @@ const USAGE = `Сборка списка глав.
 Проверьте получившийся список глазами: на страницах книг попадаются ссылки
 на комментарии и на первую главу в трёх местах сразу.
 `;
-
-const USER_AGENT =
-  "Tolmach/0.1 (переводчик веб-новелл; +https://github.com/Yebatop/ExtTran)";
 
 function expandPattern(pattern: string): string[] {
   const match = pattern.match(/\{(\d+)\.\.(\d+)\}/);

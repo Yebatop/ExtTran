@@ -77,3 +77,14 @@ export function isRegister(value: string): value is Register {
  * дороже, чем его не использовать.
  */
 export const MAX_OUTPUT_TOKENS = 32000;
+
+/**
+ * Как мы представляемся сайтам.
+ *
+ * ТОЛЬКО ЛАТИНИЦА. HTTP-заголовки — это ByteString, то есть байты 0–255:
+ * любая кириллическая буква здесь роняет запрос ещё до отправки, с ошибкой
+ * «Cannot convert argument to a ByteString». Так уже было: в строке стояло
+ * русское слово, и не работал ни один сетевой запрос.
+ */
+export const USER_AGENT =
+  "Tolmach/0.1 (web novel translator; +https://github.com/Yebatop/ExtTran)";

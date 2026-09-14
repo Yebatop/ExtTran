@@ -1,0 +1,121 @@
+/**
+ * Самопроверка: всё, что можно проверить без ключа и без сети.
+ *
+ *   npm run selftest
+ *
+ * Появилась после того, как в заголовок User-Agent попало русское слово и не
+ * работал ни один сетевой запрос: типизация была чистой, файлы разбирались,
+ * а запрос падал ещё до отправки. Проверять надо не только то, что удобно
+ * проверять.
+ */
+
+// Первым импортом: загружает .env до того, как его прочитает config.
+import "./env.js";
+import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
+import { renderGlossary, type Glossary } from "./glossary.js";
+import { attempts, linkDensity } from "./extract.js";
+
+let failed = 0;
+
+function check(name: string, fn: () => void): void {
+  try {
+    fn();
+    process.stdout.write(`  ✓ ${name}\n`);
+  } catch (error) {
+    failed += 1;
+    process.stdout.write(
+      `  ✗ ${name}\n      ${error instanceof Error ? error.message : String(error)}\n`,
+    );
+  }
+}
+
+function assert(condition: boolean, message: string): void {
+  if (!condition) throw new Error(message);
+}
+
+const CHAPTER_HTML = `<!doctype html><html><head><title>Chapter 1</title></head><body>
+<nav><a href="/">Home</a><a href="/list">List</a></nav>
+<h1>Chapter 1</h1>
+<div class="reading-content">
+<p>The gate keeper counted twice and shook his head, because the number had not changed.</p>
+<p>He had counted it every morning for nine years, and every morning it came out the same.</p>
+<p>That was the part nobody in the valley could explain, and the part he had stopped explaining.</p>
+<p>By noon the dust had settled again, and the road below was empty in both directions.</p>
+</div></body></html>`;
+
+const TOC_HTML = `<!doctype html><html><body><h1>Book</h1><ul>${Array.from(
+  { length: 80 },
+  (_, i) => `<li><a href="/c/${i + 1}">Chapter ${i + 1}</a></li>`,
+).join("")}</ul></body></html>`;
+
+process.stdout.write("Самопроверка Толмача\n\n");
+
+check("заголовки запроса собираются (только латиница)", () => {
+  // Именно здесь и падало: HTTP-заголовок — это ByteString, байты 0–255.
+  new Headers({
+    "user-agent": USER_AGENT,
+    accept: "text/html,application/xhtml+xml",
+    "accept-language": "en-US,en;q=0.9",
+  });
+  assert(
+    // eslint-disable-next-line no-control-regex
+    /^[\x00-\xFF]*$/.test(USER_AGENT),
+    `в User-Agent есть символ вне Latin-1: ${USER_AGENT}`,
+  );
+});
+
+check("текст главы снимается со страницы", () => {
+  const tries = attempts(CHAPTER_HTML, "https://example.invalid/c/1");
+  assert(tries.length > 0, "ни один способ не сработал");
+  const best = Math.max(...tries.map((t) => t.wordCount));
+  assert(best > 40, `слов снялось всего ${best}`);
+});
+
+check("оглавление отличается от главы", () => {
+  const chapter = linkDensity(CHAPTER_HTML, "https://example.invalid/c/1");
+  const toc = linkDensity(TOC_HTML, "https://example.invalid/book");
+  assert(chapter < 0.5, `у главы доля ссылок ${(chapter * 100).toFixed(0)}%`);
+  assert(toc > 0.5, `у оглавления доля ссылок ${(toc * 100).toFixed(0)}%`);
+});
+
+check("глоссарий собирается одинаково при любом порядке", () => {
+  const a: Glossary = {
+    novel: "X",
+    terms: [
+      { en: "Bravo", ru: "Браво", kind: "имя" },
+      { en: "Alpha", ru: "Альфа", kind: "имя" },
+    ],
+    addresses: [{ from: "Б", to: "А", form: "ты" }],
+  };
+  const b: Glossary = {
+    novel: "X",
+    terms: [...a.terms].reverse(),
+    addresses: [...a.addresses],
+  };
+  assert(
+    renderGlossary(a) === renderGlossary(b),
+    "порядок терминов влияет на промпт — кэш будет обнуляться каждый раз",
+  );
+});
+
+check("регистры перевода на месте", () => {
+  for (const name of ["живой", "ровный", "возвышенный"]) {
+    assert(isRegister(name), `регистр «${name}» потерялся`);
+    assert(REGISTERS[name as keyof typeof REGISTERS].length > 20, `описание «${name}» пустое`);
+  }
+});
+
+check("модели и цены заданы", () => {
+  for (const tier of ["fast", "strong"] as const) {
+    const m = MODELS[tier];
+    assert(m.id.length > 0, `у ${tier} нет идентификатора модели`);
+    assert(m.inputPerMTok > 0 && m.outputPerMTok > 0, `у ${tier} нулевая цена`);
+  }
+});
+
+process.stdout.write(
+  failed === 0
+    ? "\nВсё на месте. Ключ и сеть проверяются командой check на настоящей странице.\n"
+    : `\nПровалилось проверок: ${failed}.\n`,
+);
+process.exitCode = failed === 0 ? 0 : 1;

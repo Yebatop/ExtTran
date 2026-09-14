@@ -11,6 +11,7 @@
 import { readFile } from "node:fs/promises";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
+import { USER_AGENT } from "./config.js";
 
 export interface Chapter {
   title: string;
@@ -24,9 +25,6 @@ export interface Chapter {
 
 /** Ниже этого числа слов результат Readability считаем неудачей. */
 const TOO_SHORT_WORDS = 200;
-
-const USER_AGENT =
-  "Tolmach/0.1 (переводчик веб-новелл; +https://github.com/Yebatop/ExtTran)";
 
 export async function fetchPage(url: string): Promise<string> {
   const response = await fetch(url, {

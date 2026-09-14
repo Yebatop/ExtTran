@@ -6,6 +6,7 @@
   "description": "Перевод англоязычных веб-новелл на русский",
   "scripts": {
     "check": "tsx src/check.ts",
+    "selftest": "tsx src/selftest.ts",
     "проверка": "tsx src/check.ts",
     "list": "tsx src/sources-build.ts",
     "список": "tsx src/sources-build.ts",
