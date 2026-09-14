@@ -20,6 +20,7 @@ import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.
 import { loadChapter } from "./extract.js";
 import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
+import { mean, median } from "./stats.js";
 
 const USAGE = `Замер себестоимости главы.
 
@@ -69,19 +70,6 @@ interface TierSummary {
   rubPer1000Words: number;
   medianWords: number;
   cacheHitChapters: number;
-}
-
-function median(values: number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  if (sorted.length % 2 === 1) return sorted[mid] ?? 0;
-  return ((sorted[mid - 1] ?? 0) + (sorted[mid] ?? 0)) / 2;
-}
-
-function mean(values: number[]): number {
-  if (values.length === 0) return 0;
-  return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
 function summarise(rows: Row[], tier: Tier): TierSummary {

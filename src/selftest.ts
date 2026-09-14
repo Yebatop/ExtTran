@@ -14,6 +14,7 @@ import "./env.js";
 import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
 import { renderGlossary, type Glossary } from "./glossary.js";
 import { attempts, linkDensity, stripCredits } from "./extract.js";
+import { mean, median } from "./stats.js";
 
 let failed = 0;
 
@@ -136,6 +137,15 @@ check("последняя реплика главы не считается по
     stripCredits(text).endsWith("Not tonight.\u201d"),
     "срезали последнюю реплику главы",
   );
+});
+
+check("медиана не ведётся на одну длинную главу", () => {
+  // Ровно наш случай: первая глава книги длиннее остальных.
+  const lengths = [2731, 1400, 1380, 1420, 1390];
+  assert(median(lengths) === 1400, `медиана ${median(lengths)}, ждали 1400`);
+  assert(mean(lengths) > median(lengths), "среднее должно быть выше медианы");
+  assert(median([]) === 0 && mean([]) === 0, "пустой список должен давать ноль");
+  assert(median([1, 2, 3, 4]) === 2.5, "чётная длина считается неверно");
 });
 
 check("регистры перевода на месте", () => {
