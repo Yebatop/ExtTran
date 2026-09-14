@@ -88,7 +88,7 @@ button, input, textarea, select { font: inherit; }
    перевод, и при этом текст остаётся читаемым, а не превращается в справку. */
 .reading.original p {
   font-style: italic;
-  color: #a9a294;
+  color: var(--ink-original);
 }
 .reading.original > p:first-of-type::first-letter {
   float: none;
@@ -139,3 +139,70 @@ button, input, textarea, select { font: inherit; }
   color: var(--ink);
 }
 .row:hover { border-color: #3a3129; color: var(--ink); }
+
+/*
+ * Три темы ридера с холста ReaderThemes. Меняются только цвета: кегль,
+ * интерлиньяж и ширина строки везде одни и те же — иначе это уже не тема,
+ * а другой ридер.
+ *
+ * Ночная — это :root выше, её здесь нет. Остальные две переопределяют те же
+ * переменные внутри своей ветки, поэтому весь ридер разворачивается целиком,
+ * а не пятнами: цвета в нём заданы переменными, а не числами.
+ */
+:root {
+  /* Оригинал: серо-синий, чтобы был рядом, но не спорил с русским. */
+  --ink-original: #a9a294;
+  /* Текст поверх киновари. */
+  --on-accent: #14120f;
+}
+
+[data-reader-theme="сепия"] {
+  --bg: #f0e4cf;
+  --bg-raised: #e7dabf;
+  --ink: #2e2820;
+  --ink-read: #3a3129;
+  --muted: #7a6a52;
+  --dim: #8a7a60;
+  --accent: #a83a1f;
+  --accent-hover: #8f3018;
+  --line: #ddd0b6;
+  --line-soft: #e4d8c0;
+  --term: #a86a45;
+  --ink-original: #6b6353;
+  --on-accent: #f6efe2;
+  color-scheme: light;
+}
+
+[data-reader-theme="дневная"] {
+  --bg: #f8f6f1;
+  --bg-raised: #efece5;
+  --ink: #1c1a16;
+  --ink-read: #26231e;
+  --muted: #6f6a5e;
+  --dim: #837d71;
+  --accent: #b8452a;
+  --accent-hover: #9d3823;
+  --line: #e0dbd0;
+  --line-soft: #e8e4dc;
+  --term: #a8674a;
+  --ink-original: #5e594f;
+  --on-accent: #faf8f4;
+  color-scheme: light;
+}
+
+/* Полоса прочитанного: сколько главы осталось под пальцем. */
+.progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--line-soft);
+}
+.progress .bar { flex-grow: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.progress .bar span { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.progress .pct { font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
