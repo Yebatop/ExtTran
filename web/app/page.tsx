@@ -101,7 +101,7 @@ export default function Home() {
               <select
                 id="tier"
                 name="tier"
-                defaultValue="fast"
+                defaultValue="middle"
                 style={{
                   width: "100%",
                   padding: "13px 14px",
@@ -112,8 +112,8 @@ export default function Home() {
                   fontSize: 15,
                 }}
               >
-                <option value="fast">Обычный — быстро</option>
-                <option value="middle">Получше — точнее в трудных местах</option>
+                <option value="middle">Обычный</option>
+                <option value="strong">Получше — три главы квоты</option>
               </select>
             </div>
             <button
