@@ -5,10 +5,11 @@
   "type": "module",
   "description": "Перевод англоязычных веб-новелл на русский",
   "scripts": {
+    "проверка": "tsx --env-file-if-exists=.env src/check.ts",
+    "список": "tsx --env-file-if-exists=.env src/sources-build.ts",
+    "глоссарий": "tsx --env-file-if-exists=.env src/glossary-build.ts",
     "tolmach": "tsx --env-file-if-exists=.env src/cli.ts",
     "замер": "tsx --env-file-if-exists=.env src/measure.ts",
-    "глоссарий": "tsx --env-file-if-exists=.env src/glossary-build.ts",
-    "список": "tsx --env-file-if-exists=.env src/sources-build.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
