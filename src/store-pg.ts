@@ -33,33 +33,65 @@ export function connectionString(): string | undefined {
 /** Хосты, до которых идти по TLS незачем: соединение и так не покидает машину. */
 const LOCAL_HOSTS = new Set(["", "localhost", "127.0.0.1", "::1"]);
 
+/** Раскодировать %2F и прочее; если строка битая — вернуть как есть. */
+function decode(value: string): string {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+}
+
+/**
+ * Куда на самом деле пойдёт соединение: имя хоста или путь к файловому сокету.
+ *
+ * Разбираем строкой, а не `new URL`, потому что `new URL` на половине рабочих
+ * строк подключения просто падает: `postgres://кто-то@/база?host=/var/run/...`
+ * — законная строка для драйвера и «Invalid URL» для разборщика адресов, ведь
+ * после собаки обязан стоять непустой хост. Драйвер такие строки понимает, и
+ * решать за него, нужен ли TLS, надо по тем же правилам.
+ */
+function hostOf(url: string): string {
+  // Ключ host главнее части до косой черты — так же его понимает и драйвер.
+  // Этим ключом и записывают путь к сокету, когда в адресе места ему нет.
+  const viaKey = /[?&]host=([^&]*)/.exec(url)?.[1];
+  if (viaKey !== undefined) return decode(viaKey);
+
+  const scheme = url.indexOf("://");
+  if (scheme === -1) return "";
+  const authority = url.slice(scheme + 3).split(/[/?#]/, 1)[0] ?? "";
+  // Пароль тоже может содержать собаку, поэтому берём последнюю.
+  const at = authority.lastIndexOf("@");
+  const hostPort = at === -1 ? authority : authority.slice(at + 1);
+  // Порт отрезаем с конца, чтобы не задеть двоеточия внутри адреса IPv6.
+  return decode(hostPort.replace(/:\d*$/, "").replace(/^\[|\]$/g, ""));
+}
+
 /**
  * Нужен ли TLS.
  *
  * Все размещённые базы его требуют, а локальная при испытаниях — наоборот,
  * не умеет, и без этого различия проверить адаптер негде.
  *
- * Пустое имя хоста значит подключение через файловый сокет: соединение не
- * покидает машину, шифровать нечего. Так и выяснилось — первый же прогон на
- * локальной базе уткнулся в «сервер не поддерживает SSL», потому что пустая
- * строка не совпала ни с одним именем и была принята за чужой хост.
+ * Путь вместо имени хоста (или пустое имя) значит файловый сокет: соединение
+ * не покидает машину, шифровать нечего. Так и выяснилось — дважды: сперва
+ * прогон на локальной базе уткнулся в «сервер не поддерживает SSL», потому что
+ * пустая строка не совпала ни с одним именем и была принята за чужой хост;
+ * потом то же самое повторилось на строке с ключом `host=`, потому что она
+ * вовсе не разбиралась как адрес, а на неразобранную строку мы отвечали
+ * «раз непонятно — значит, TLS».
  *
  * Явный sslmode в строке главнее догадок по хосту: если человек написал, чего
  * он хочет, спорить не с чем.
  */
 function needsTls(url: string): boolean {
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
-    return true;
-  }
+  const mode = /[?&]sslmode=([^&]*)/.exec(url)?.[1];
+  if (mode !== undefined) return decode(mode) !== "disable";
 
-  const mode = parsed.searchParams.get("sslmode");
-  if (mode === "disable") return false;
-  if (mode !== null) return true;
-
-  return !LOCAL_HOSTS.has(parsed.hostname);
+  const host = hostOf(url);
+  // Путь — это сокет, а не сервер в сети.
+  if (host.startsWith("/")) return false;
+  return !LOCAL_HOSTS.has(host);
 }
 
 export class PostgresStore implements Store {
@@ -203,9 +235,13 @@ export class PostgresStore implements Store {
     // Книга должна существовать: на неё смотрит внешний ключ. Глоссарий
     // пишется раньше записи о книге в самой первой главе, поэтому заводим
     // заготовку, а не падаем.
+    //
+    // coalesce — на случай глоссария без названия: название у книги обязано
+    // быть непустым, и при пустом значении падает вся запись, даже когда
+    // книга давно заведена и заготовка никому не нужна.
     await this.pool.query(
       `insert into books (key, host, slug, title, chapters_translated, first_seen, last_seen)
-       values ($1, '', '', $2, 0, now(), now())
+       values ($1, '', '', coalesce($2, ''), 0, now(), now())
        on conflict (key) do nothing`,
       [key, glossary.novel],
     );
