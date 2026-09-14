@@ -18,8 +18,11 @@
     "tolmach": "tsx src/cli.ts",
     "typecheck": "tsc --noEmit",
     "build:core": "tsc -p tsconfig.core.json",
-    "web": "npm run build:core && npm run dev --prefix web",
-    "сайт": "npm run build:core && npm run dev --prefix web"
+    "web:deps": "[ -d web/node_modules/next ] || npm install --prefix web",
+    "web": "npm run build:core && npm run web:deps && npm run dev --prefix web",
+    "сайт": "npm run build:core && npm run web:deps && npm run dev --prefix web",
+    "web:webpack": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack",
+    "сайт-запасной": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
