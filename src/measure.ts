@@ -121,7 +121,7 @@ function summarise(rows: Row[], tier: Tier): TierSummary {
  */
 const PLANS = [
   { name: "Читатель", rub: 490, chapters: 100, strongMultiplier: 3 },
-  { name: "Запойный", rub: 1190, chapters: 300, strongMultiplier: 3 },
+  { name: "Запойный", rub: 1190, chapters: 250, strongMultiplier: 3 },
 ] as const;
 
 /**
