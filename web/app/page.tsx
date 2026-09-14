@@ -164,7 +164,20 @@ export default function Home() {
         <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
         Пока работает перевод главы по ссылке и глоссарий книги: ни кабинета,
         ни оплаты ещё нет.
+        <div style={{ marginTop: 10, opacity: 0.55, fontSize: 12 }}>сборка {build()}</div>
       </footer>
     </main>
   );
+}
+
+/**
+ * Какая сборка сейчас открыта.
+ *
+ * Полдня ушло на вопрос «а это вообще свежая страница или кэш» — браузер
+ * отдавал вчерашний HTML, и по виду страницы отличить было нельзя. Семь
+ * символов в подвале отвечают на это с одного взгляда.
+ */
+function build(): string {
+  const sha = process.env.VERCEL_GIT_COMMIT_SHA;
+  return sha ? sha.slice(0, 7) : "локальная";
 }
