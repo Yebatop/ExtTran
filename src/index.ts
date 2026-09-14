@@ -73,6 +73,12 @@ export {
   type TermKind,
 } from "./glossary.js";
 
+export {
+  highlight,
+  type HighlightTerm,
+  type Segment,
+} from "./highlight.js";
+
 export { polish } from "./polish.js";
 
 export { mean, median, spread } from "./stats.js";

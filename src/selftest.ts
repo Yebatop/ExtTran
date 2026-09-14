@@ -25,6 +25,7 @@ import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
 import { bookRef, storageKey } from "./book.js";
 import { polish } from "./polish.js";
+import { highlight } from "./highlight.js";
 import { MemoryStore } from "./store.js";
 import { missingFileMessage } from "./files.js";
 
@@ -405,6 +406,46 @@ check("типографика правится, а текст не страда�
 
   const three = "\u041d\u0443... \u043b\u0430\u0434\u043d\u043e.";
   assert(polish(three) === three, "\u043e\u0431\u044b\u0447\u043d\u043e\u0435 \u043c\u043d\u043e\u0433\u043e\u0442\u043e\u0447\u0438\u0435 \u0442\u0440\u043e\u043d\u0443\u043b\u0438");
+});
+
+check("термины подсвечиваются в склонении, но не внутри слова", () => {
+  const terms = [
+    { en: "Ebenholz", ru: "Эбенхольц", note: "род главного героя" },
+    { en: "mana", ru: "мана" },
+    { en: "Watchers", ru: "Орден рыцарей-Стражей" },
+  ];
+
+  const marked = (text: string): string[] =>
+    highlight(text, terms)
+      .filter((seg) => seg.term)
+      .map((seg) => seg.text);
+
+  // Склонение — основная работа: точное совпадение не нашло бы почти ничего.
+  assert(
+    marked("поместье Эбенхольца окружали горы").join() === "Эбенхольца",
+    `падеж не пойман: ${marked("поместье Эбенхольца окружали горы").join()}`,
+  );
+  assert(marked("наследник Эбенхольц").join() === "Эбенхольц", "именительный не пойман");
+
+  // А вот это подчёркивать нельзя: «мана» плюс произвольные буквы дало бы
+  // «манатки», и читатель увидел бы термин там, где его нет.
+  assert(marked("собрал манатки и ушёл").length === 0, "поймали постороннее слово");
+  assert(marked("манекен в витрине").length === 0, "поймали середину слова");
+
+  // Длинные термины идут первыми, иначе короткий съест начало длинного.
+  assert(
+    marked("вступил в Орден рыцарей-Стражей").join() === "Орден рыцарей-Стражей",
+    `длинный термин разорван: ${marked("вступил в Орден рыцарей-Стражей").join()}`,
+  );
+
+  // Текст не должен теряться при разборе на куски.
+  const text = "Мана течёт по каналу, и Эбенхольц это знает.";
+  assert(
+    highlight(text, terms).map((s) => s.text).join("") === text,
+    "склейка кусков не даёт исходный текст",
+  );
+  assert(highlight("", terms).length === 1, "пустой текст должен давать один кусок");
+  assert(highlight(text, []).length === 1, "без терминов текст не режется");
 });
 
 check("регистры перевода на месте", () => {
