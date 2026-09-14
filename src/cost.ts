@@ -64,3 +64,33 @@ export function formatSpend(spend: Spend, model: ModelSpec): string {
   );
   return lines.join("\n");
 }
+
+/**
+ * Потолок расходов, заданный в рублях или в долларах.
+ *
+ * Считаем внутри в рублях, но списывает-то Anthropic доллары, а рубли у нас
+ * получаются по курсу из настройки — то есть по числу, которое вписал человек.
+ * Поэтому в выводе всегда показываем обе величины и сам курс: иначе непонятно,
+ * что именно ограничивает предел.
+ */
+export interface Ceiling {
+  rub: number;
+  usd: number;
+}
+
+export function makeCeiling(rub?: number, usd?: number): Ceiling | undefined {
+  if (usd !== undefined && Number.isFinite(usd)) {
+    return { usd, rub: usd * USD_RUB };
+  }
+  if (rub !== undefined && Number.isFinite(rub)) {
+    return { rub, usd: rub / USD_RUB };
+  }
+  return undefined;
+}
+
+export function describeCeiling(ceiling: Ceiling): string {
+  return (
+    `Предел: ${ceiling.rub.toFixed(0)} ₽ — это $${ceiling.usd.toFixed(2)} ` +
+    `по курсу ${USD_RUB} ₽/$ из TOLMACH_USD_RUB. Списывают доллары, курс наш.`
+  );
+}

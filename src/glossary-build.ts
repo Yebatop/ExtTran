@@ -15,6 +15,7 @@ import "./env.js";
 import { readFile, writeFile } from "node:fs/promises";
 import Anthropic from "@anthropic-ai/sdk";
 import { MODELS, USD_RUB, type Tier } from "./config.js";
+import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { loadChapter } from "./extract.js";
 import { type Glossary } from "./glossary.js";
 import { extractTerms, mergeIntoGlossary } from "./terms.js";
@@ -29,6 +30,7 @@ const USAGE = `Сборка глоссария из глав.
   --книга <имя>     название книги для заголовка глоссария
   --модель <какая>  strong | fast   (по умолчанию strong)
   --предел <рубли>  оборвать, когда потрачено больше
+  --предел-usd <$>  то же, но сразу в долларах — их и списывают
   --глав <N>        ограничить число глав из списка
 
 Десяти-пятнадцати глав обычно хватает, чтобы собрать костяк: дальше новые
@@ -41,7 +43,7 @@ interface Args {
   out: string;
   novel?: string;
   tier: Tier;
-  ceilingRub?: number;
+  ceiling?: Ceiling;
   limit?: number;
 }
 
@@ -60,8 +62,13 @@ function parseArgs(argv: string[]): Args {
   };
   const novel = flags.get("книга") ?? flags.get("novel");
   if (novel !== undefined) args.novel = novel;
-  const ceiling = flags.get("предел") ?? flags.get("ceiling");
-  if (ceiling !== undefined) args.ceilingRub = Number(ceiling);
+  const rub = flags.get("предел") ?? flags.get("ceiling");
+  const usd = flags.get("предел-usd") ?? flags.get("ceiling-usd");
+  const ceiling = makeCeiling(
+    rub !== undefined ? Number(rub) : undefined,
+    usd !== undefined ? Number(usd) : undefined,
+  );
+  if (ceiling !== undefined) args.ceiling = ceiling;
   const limit = flags.get("глав") ?? flags.get("limit");
   if (limit !== undefined) args.limit = Number(limit);
   return args;
@@ -124,16 +131,18 @@ async function main(): Promise<void> {
       `Глав к разбору: ${planned.length}`,
       `Уже в глоссарии: ${glossary.terms.length} терминов, ${glossary.addresses.length} пар обращений`,
       `Модель: ${model.id}`,
-      args.ceilingRub ? `Предел: ${args.ceilingRub} ₽` : "",
-      "",
+      args.ceiling ? describeCeiling(args.ceiling) : "",
     ]
       .filter(Boolean)
-      .join("\n"),
+      .join("\n") + "\n\n",
   );
 
   for (const [index, source] of planned.entries()) {
-    if (args.ceilingRub !== undefined && spentRub >= args.ceilingRub) {
-      process.stderr.write(`\nОстановились: упёрлись в предел ${args.ceilingRub} ₽.\n`);
+    if (args.ceiling !== undefined && spentRub >= args.ceiling.rub) {
+      process.stderr.write(
+        `\nОстановились: потрачено ${spentRub.toFixed(2)} ₽ ` +
+          `($${(spentRub / USD_RUB).toFixed(2)}), это предел.\n`,
+      );
       break;
     }
 

@@ -20,6 +20,7 @@ import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.
 import { loadChapter } from "./extract.js";
 import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
+import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { mean, median } from "./stats.js";
 import { parseArgv } from "./args.js";
 
@@ -37,6 +38,7 @@ const USAGE = `Замер себестоимости главы.
   --пилот <N>          сколько глав в пилоте           (по умолчанию 3)
   --все                прогнать весь список, а не только пилот
   --предел <рубли>     оборвать прогон, когда потрачено больше
+  --предел-usd <$>     то же, но сразу в долларах — их и списывают
   --отчёт <файл>       куда положить JSON  (по умолчанию out/замер-<дата>.json)
 
 Сначала запустите без --все: увидите цену полного прогона до того, как он начнётся.
@@ -166,7 +168,7 @@ interface Args {
   tiers: Tier[];
   pilot: number;
   all: boolean;
-  ceilingRub?: number;
+  ceiling?: Ceiling;
   report?: string;
 }
 
@@ -197,8 +199,13 @@ function parseArgs(argv: string[]): Args {
   };
   const glossary = flags.get("глоссарий") ?? flags.get("glossary");
   if (glossary !== undefined) args.glossary = glossary;
-  const ceiling = flags.get("предел") ?? flags.get("ceiling");
-  if (ceiling !== undefined) args.ceilingRub = Number(ceiling);
+  const rub = flags.get("предел") ?? flags.get("ceiling");
+  const usd = flags.get("предел-usd") ?? flags.get("ceiling-usd");
+  const ceiling = makeCeiling(
+    rub !== undefined ? Number(rub) : undefined,
+    usd !== undefined ? Number(usd) : undefined,
+  );
+  if (ceiling !== undefined) args.ceiling = ceiling;
   const report = flags.get("отчёт") ?? flags.get("report");
   if (report !== undefined) args.report = report;
   return args;
@@ -246,11 +253,10 @@ async function main(): Promise<void> {
       `Прогоняем: ${planned.length}${args.all ? "" : ` (пилот; полный прогон — ключ --все)`}`,
       `Модели: ${args.tiers.map((t) => MODELS[t].id).join(", ")}`,
       `Регистр: ${args.register}`,
-      args.ceilingRub ? `Предел: ${args.ceilingRub} ₽` : "",
-      "",
+      args.ceiling ? describeCeiling(args.ceiling) : "",
     ]
       .filter(Boolean)
-      .join("\n"),
+      .join("\n") + "\n\n",
   );
 
   outer: for (const [index, source] of planned.entries()) {
@@ -280,7 +286,7 @@ async function main(): Promise<void> {
     }
 
     for (const tier of args.tiers) {
-      if (args.ceilingRub !== undefined && spentRub >= args.ceilingRub) {
+      if (args.ceiling !== undefined && spentRub >= args.ceiling.rub) {
         stoppedByCeiling = true;
         break outer;
       }
@@ -379,11 +385,15 @@ async function main(): Promise<void> {
   }
 
   if (stoppedByCeiling) {
-    out.push(`Прогон оборван: упёрлись в предел ${args.ceilingRub} ₽.`, "");
+    out.push(
+      `Прогон оборван: потрачено ${spentRub.toFixed(2)} ₽ ` +
+        `($${(spentRub / USD_RUB).toFixed(2)}), это предел.`,
+      "",
+    );
   }
 
   out.push(
-    `Всего потрачено: ${spentRub.toFixed(2)} ₽ (курс ${USD_RUB}).`,
+    `Всего потрачено: ${spentRub.toFixed(2)} ₽ — это $${(spentRub / USD_RUB).toFixed(2)} по курсу ${USD_RUB}.`,
     "",
     "Медиана честнее среднего: длина глав у разных авторов различается вдвое,",
     "и одна очень длинная глава перекашивает среднее.",
