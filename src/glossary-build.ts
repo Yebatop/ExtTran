@@ -20,6 +20,7 @@ import { loadChapter } from "./extract.js";
 import { type Glossary, type Term } from "./glossary.js";
 import { extractTerms, mergeIntoGlossary } from "./terms.js";
 import { parseArgv } from "./args.js";
+import { readList } from "./files.js";
 
 const USAGE = `Сборка глоссария из глав.
 
@@ -78,14 +79,6 @@ function parseArgs(argv: string[]): Args {
   const limit = flags.get("глав") ?? flags.get("limit");
   if (limit !== undefined) args.limit = Number(limit);
   return args;
-}
-
-async function readList(listPath: string): Promise<string[]> {
-  const raw = await readFile(listPath, "utf8");
-  return raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.startsWith("#"));
 }
 
 async function readOrCreate(path: string, novel: string): Promise<Glossary> {

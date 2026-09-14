@@ -13,7 +13,7 @@
 
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
 import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.js";
@@ -23,6 +23,7 @@ import { translateChapter } from "./translate.js";
 import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { mean, median } from "./stats.js";
 import { parseArgv } from "./args.js";
+import { readList } from "./files.js";
 
 const USAGE = `Замер себестоимости главы.
 
@@ -211,14 +212,6 @@ function parseArgs(argv: string[]): Args {
   return args;
 }
 
-async function readSources(listPath: string): Promise<string[]> {
-  const raw = await readFile(listPath, "utf8");
-  return raw
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line.length > 0 && !line.startsWith("#"));
-}
-
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
   if (args.listPath === "") {
@@ -227,7 +220,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const sources = await readSources(args.listPath);
+  const sources = await readList(args.listPath);
   if (sources.length === 0) throw new Error("В списке нет ни одной главы.");
 
   const glossary: Glossary = args.glossary

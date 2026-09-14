@@ -25,6 +25,7 @@ import {
 } from "./extract.js";
 import { MODELS, USD_RUB } from "./config.js";
 import { mean, median } from "./stats.js";
+import { readList } from "./files.js";
 import { parseArgv } from "./args.js";
 
 const USAGE = `Проверка страниц глав.
@@ -206,14 +207,7 @@ async function one(source: string): Promise<void> {
 }
 
 async function batch(listPath: string, limit: number): Promise<void> {
-  const raw = await readFile(listPath, "utf8");
-  const sources = raw
-    .split("\n")
-    .map((l) => l.trim())
-    .filter((l) => l.length > 0 && !l.startsWith("#"))
-    .slice(0, limit);
-
-  if (sources.length === 0) throw new Error("В списке нет ни одной главы.");
+  const sources = await readList(listPath, limit);
 
   process.stderr.write(
     `Проверяем ${sources.length} глав. Ключ не нужен, денег не тратит.\n\n`,

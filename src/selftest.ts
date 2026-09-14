@@ -23,6 +23,7 @@ import {
 } from "./extract.js";
 import { mean, median } from "./stats.js";
 import { parseArgv } from "./args.js";
+import { missingFileMessage } from "./files.js";
 
 let failed = 0;
 
@@ -277,6 +278,30 @@ check("разбор аргументов переживает лишний --", 
     threw = true;
   }
   assert(threw, "ключ без значения должен ругаться, а не молчать");
+});
+
+check("промах в имени файла объясняется, а не нумеруется", () => {
+  // Имя набирают на телефоне, кириллицей. ENOENT не говорит ни что за файл
+  // ждали, ни что лежит рядом — а рядом обычно лежит то самое, с опечаткой.
+  const withNeighbours = missingFileMessage("главы.txt", "список глав", [
+    "список.txt",
+    "главы-1-10.txt",
+  ]);
+  assert(withNeighbours.includes("главы.txt"), "не сказано, чего искали");
+  assert(withNeighbours.includes("список глав"), "не сказано, что это за файл");
+  assert(withNeighbours.includes("список.txt"), "не показано, что лежит рядом");
+
+  const empty = missingFileMessage("главы.txt", "список глав", []);
+  assert(empty.includes("главы.txt"), "не сказано, чего искали");
+  assert(!empty.includes(":"), "обещали список соседей, которых нет");
+
+  const many = missingFileMessage(
+    "главы.txt",
+    "список глав",
+    Array.from({ length: 20 }, (_, i) => `c${i}.txt`),
+  );
+  assert(many.split("\n").length <= 10, "вывалили в глаза всю папку целиком");
+  assert(many.includes("и ещё 12"), "не сказано, сколько соседей не показали");
 });
 
 check("регистры перевода на месте", () => {
