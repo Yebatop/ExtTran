@@ -181,14 +181,69 @@ export function linkDensity(html: string, source: string): number {
   return inLinks / all;
 }
 
+/**
+ * Убрать служебную обвязку переводчика.
+ *
+ * Английский текст на таких сайтах обычно чужой перевод, и сверху к нему
+ * прилеплена подпись вроде «Translator: KJ», а снизу просьба поддержать на
+ * Patreon. В главу это не входит, читателю не нужно, а токены за это платятся
+ * на каждой главе.
+ *
+ * Срезаем только по краям и только явные шаблоны: в середине текста ничего
+ * не трогаем, чтобы не отхватить кусок сцены.
+ */
+const CREDIT_LINE =
+  /^(translator|translation|tl|editor|edited by|proofreader|proofread by|translated by|raw provider|host|t\/?n)\s*[:：]/i;
+const SEPARATOR_LINE = /^[\s\u2500-\u257F*_=~—–-]+$/;
+
+/**
+ * Подвал узнаём только по явным приметам — по названию площадки поддержки или
+ * по обещанию глав вперёд. Ничего вроде «please» тут быть не должно: глава
+ * вполне может кончаться репликой «Please, don't», и молча удалить её хуже,
+ * чем оставить строчку мусора.
+ */
+const SUPPORT_LINE =
+  /(patreon|ko-?fi|buymeacoffee|boosty|discord|paypal|advanced? chapters?|chapters? ahead|early access)/i;
+
+/** Сколько строк с каждого края вообще можно трогать. */
+const HEAD_WINDOW = 8;
+const TAIL_WINDOW = 6;
+
+export function stripCredits(text: string): string {
+  const lines = text.split("\n");
+
+  let start = 0;
+  while (start < lines.length && start < HEAD_WINDOW) {
+    const line = (lines[start] ?? "").trim();
+    if (line === "" || SEPARATOR_LINE.test(line) || CREDIT_LINE.test(line)) {
+      start += 1;
+      continue;
+    }
+    break;
+  }
+
+  let end = lines.length;
+  while (end > start && lines.length - end < TAIL_WINDOW) {
+    const line = (lines[end - 1] ?? "").trim();
+    if (line === "" || SEPARATOR_LINE.test(line) || SUPPORT_LINE.test(line)) {
+      end -= 1;
+      continue;
+    }
+    break;
+  }
+
+  return lines.slice(start, end).join("\n").trim();
+}
+
 function normalize(raw: string): string {
-  return raw
+  const collapsed = raw
     .replace(/\r\n?/g, "\n")
     .split("\n")
     .map((line) => line.trim())
     .join("\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
+  return stripCredits(collapsed);
 }
 
 function countWords(text: string): number {

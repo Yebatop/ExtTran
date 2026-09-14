@@ -13,7 +13,7 @@
 import "./env.js";
 import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
 import { renderGlossary, type Glossary } from "./glossary.js";
-import { attempts, linkDensity } from "./extract.js";
+import { attempts, linkDensity, stripCredits } from "./extract.js";
 
 let failed = 0;
 
@@ -95,6 +95,46 @@ check("глоссарий собирается одинаково при люб�
   assert(
     renderGlossary(a) === renderGlossary(b),
     "порядок терминов влияет на промпт — кэш будет обнуляться каждый раз",
+  );
+});
+
+check("служебная обвязка переводчика срезается", () => {
+  const withCredits = [
+    "Translator: KJ",
+    "Editor: someone",
+    "\u2500\u2500\u2500\u2500",
+    "",
+    "The gate keeper counted twice and shook his head.",
+    "",
+    "Translator: he had counted it every morning for nine years.",
+    "",
+    "\u2500\u2500\u2500\u2500",
+    "Support us on our page for advanced chapters",
+  ].join("\n");
+
+  const cleaned = stripCredits(withCredits);
+  assert(!cleaned.startsWith("Translator"), "шапка осталась");
+  assert(!cleaned.includes("advanced chapters"), "подвал остался");
+  assert(
+    cleaned.startsWith("The gate keeper"),
+    `начало текста отъели: ${cleaned.slice(0, 40)}`,
+  );
+  assert(
+    cleaned.includes("Translator: he had counted"),
+    "строка из середины текста срезана, а трогать её нельзя",
+  );
+});
+
+check("последняя реплика главы не считается подвалом", () => {
+  // Настоящий риск: глава кончается короткой репликой, а мы её молча съедаем.
+  const text = [
+    "He stopped at the door and did not turn around.",
+    "",
+    "\u201cPlease,\u201d she said. \u201cNot tonight.\u201d",
+  ].join("\n");
+  assert(
+    stripCredits(text).endsWith("Not tonight.\u201d"),
+    "срезали последнюю реплику главы",
   );
 });
 
