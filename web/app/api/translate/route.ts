@@ -147,7 +147,7 @@ export async function POST(request: Request): Promise<Response> {
         // Глоссарий у книги один на все главы: имя из первой главы должно
         // писаться так же и в трёхсотой. Ключ книги выводится из адреса.
         const ref = bookRef(checked.url);
-        const store = chooseStore();
+        const store = await chooseStore();
         const known: Glossary = (await store.readGlossary(ref.key)) ?? {
           novel: chapter.title || ref.slug,
           terms: [],

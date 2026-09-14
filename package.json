@@ -10,6 +10,8 @@
   "scripts": {
     "check": "tsx src/check.ts",
     "selftest": "tsx src/selftest.ts",
+    "db-check": "tsx src/db-check.ts",
+    "проверка-базы": "tsx src/db-check.ts",
     "проверка": "tsx src/check.ts",
     "list": "tsx src/sources-build.ts",
     "список": "tsx src/sources-build.ts",
@@ -31,11 +33,13 @@
     "@anthropic-ai/sdk": "^0.125.0",
     "@mozilla/readability": "^0.5.0",
     "jsdom": "^25.0.1",
+    "pg": "^8.23.0",
     "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/jsdom": "^21.1.7",
     "@types/node": "^22.10.2",
+    "@types/pg": "^8.23.1",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   },

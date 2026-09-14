@@ -14,7 +14,7 @@ const config: NextConfig = {
    * больше всего сайта, а ключ рядом с ним вообще не должен оказываться
    * в одном файле с клиентским кодом.
    */
-  serverExternalPackages: ["jsdom", "@mozilla/readability", "@anthropic-ai/sdk"],
+  serverExternalPackages: ["jsdom", "@mozilla/readability", "@anthropic-ai/sdk", "pg"],
 };
 
 export default config;

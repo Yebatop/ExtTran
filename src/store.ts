@@ -123,11 +123,19 @@ export class FileStore implements Store {
 /**
  * Какое хранилище использовать.
  *
- * Папка задаётся TOLMACH_STORE_DIR. Если её нет — память: сайт поднимется и
- * будет работать, просто забудет всё при перезапуске. Молча падать из-за
- * ненастроенного хранилища он не должен.
+ * По убыванию надёжности: база, если есть строка подключения; папка, если
+ * задана TOLMACH_STORE_DIR; иначе память. Последнее — не полноценная работа,
+ * а способ подняться и показать себя: сайт будет работать, просто забудет всё
+ * при перезапуске. Молча падать из-за ненастроенного хранилища он не должен.
+ *
+ * Импорт базы ленивый: без строки подключения драйвер не понадобится, и
+ * тащить его в запуск незачем.
  */
-export function chooseStore(): Store {
+export async function chooseStore(): Promise<Store> {
+  const { connectionString, PostgresStore } = await import("./store-pg.js");
+  const url = connectionString();
+  if (url) return new PostgresStore(url);
+
   const dir = process.env.TOLMACH_STORE_DIR;
   return dir ? new FileStore(dir) : new MemoryStore();
 }
