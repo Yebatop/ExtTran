@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .num { font-variant-numeric: tabular-nums; }
+    .card { padding: 22px 24px; border-radius: 13px; background: #1a1611; border: 1px solid #262019; }
+    .ch { display: grid; grid-template-columns: 54px 1fr 120px 110px; align-items: center; gap: 14px;
+          padding: 11px 14px; border-radius: 8px; background: #191510; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 900px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 26px; height: 64px; padding: 0 40px; border-bottom: 1px solid #221d17; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 16px">Толмач</span>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <a href="#" style="font-size: 13.5px; color: #8a806f">Каталог</a>
+    <a href="#" style="font-size: 13.5px; color: #8a806f">Переводчики</a>
+  </div>
+
+  <div style="flex-grow: 1; overflow: auto; padding: 32px 40px 36px">
+
+    <!-- Шапка профиля -->
+    <div style="display: flex; align-items: center; gap: 22px; margin-bottom: 26px">
+      <div style="width: 74px; height: 74px; border-radius: 50%; background: #2a241d; border: 1px solid #4a3527; flex-shrink: 0"></div>
+      <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1">
+        <h1 style="font-family: 'Prata', Georgia, serif; font-size: 34px; font-weight: 400; margin: 0; color: #f8f3e9">Фурия</h1>
+        <span style="font-size: 13.5px; color: #79726a">Выкладывает переводы с марта · возвышенный и ровный регистр · сянься и уся</span>
+      </div>
+      <button style="display: flex; align-items: center; gap: 9px; height: 44px; padding: 0 20px; border-radius: 10px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8.5 6.5 12 13 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Читать в его переводе
+      </button>
+    </div>
+
+    <!-- Цифры -->
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-bottom: 26px">
+      <div class="card" style="display: flex; flex-direction: column; gap: 7px">
+        <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 30px; color: #f6f0e5">84</span>
+        <span style="font-size: 13px; color: #8a806f">главы выложено</span>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 7px">
+        <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 30px; color: #f6f0e5">12 400</span>
+        <span style="font-size: 13px; color: #8a806f">раз их прочитали</span>
+      </div>
+      <div class="card" style="display: flex; flex-direction: column; gap: 7px">
+        <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 30px; color: #f6f0e5">218</span>
+        <span style="font-size: 13px; color: #8a806f">правок в глоссариях</span>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 26px">
+
+      <!-- Книги и главы -->
+      <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 22px">
+
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span class="lbl">Что переводит</span>
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div class="card" style="display: flex; align-items: center; gap: 16px; padding: 15px 18px">
+              <div style="width: 42px; height: 58px; border-radius: 6px; background: linear-gradient(150deg, #2e2721, #1c1813); border: 1px solid #332c25; flex-shrink: 0"></div>
+              <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+                <span style="font-size: 15px; font-weight: 600; color: #f2ece0">Путь Пепельного Клинка</span>
+                <span style="font-size: 12.5px; color: #79726a">главы 121–204 · идёт дальше</span>
+              </span>
+              <span class="num" style="font-size: 13.5px; color: #c4b9a8; flex-shrink: 0">62 главы</span>
+            </div>
+            <div class="card" style="display: flex; align-items: center; gap: 16px; padding: 15px 18px">
+              <div style="width: 42px; height: 58px; border-radius: 6px; background: linear-gradient(150deg, #2e2721, #1c1813); border: 1px solid #332c25; flex-shrink: 0"></div>
+              <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+                <span style="font-size: 15px; font-weight: 600; color: #f2ece0">Небо над Каменным Рынком</span>
+                <span style="font-size: 12.5px; color: #79726a">главы 1–22 · заброшено в июне</span>
+              </span>
+              <span class="num" style="font-size: 13.5px; color: #c4b9a8; flex-shrink: 0">22 главы</span>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <span class="lbl">Последнее</span>
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <div class="ch">
+              <span class="num" style="font-size: 13px; color: #79726a">204</span>
+              <span style="font-size: 13.5px; color: #e4dbcb">Счёт, который сбился</span>
+              <span class="num" style="font-size: 12.5px; color: #8a806f; text-align: right">86 прочтений</span>
+              <span style="font-size: 12.5px; color: #6b6459; text-align: right">вчера</span>
+            </div>
+            <div class="ch">
+              <span class="num" style="font-size: 13px; color: #79726a">203</span>
+              <span style="font-size: 13.5px; color: #e4dbcb">Ворота, которых не считали</span>
+              <span class="num" style="font-size: 12.5px; color: #8a806f; text-align: right">141 прочтение</span>
+              <span style="font-size: 12.5px; color: #6b6459; text-align: right">3 дня назад</span>
+            </div>
+            <div class="ch">
+              <span class="num" style="font-size: 13px; color: #79726a">202</span>
+              <span style="font-size: 13.5px; color: #e4dbcb">Тот, кто ушёл до рассвета</span>
+              <span class="num" style="font-size: 12.5px; color: #8a806f; text-align: right">158 прочтений</span>
+              <span style="font-size: 12.5px; color: #6b6459; text-align: right">неделю назад</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Глоссарий -->
+      <div style="width: 320px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px">
+        <span class="lbl">Как он называет вещи</span>
+        <div class="card" style="display: flex; flex-direction: column; gap: 11px">
+          <div style="display: flex; align-items: baseline; gap: 10px; font-size: 13px">
+            <span style="font-family: 'Literata', Georgia, serif; font-style: italic; color: #79848c; width: 118px; flex-shrink: 0">Ninefold Breath Seal</span>
+            <span style="color: #e4dbcb">Печать Девяти Вдохов</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px; font-size: 13px">
+            <span style="font-family: 'Literata', Georgia, serif; font-style: italic; color: #79848c; width: 118px; flex-shrink: 0">Silent Fang Sect</span>
+            <span style="color: #e4dbcb">секта Безмолвного Клыка</span>
+          </div>
+          <div style="display: flex; align-items: baseline; gap: 10px; font-size: 13px">
+            <span style="font-family: 'Literata', Georgia, serif; font-style: italic; color: #79848c; width: 118px; flex-shrink: 0">Cloudfall Ridge</span>
+            <span style="color: #e4dbcb">Хребет Облачного Паденья</span>
+          </div>
+          <div style="height: 1px; background: #262019; margin: 2px 0"></div>
+          <span style="font-size: 12px; color: #6b6459; line-height: 1.5">У другого переводчика те же места могут называться иначе. Поэтому книгу удобнее читать в одном переводе целиком.</span>
+        </div>
+
+        <div class="card" style="display: flex; flex-direction: column; gap: 10px; background: #191510">
+          <span class="lbl" style="font-size: 10px">Как это устроено</span>
+          <span style="font-size: 12.5px; line-height: 1.55; color: #79726a">Каждую главу человек выложил сам и может снять в любой момент. Толмач ничего не публикует за переводчика.</span>
+          <a href="#" style="font-size: 12.5px">Правила и жалобы правообладателей →</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
