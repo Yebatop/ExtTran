@@ -17,13 +17,19 @@ import Anthropic from "@anthropic-ai/sdk";
 import { MODELS, USD_RUB, type Tier } from "./config.js";
 import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { loadChapter } from "./extract.js";
-import { type Glossary } from "./glossary.js";
+import { type Glossary, type Term } from "./glossary.js";
 import { extractTerms, mergeIntoGlossary } from "./terms.js";
 import { parseArgv } from "./args.js";
 
 const USAGE = `Сборка глоссария из глав.
 
   npm run глоссарий -- <файл-со-списком-глав> --в <глоссарий.json> [ключи]
+
+Просмотр собранного:
+
+  npm run glossary -- --показать глоссарий.json
+
+Печатает термины по разделам и подсвечивает подозрительное. Ключ не нужен.
 
 Ключи:
   --в <файл>        куда писать глоссарий (обязательно; дописывается, если есть)
@@ -105,7 +111,95 @@ function sortGlossary(glossary: Glossary): Glossary {
   };
 }
 
+/**
+ * Показать глоссарий по-человечески и подсветить, что стоит перепроверить.
+ *
+ * Просмотр — обязательный шаг: транскрипцию имён машина угадывает через раз,
+ * а исправить её в начале дешевле, чем переписывать три сотни глав. Но сотню
+ * терминов глазами по сырому JSON не пройдёшь, тем более с телефона.
+ */
+function show(glossary: Glossary): void {
+  const out: string[] = [];
+  const byKind = new Map<string, Term[]>();
+  for (const term of glossary.terms) {
+    const list = byKind.get(term.kind) ?? [];
+    list.push(term);
+    byKind.set(term.kind, list);
+  }
+
+  out.push(
+    glossary.novel ? `${glossary.novel}` : "Глоссарий",
+    `${glossary.terms.length} терминов, ${glossary.addresses.length} пар обращений`,
+    "",
+  );
+
+  for (const [kind, terms] of [...byKind].sort((a, b) => b[1].length - a[1].length)) {
+    out.push(`${kind.toUpperCase()} — ${terms.length}`);
+    for (const t of [...terms].sort((a, b) => a.en.localeCompare(b.en, "en"))) {
+      const mark = t.source === "вручную" ? "✓" : " ";
+      out.push(`  ${mark} ${t.en.padEnd(30)} ${t.ru}`);
+    }
+    out.push("");
+  }
+
+  if (glossary.addresses.length > 0) {
+    out.push("КТО КОМУ КАК");
+    for (const a of glossary.addresses) {
+      out.push(`    ${a.from} → ${a.to}: ${a.form}`);
+    }
+    out.push("");
+  }
+
+  // Подозрительное
+  const notes: string[] = [];
+
+  const byRu = new Map<string, string[]>();
+  for (const t of glossary.terms) {
+    const list = byRu.get(t.ru.toLowerCase()) ?? [];
+    list.push(t.en);
+    byRu.set(t.ru.toLowerCase(), list);
+  }
+  for (const [ru, ens] of byRu) {
+    if (ens.length > 1) {
+      notes.push(`  одно русское написание на разные термины: «${ru}» ← ${ens.join(", ")}`);
+    }
+  }
+
+  for (const t of glossary.terms) {
+    if (t.ru === t.en) notes.push(`  не переведено: ${t.en}`);
+    if (/[а-яё]/i.test(t.en)) notes.push(`  кириллица в английском поле: ${t.en}`);
+    if (/^[a-z]/.test(t.en) && !t.en.includes(" ")) {
+      notes.push(`  похоже на нарицательное, а не на имя: ${t.en} → ${t.ru}`);
+    }
+    if (t.note && t.note.split(/\s+/).length > 10) {
+      notes.push(`  помета длиннее десяти слов (в глоссарии не место пересказу): ${t.en}`);
+    }
+  }
+
+  if (notes.length > 0) {
+    out.push("СТОИТ ПЕРЕПРОВЕРИТЬ", ...notes.slice(0, 40), "");
+    if (notes.length > 40) out.push(`  …и ещё ${notes.length - 40}`, "");
+  }
+
+  const pinned = glossary.terms.filter((t) => t.source === "вручную").length;
+  out.push(
+    `Проверено вручную: ${pinned} из ${glossary.terms.length}.`,
+    "Отметить проверенное — поставить строке \"source\": \"вручную\" в файле;",
+    "слияние такие строки больше не трогает.",
+    "",
+  );
+
+  process.stdout.write(out.join("\n"));
+}
+
 async function main(): Promise<void> {
+  const raw = parseArgv(process.argv.slice(2));
+  const toShow = raw.flags.get("показать") ?? raw.flags.get("show");
+  if (toShow !== undefined) {
+    show(await readOrCreate(toShow, ""));
+    return;
+  }
+
   const args = parseArgs(process.argv.slice(2));
   if (args.listPath === "" || args.out === "") {
     process.stdout.write(USAGE);
