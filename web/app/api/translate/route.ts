@@ -1,10 +1,16 @@
 import {
-  EMPTY_GLOSSARY,
+  bookRef,
   chapterFromHtml,
+  chooseStore,
+  extractTerms,
   fetchPage,
   isRegister,
   looksLocked,
+  mergeIntoGlossary,
+  storageKey,
   translateChapter,
+  type BookRecord,
+  type Glossary,
 } from "@/lib/core";
 import { checkSource } from "@/lib/source";
 
@@ -21,10 +27,29 @@ export const maxDuration = 300;
  * это стоило. Так читатель видит первый абзац через несколько секунд, а не
  * пустой экран две минуты.
  */
+/**
+ * До каких пор собирать глоссарий.
+ *
+ * Замеры на живой книге показали: костяк набирается за десять-пятнадцать глав,
+ * дальше новые имена появляются редко, а разбор главы стоит денег на каждой.
+ * Поэтому собираем, пока книга молодая, и перестаём, когда собрали.
+ */
+const GLOSSARY_CHAPTERS = 15;
+
 type Frame =
-  | { type: "meta"; title: string; words: number; method: string }
+  | {
+      type: "meta";
+      title: string;
+      words: number;
+      method: string;
+      book: string;
+      bookKey: string;
+      bookSlug: string;
+      terms: number;
+    }
   | { type: "text"; chunk: string }
   | { type: "done"; rub: number; usd: number; model: string; seconds: number }
+  | { type: "glossary"; added: number; total: number; rub: number }
   | { type: "refusal"; category: string | null; explanation: string | null }
   | { type: "error"; message: string };
 
@@ -83,20 +108,31 @@ export async function POST(request: Request): Promise<Response> {
         }
 
         const chapter = chapterFromHtml(html, checked.url);
+
+        // Глоссарий у книги один на все главы: имя из первой главы должно
+        // писаться так же и в трёхсотой. Ключ книги выводится из адреса.
+        const ref = bookRef(checked.url);
+        const store = chooseStore();
+        const known: Glossary = (await store.readGlossary(ref.key)) ?? {
+          novel: chapter.title || ref.slug,
+          terms: [],
+          addresses: [],
+        };
+
         send({
           type: "meta",
           title: chapter.title,
           words: chapter.wordCount,
           method: chapter.method ?? "неизвестно",
+          book: known.novel || ref.slug,
+          bookKey: ref.key,
+          bookSlug: storageKey(ref.key),
+          terms: known.terms.length,
         });
 
-        // Глоссария пока неоткуда взять: он собирается по книге и живёт в
-        // хранилище, которого ещё нет. Без него перевод ровно настолько же
-        // машинный, как у всех остальных, — и это главное, что предстоит
-        // исправить следующим шагом.
         const result = await translateChapter({
           chapter,
-          glossary: EMPTY_GLOSSARY,
+          glossary: known,
           register,
           tier: "fast",
           onText: (chunk) => send({ type: "text", chunk }),
@@ -116,6 +152,40 @@ export async function POST(request: Request): Promise<Response> {
             model: result.model,
             seconds: (Date.now() - started) / 1000,
           });
+
+          const book: BookRecord = (await store.readBook(ref.key)) ?? {
+            key: ref.key,
+            host: ref.host,
+            slug: ref.slug,
+            title: chapter.title || ref.slug,
+            chaptersTranslated: 0,
+            firstSeen: new Date().toISOString(),
+            lastSeen: new Date().toISOString(),
+          };
+          book.chaptersTranslated += 1;
+          book.lastSeen = new Date().toISOString();
+          await store.writeBook(book);
+
+          // Пополняем глоссарий уже после того, как читатель получил текст:
+          // ему не за что ждать лишние секунды, а книге эти имена пригодятся
+          // в следующей главе.
+          if (book.chaptersTranslated <= GLOSSARY_CHAPTERS) {
+            try {
+              const found = await extractTerms({ chapter, known, tier: "fast" });
+              const report = mergeIntoGlossary(known, found);
+              known.novel = known.novel || chapter.title || ref.slug;
+              await store.writeGlossary(ref.key, known);
+              send({
+                type: "glossary",
+                added: report.added,
+                total: known.terms.length,
+                rub: found.spend.rub,
+              });
+            } catch {
+              // Разбор не удался — перевод от этого не хуже, читателю знать
+              // об этом незачем. Глоссарий доберём на следующей главе.
+            }
+          }
         }
       } catch (error) {
         send({

@@ -7,6 +7,10 @@ interface Meta {
   title: string;
   words: number;
   method: string;
+  book: string;
+  bookKey: string;
+  bookSlug: string;
+  terms: number;
 }
 
 interface Done {
@@ -14,6 +18,12 @@ interface Done {
   usd: number;
   model: string;
   seconds: number;
+}
+
+interface GlossaryNews {
+  added: number;
+  total: number;
+  rub: number;
 }
 
 type State = "loading" | "translating" | "done" | "failed";
@@ -30,6 +40,7 @@ export default function Reader({ src, register }: { src: string; register: strin
   const [meta, setMeta] = useState<Meta | null>(null);
   const [text, setText] = useState("");
   const [done, setDone] = useState<Done | null>(null);
+  const [glossary, setGlossary] = useState<GlossaryNews | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const started = useRef(false);
 
@@ -88,6 +99,9 @@ export default function Reader({ src, register }: { src: string; register: strin
                 setDone(frame as unknown as Done);
                 setState("done");
                 break;
+              case "glossary":
+                setGlossary(frame as unknown as GlossaryNews);
+                break;
               case "refusal":
                 setProblem(
                   "Модель отказалась переводить эту главу" +
@@ -131,6 +145,20 @@ export default function Reader({ src, register }: { src: string; register: strin
           </h1>
           <div className="label">
             {meta.words.toLocaleString("ru")} слов в оригинале · регистр {register}
+          </div>
+          <div style={{ marginTop: 12, fontSize: 13, color: "var(--muted)", lineHeight: 1.5 }}>
+            {meta.terms > 0 ? (
+              <>
+                Глоссарий книги:{" "}
+                <Link href={`/book/${encodeURIComponent(meta.bookSlug)}`}>
+                  {meta.terms}{" "}
+                  {meta.terms % 10 === 1 && meta.terms % 100 !== 11 ? "термин" : "терминов"}
+                </Link>{" "}
+                — имена и обращения из прошлых глав соблюдаются в этой.
+              </>
+            ) : (
+              "Это первая глава книги у нас: глоссарий начнёт собираться с неё."
+            )}
           </div>
         </header>
       )}
@@ -183,6 +211,13 @@ export default function Reader({ src, register }: { src: string; register: strin
           <span>{done.seconds.toFixed(0)} с</span>
           <span>{done.rub.toFixed(2)} ₽ себестоимости</span>
           <span>{done.model}</span>
+          {glossary && (
+            <span style={{ color: "var(--muted)" }}>
+              {glossary.added > 0
+                ? `+${glossary.added} в глоссарий, стало ${glossary.total}`
+                : `глоссарий без изменений, ${glossary.total}`}
+            </span>
+          )}
         </footer>
       )}
     </main>

@@ -23,6 +23,8 @@ import {
 } from "./extract.js";
 import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
+import { bookRef, storageKey } from "./book.js";
+import { MemoryStore } from "./store.js";
 import { missingFileMessage } from "./files.js";
 
 let failed = 0;
@@ -321,6 +323,64 @@ check("промах в имени файла объясняется, а не н�
   );
   assert(many.split("\n").length <= 10, "вывалили в глаза всю папку целиком");
   assert(many.includes("и ещё 12"), "не сказано, сколько соседей не показали");
+});
+
+check("главы одной книги дают один ключ", () => {
+  // Тихая ошибка, которая дороже всех: разойдись ключ на двух главах — и
+  // каждая заведёт свой глоссарий, а весь смысл продукта в том, что он один
+  // на книгу. Адреса настоящие, с того сайта, на котором мерили.
+  const book = "kjnovels.com/novel/semi-coercive-imperialist";
+  for (const url of [
+    "https://kjnovels.com/novel/semi-coercive-imperialist/chapter-1-the-beginning",
+    "https://kjnovels.com/novel/semi-coercive-imperialist/chapter-2-must-kill",
+    "https://kjnovels.com/novel/semi-coercive-imperialist/chapter-274",
+  ]) {
+    const ref = bookRef(url);
+    assert(ref.key === book, `${url}\n      дал ключ ${ref.key}, ждали ${book}`);
+    assert(ref.slug === "semi-coercive-imperialist", `имя из адреса: ${ref.slug}`);
+  }
+
+  // Другая книга на том же сайте — другой ключ, иначе глоссарии смешаются.
+  assert(
+    bookRef("https://kjnovels.com/novel/other-book/chapter-1").key !== book,
+    "две разные книги схлопнулись в один ключ",
+  );
+
+  // Устройство путей у сайтов разное; проверяем не только один случай.
+  assert(
+    bookRef("https://site.invalid/read/some-novel/123").key === "site.invalid/read/some-novel",
+    `номерная глава: ${bookRef("https://site.invalid/read/some-novel/123").key}`,
+  );
+  assert(
+    bookRef("https://site.invalid/novel/x/vol-2/chapter-5").key === "site.invalid/novel/x",
+    `том и глава: ${bookRef("https://site.invalid/novel/x/vol-2/chapter-5").key}`,
+  );
+
+  // Ключ хранилища: разные книги не должны схлопнуться после обработки.
+  assert(
+    storageKey("kjnovels.com/novel/a") !== storageKey("kjnovels.com/novel/b"),
+    "ключи хранилища схлопнулись",
+  );
+  assert(
+    /^[a-z0-9._-]+$/.test(storageKey("KJNovels.com/novel/Semi-Coercive")),
+    `в ключе хранилища осталось небезопасное: ${storageKey("KJNovels.com/novel/Semi-Coercive")}`,
+  );
+});
+
+check("хранилище отдаёт то, что в него положили", () => {
+  const store = new MemoryStore();
+  const key = "site.invalid/novel/x";
+  void store.writeGlossary(key, {
+    novel: "X",
+    terms: [{ en: "Ain", ru: "Айн", kind: "имя" }],
+    addresses: [],
+  });
+  void store
+    .readGlossary(key)
+    .then((g) => assert(g?.terms.length === 1, "глоссарий не вернулся"));
+  void store
+    .readGlossary("site.invalid/novel/другая")
+    .then((g) => assert(g === null, "чужой глоссарий нашёлся там, где его нет"));
 });
 
 check("регистры перевода на месте", () => {
