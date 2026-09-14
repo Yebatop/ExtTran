@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { storageMode } from "@/lib/core";
 
 /**
  * Пока страница статическая, браузер держит её HTML между развёртываниями —
@@ -164,7 +165,10 @@ export default function Home() {
         <span style={{ margin: "0 10px", opacity: 0.4 }}>·</span>
         Пока работает перевод главы по ссылке и глоссарий книги: ни кабинета,
         ни оплаты ещё нет.
-        <div style={{ marginTop: 10, opacity: 0.55, fontSize: 12 }}>сборка {build()}</div>
+        <div style={{ marginTop: 10, opacity: 0.55, fontSize: 12 }}>
+          сборка {build()} · хранение: {storageMode()}
+          {storageMode() === "память" && " (переводы не сохраняются — база не подключена)"}
+        </div>
       </footer>
     </main>
   );

@@ -8,6 +8,7 @@ import {
   isRegister,
   isTier,
   looksLocked,
+  nextFromIndex,
   mergeIntoGlossary,
   storageKey,
   translateChapter,
@@ -167,9 +168,20 @@ export async function POST(request: Request): Promise<Response> {
         };
 
         // Свежая ссылка лучше сохранённой: книга могла прирасти главами.
-        const nextUrl = html
-          ? findNextLink(html, checked.url)
-          : (saved?.nextUrl ?? null);
+        let nextUrl = html ? findNextLink(html, checked.url) : (saved?.nextUrl ?? null);
+
+        // Ссылки «вперёд» на странице главы может не быть вовсе: навигацию
+        // рисует скрипт или её просто не сделали. Тогда порядок глав записан
+        // только на странице книги — идём туда. Неудача здесь некритична:
+        // без кнопки читать можно, просто неудобно.
+        if (!nextUrl && html) {
+          try {
+            const indexUrl = `https://${ref.key}`;
+            nextUrl = nextFromIndex(await fetchPage(indexUrl), indexUrl, checked.url);
+          } catch {
+            nextUrl = null;
+          }
+        }
 
         send({
           type: "meta",
