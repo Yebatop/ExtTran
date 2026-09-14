@@ -13,7 +13,7 @@
 import "./env.js";
 import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
 import { renderGlossary, type Glossary } from "./glossary.js";
-import { attempts, linkDensity, stripCredits } from "./extract.js";
+import { attempts, decodeMhtml, linkDensity, looksLocked, stripCredits } from "./extract.js";
 import { mean, median } from "./stats.js";
 
 let failed = 0;
@@ -146,6 +146,41 @@ check("медиана не ведётся на одну длинную глав�
   assert(mean(lengths) > median(lengths), "среднее должно быть выше медианы");
   assert(median([]) === 0 && mean([]) === 0, "пустой список должен давать ноль");
   assert(median([1, 2, 3, 4]) === 2.5, "чётная длина считается неверно");
+});
+
+check("страница, сохранённая как MHTML, распаковывается", () => {
+  // Chrome на Android по умолчанию сохраняет именно так. Тело кодируется
+  // quoted-printable: знак равенства в конце строки это перенос, а не символ.
+  const html = "<html><head><title>Ch 5</title></head><body><h1>Ch 5</h1></body></html>";
+  const wrapped =
+    "MIME-Version: 1.0\r\n" +
+    'Content-Type: multipart/related; boundary="----=_B_01"\r\n\r\n' +
+    "------=_B_01\r\n" +
+    "Content-Type: text/html\r\n" +
+    "Content-Transfer-Encoding: quoted-printable\r\n\r\n" +
+    // Перенос внутри слова Chapter и закодированный знак равенства
+    html.replace("<h1>Ch 5</h1>", "<h1>Ch=\n 5</h1>") +
+    "\r\n------=_B_01--\r\n";
+
+  const decoded = decodeMhtml(wrapped);
+  assert(decoded !== null, "не распаковалось вовсе");
+  assert(
+    (decoded ?? "").includes("<h1>Ch 5</h1>"),
+    `перенос строки не склеился: ${(decoded ?? "").match(/<h1>[^<]*<\/h1>/)?.[0]}`,
+  );
+  assert(
+    !/=[0-9A-Fa-f]{2}|=\r?\n/.test(decoded ?? ""),
+    "в распакованном тексте остались escape-последовательности",
+  );
+  assert(decodeMhtml("<html>обычный html</html>") === null, "обычный html принят за MHTML");
+});
+
+check("платная глава отличается от сломанной", () => {
+  const locked =
+    "<html><body><h1>Chapter 270</h1><div>This is a premium chapter. Subscribe to read.</div></body></html>";
+  const broken = "<html><body><div id=\"app\"></div></body></html>";
+  assert(looksLocked(locked), "платную главу не распознали");
+  assert(!looksLocked(broken), "пустую страницу приняли за платную");
 });
 
 check("регистры перевода на месте", () => {

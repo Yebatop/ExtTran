@@ -15,7 +15,14 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { readFile } from "node:fs/promises";
-import { attempts, fetchPage, linkDensity, type ExtractionAttempt } from "./extract.js";
+import {
+  attempts,
+  decodeMhtml,
+  fetchPage,
+  linkDensity,
+  looksLocked,
+  type ExtractionAttempt,
+} from "./extract.js";
 import { MODELS, USD_RUB } from "./config.js";
 import { mean, median } from "./stats.js";
 
@@ -46,7 +53,7 @@ const PAUSE_MS = 1000;
 const PLAN_RUB = 490;
 const PLAN_CHAPTERS = 100;
 
-type Verdict = "годится" | "коротко" | "оглавление" | "не годится" | "ошибка";
+type Verdict = "годится" | "коротко" | "оглавление" | "закрыта" | "не годится" | "ошибка";
 
 interface Judgement {
   verdict: Verdict;
@@ -68,7 +75,19 @@ function estimateRub(words: number, tier: "fast" | "strong"): number {
 }
 
 async function loadHtml(source: string): Promise<string> {
-  return /^https?:\/\//i.test(source) ? fetchPage(source) : readFile(source, "utf8");
+  if (/^https?:\/\//i.test(source)) return fetchPage(source);
+  const raw = await readFile(source, "utf8");
+  if (/\.mhtml?$/i.test(source)) {
+    const html = decodeMhtml(raw);
+    if (html === null) {
+      throw new Error(
+        "Файл выглядит как MHTML, но распаковать его не вышло. " +
+          "Пересохраните страницу как обычный HTML.",
+      );
+    }
+    return html;
+  }
+  return raw;
 }
 
 function judge(html: string, source: string): Judgement {
@@ -81,7 +100,10 @@ function judge(html: string, source: string): Judgement {
 
   let verdict: Verdict;
   let why: string | undefined;
-  if (!best || best.wordCount < 100) {
+  if ((!best || best.wordCount < 100) && looksLocked(html)) {
+    verdict = "закрыта";
+    why = "глава платная — по нашим правилам такие не переводим";
+  } else if (!best || best.wordCount < 100) {
     verdict = "не годится";
     why =
       Buffer.byteLength(html, "utf8") < 20_000
@@ -236,6 +258,14 @@ async function batch(listPath: string, limit: number): Promise<void> {
       out.push(`  ${f.source.slice(0, 46).padEnd(48)} ${f.why.slice(0, 60)}`);
     }
     if (failed.length > 12) out.push(`  …и ещё ${failed.length - 12}`);
+    if (failed.some((f) => f.why.includes("платная"))) {
+      out.push(
+        "Закрытые главы — это нормально: на таких сайтах свежие главы обычно",
+        "держат для подписчиков. Переводить их мы не станем при любом раскладе,",
+        "так что для замера берите те, что открыты всем.",
+        "",
+      );
+    }
     out.push(
       "",
       "Если непригодных большинство — почти наверняка в список попали не главы.",

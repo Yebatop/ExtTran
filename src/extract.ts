@@ -44,12 +44,74 @@ export async function fetchPage(url: string): Promise<string> {
   return response.text();
 }
 
+
+/**
+ * Распаковать страницу, сохранённую как MHTML (.mht).
+ *
+ * Chrome на Android по умолчанию сохраняет страницу именно так: это не HTML,
+ * а MIME-архив со всеми картинками внутри. На телефоне других вариантов часто
+ * и нет, поэтому разбираем.
+ */
+export function decodeMhtml(raw: string): string | null {
+  const boundaryMatch = raw.match(/boundary="?([^"\r\n;]+)"?/i);
+  if (!boundaryMatch?.[1]) return null;
+
+  const parts = raw.split(`--${boundaryMatch[1]}`);
+  for (const part of parts) {
+    const split = part.indexOf("\r\n\r\n") >= 0 ? "\r\n\r\n" : "\n\n";
+    const at = part.indexOf(split);
+    if (at < 0) continue;
+
+    const headers = part.slice(0, at).toLowerCase();
+    if (!headers.includes("text/html")) continue;
+
+    const body = part.slice(at + split.length);
+    if (headers.includes("base64")) {
+      return Buffer.from(body.replace(/\s+/g, ""), "base64").toString("utf8");
+    }
+    if (headers.includes("quoted-printable")) {
+      return body
+        .replace(/=\r?\n/g, "")
+        .replace(/=([0-9A-Fa-f]{2})/g, (_, hex: string) =>
+          String.fromCharCode(parseInt(hex, 16)),
+        );
+    }
+    return body;
+  }
+  return null;
+}
+
+/**
+ * Похоже ли, что глава закрыта для подписчиков сайта.
+ *
+ * Такие страницы весят как обычные, но текста на них нет — вместо него
+ * предложение заплатить. Отличать их важно не для удобства: по нашей политике
+ * платные главы не переводятся вообще, ни за квоту, ни вставленным текстом.
+ */
+const LOCK_MARKERS =
+  /(locked chapter|chapter is locked|unlock this chapter|premium chapter|members only|subscribe to read|advance access|early access|purchase this chapter|coins? to unlock)/i;
+
+export function looksLocked(html: string): boolean {
+  const body = html.replace(/<[^>]+>/g, " ");
+  return LOCK_MARKERS.test(body);
+}
+
 export async function loadChapter(source: string): Promise<Chapter> {
   if (/^https?:\/\//i.test(source)) {
     return fromHtml(await fetchPage(source), source);
   }
 
   const raw = await readFile(source, "utf8");
+  if (/\.mhtml?$/i.test(source)) {
+    const html = decodeMhtml(raw);
+    if (html === null) {
+      throw new Error(
+        "Файл выглядит как MHTML, но распаковать его не вышло. " +
+          "Пересохраните страницу как обычный HTML.",
+      );
+    }
+    return fromHtml(html, source);
+  }
   if (/\.html?$/i.test(source)) return fromHtml(raw, source);
   const text = normalize(raw);
   return {
