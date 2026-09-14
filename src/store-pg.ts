@@ -12,7 +12,7 @@
 
 import pg from "pg";
 import type { Glossary } from "./glossary.js";
-import type { BookRecord, Store } from "./store.js";
+import type { BookRecord, Store, TranslationRecord } from "./store.js";
 
 /**
  * Где искать строку подключения.
@@ -96,6 +96,25 @@ export class PostgresStore implements Store {
           data jsonb not null,
           updated_at timestamptz not null default now()
         );
+        create table if not exists translations (
+          reader text not null,
+          source text not null,
+          register text not null,
+          tier text not null,
+          book_key text not null,
+          title text not null default '',
+          words integer not null default 0,
+          body text not null,
+          model text not null default '',
+          rub numeric(10,4) not null default 0,
+          published boolean not null default false,
+          next_url text,
+          created_at timestamptz not null default now(),
+          last_read_at timestamptz not null default now(),
+          primary key (reader, source, register, tier)
+        );
+        create index if not exists translations_last_read
+          on translations (last_read_at);
       `);
     })();
     return this.ready;
@@ -198,10 +217,75 @@ export class PostgresStore implements Store {
     );
   }
 
+  async readTranslation(
+    owner: string,
+    source: string,
+    register: string,
+    tier: string,
+  ): Promise<TranslationRecord | null> {
+    await this.init();
+    // Чтение продлевает срок хранения: в политике сто восемьдесят дней
+    // считаются со дня последнего открытия, а не со дня перевода.
+    const { rows } = await this.pool.query<{
+      reader: string; source: string; register: string; tier: string;
+      book_key: string; title: string; words: number; body: string;
+      model: string; rub: string; published: boolean; next_url: string | null;
+      created_at: Date; last_read_at: Date;
+    }>(
+      `update translations set last_read_at = now()
+       where reader = $1 and source = $2 and register = $3 and tier = $4
+       returning *`,
+      [owner, source, register, tier],
+    );
+    const row = rows[0];
+    if (!row) return null;
+    return {
+      owner: row.reader,
+      source: row.source,
+      bookKey: row.book_key,
+      register: row.register,
+      tier: row.tier,
+      title: row.title,
+      words: row.words,
+      text: row.body,
+      model: row.model,
+      rub: Number(row.rub),
+      published: row.published,
+      nextUrl: row.next_url,
+      createdAt: row.created_at.toISOString(),
+      lastReadAt: row.last_read_at.toISOString(),
+    };
+  }
+
+  async writeTranslation(record: TranslationRecord): Promise<void> {
+    await this.init();
+    await this.pool.query(
+      `insert into translations
+         (reader, source, register, tier, book_key, title, words, body,
+          model, rub, published, next_url, created_at, last_read_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+       on conflict (reader, source, register, tier) do update set
+         body = excluded.body,
+         title = excluded.title,
+         words = excluded.words,
+         model = excluded.model,
+         rub = excluded.rub,
+         next_url = excluded.next_url,
+         last_read_at = excluded.last_read_at`,
+      [
+        record.owner, record.source, record.register, record.tier,
+        record.bookKey, record.title, record.words, record.text,
+        record.model, record.rub, record.published, record.nextUrl,
+        record.createdAt, record.lastReadAt,
+      ],
+    );
+  }
+
   /** Убрать книгу вместе с её глоссарием. Нужно уборке после проверки базы. */
   async removeBook(key: string): Promise<void> {
     await this.init();
     await this.pool.query("delete from books where key = $1", [key]);
+    await this.pool.query("delete from translations where book_key = $1", [key]);
   }
 
   async close(): Promise<void> {

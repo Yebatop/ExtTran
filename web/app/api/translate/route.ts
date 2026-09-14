@@ -11,6 +11,7 @@ import {
   mergeIntoGlossary,
   storageKey,
   translateChapter,
+  SOLE_READER,
   type BookRecord,
   type Glossary,
 } from "@/lib/core";
@@ -65,6 +66,8 @@ type Frame =
       usd: number;
       model: string;
       seconds: number;
+      /** Перевод взят из хранилища — денег не потрачено, ключ не нужен. */
+      cached: boolean;
       /**
        * Готовый текст целиком.
        *
@@ -106,17 +109,6 @@ export async function POST(request: Request): Promise<Response> {
   const tier =
     typeof body.tier === "string" && isTier(body.tier) ? body.tier : "middle";
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return Response.json(
-      {
-        error:
-          "На сервере не выставлен ключ ANTHROPIC_API_KEY — переводить нечем. " +
-          "Это наша беда, а не ваша.",
-      },
-      { status: 503 },
-    );
-  }
-
   const encoder = new TextEncoder();
   const started = Date.now();
 
@@ -127,11 +119,33 @@ export async function POST(request: Request): Promise<Response> {
       };
 
       try {
-        const html = await fetchPage(checked.url);
+        // Ключ книги выводится из адреса, без единого запроса наружу.
+        const ref = bookRef(checked.url);
+        const store = await chooseStore();
+
+        // Хранилище — раньше сети. Глава стоит около пяти рублей, и платить за
+        // неё второй раз потому, что читатель перезагрузил страницу, не за что.
+        // А раньше сети — чтобы сохранённая глава открывалась и тогда, когда
+        // первоисточник лежит: он нам для неё больше не нужен.
+        const saved = await store.readTranslation(
+          SOLE_READER,
+          checked.url,
+          register,
+          tier,
+        );
+
+        // Страница нужна для оригинала и свежей ссылки «дальше». Для готового
+        // перевода это украшение, а не условие, поэтому неудачу здесь терпим.
+        let html: string | null = null;
+        try {
+          html = await fetchPage(checked.url);
+        } catch (error) {
+          if (!saved) throw error;
+        }
 
         // Платные главы не переводим — так записано в правилах, и это не
         // техническое ограничение, а обещание тем, кто их пишет.
-        if (looksLocked(html)) {
+        if (html && looksLocked(html)) {
           send({
             type: "error",
             message:
@@ -142,35 +156,73 @@ export async function POST(request: Request): Promise<Response> {
           return;
         }
 
-        const chapter = chapterFromHtml(html, checked.url);
+        const chapter = html ? chapterFromHtml(html, checked.url) : null;
 
         // Глоссарий у книги один на все главы: имя из первой главы должно
-        // писаться так же и в трёхсотой. Ключ книги выводится из адреса.
-        const ref = bookRef(checked.url);
-        const store = await chooseStore();
+        // писаться так же и в трёхсотой.
         const known: Glossary = (await store.readGlossary(ref.key)) ?? {
-          novel: chapter.title || ref.slug,
+          novel: chapter?.title || saved?.title || ref.slug,
           terms: [],
           addresses: [],
         };
 
+        // Свежая ссылка лучше сохранённой: книга могла прирасти главами.
+        const nextUrl = html
+          ? findNextLink(html, checked.url)
+          : (saved?.nextUrl ?? null);
+
         send({
           type: "meta",
-          title: chapter.title,
-          words: chapter.wordCount,
-          method: chapter.method ?? "неизвестно",
+          title: chapter?.title ?? saved?.title ?? "",
+          words: chapter?.wordCount ?? saved?.words ?? 0,
+          method: chapter?.method ?? (saved ? "из хранилища" : "неизвестно"),
           book: known.novel || ref.slug,
           bookKey: ref.key,
           bookSlug: storageKey(ref.key),
           terms: known.terms.length,
-          next: findNextLink(html, checked.url),
-          original: chapter.text,
+          next: nextUrl,
+          // Оригинал не храним — так записано в правилах. Если страница не
+          // открылась, показывать по кнопке будет нечего, и это честнее, чем
+          // держать английский текст у себя ради удобства.
+          original: chapter?.text ?? "",
           glossary: known.terms.map((t) => ({
             en: t.en,
             ru: t.ru,
             ...(t.note ? { note: t.note } : {}),
           })),
         });
+
+        if (saved) {
+          send({ type: "text", chunk: saved.text });
+          send({
+            type: "done",
+            rub: 0,
+            usd: 0,
+            model: saved.model,
+            seconds: (Date.now() - started) / 1000,
+            cached: true,
+            text: saved.text,
+          });
+          controller.close();
+          return;
+        }
+
+        if (!chapter) {
+          send({ type: "error", message: "Страница не открылась, а перевода у нас ещё нет." });
+          controller.close();
+          return;
+        }
+
+        if (!process.env.ANTHROPIC_API_KEY) {
+          send({
+            type: "error",
+            message:
+              "На сервере не выставлен ключ ANTHROPIC_API_KEY — переводить нечем. " +
+              "Это наша беда, а не ваша.",
+          });
+          controller.close();
+          return;
+        }
 
         const result = await translateChapter({
           chapter,
@@ -193,7 +245,27 @@ export async function POST(request: Request): Promise<Response> {
             usd: result.spend.usd,
             model: result.model,
             seconds: (Date.now() - started) / 1000,
+            cached: false,
             text: result.text,
+          });
+
+          const stamp = new Date().toISOString();
+          await store.writeTranslation({
+            owner: SOLE_READER,
+            source: checked.url,
+            bookKey: ref.key,
+            register,
+            tier,
+            title: chapter.title,
+            words: chapter.wordCount,
+            text: result.text,
+            model: result.model,
+            rub: result.spend.rub,
+            // Галочка публикации из правил: выключена, включается руками.
+            published: false,
+            nextUrl,
+            createdAt: stamp,
+            lastReadAt: stamp,
           });
 
           const book: BookRecord = (await store.readBook(ref.key)) ?? {
