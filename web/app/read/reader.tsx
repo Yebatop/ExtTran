@@ -61,7 +61,8 @@ export default function Reader({
   const [force, setForce] = useState(false);
   const [showOriginal, setShowOriginal] = useState(false);
   const [picked, setPicked] = useState<HighlightTerm | null>(null);
-  const started = useRef(-1);
+  const started = useRef("");
+  const inflight = useRef<AbortController | null>(null);
 
   useEffect(() => {
     // Переход к следующей главе — это тот же компонент с другим src:
@@ -71,16 +72,33 @@ export default function Reader({
   }, [src]);
 
   useEffect(() => {
-    // В строгом режиме разработки эффект запускается дважды — перевод стоит
-    // денег, так что второй запуск нам обойдётся ровно в цену главы.
-    if (started.current === attempt) return;
-    started.current = attempt;
+    /*
+     * Сторож от второго запроса той же главы. В строгом режиме разработки
+     * эффект запускается дважды, а перевод стоит денег — второй запуск
+     * обошёлся бы ровно в цену главы.
+     *
+     * Сторож считает по самому запросу, а не по счётчику попыток. Раньше он
+     * смотрел только на попытку — и переход к следующей главе, то есть тот же
+     * компонент с другим адресом при той же попытке, принимался за повтор:
+     * кнопка нажималась, адрес в строке менялся, а на экране оставалась
+     * прежняя глава. Проверено на собранном сайте: со старым сторожем адрес
+     * становится вторым, а заголовок и текст остаются от первой главы.
+     */
+    const key = [src, register, tier, attempt, force].join("\u0000");
+    if (started.current === key) return;
+    started.current = key;
     setProblem(null);
     setText("");
     setDone(null);
     setState("loading");
 
+    // Прошлый запрос отменяем здесь, а не в уборке эффекта: уборка в строгом
+    // режиме случается сразу после первого запуска и убивала запрос, который
+    // сторож потом не пускал повторить, — экран навсегда оставался
+    // на «открываем страницу».
+    inflight.current?.abort();
     const controller = new AbortController();
+    inflight.current = controller;
 
     void (async () => {
       try {
@@ -165,8 +183,6 @@ export default function Reader({
         setState("failed");
       }
     })();
-
-    return () => controller.abort();
   }, [src, register, tier, attempt, force]);
 
   const shown = showOriginal ? meta?.original ?? "" : text;
