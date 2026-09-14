@@ -227,6 +227,67 @@ function byParagraphDensity(document: Document): ExtractionAttempt | null {
   };
 }
 
+
+/**
+ * Найти на странице главы ссылку на следующую.
+ *
+ * Нужно там, где адреса глав не угадываются: у каждой свой хвост вроде
+ * chapter-2-must-kill, а на странице книги висят только первая и последние.
+ * Тогда единственный способ собрать главы подряд — идти по «вперёд».
+ *
+ * Порядок проверок от надёжного к шаткому. Ссылки «назад» отсеиваются явно:
+ * перепутать их проще всего, а цена ошибки — уход в начало книги.
+ */
+const NEXT_TEXT = /^(next|next chapter|next ›|next »|›|»|→|>>|вперёд|далее|следующая)/i;
+const PREV_HINT = /prev|назад|предыд|‹|«|←|<</i;
+
+export function findNextLink(html: string, currentUrl: string): string | null {
+  const dom = new JSDOM(html, { url: currentUrl });
+  const doc = dom.window.document;
+  const here = new URL(currentUrl);
+
+  const resolve = (href: string | null): string | null => {
+    if (!href) return null;
+    try {
+      const parsed = new URL(href, currentUrl);
+      parsed.hash = "";
+      if (parsed.origin !== here.origin) return null;
+      if (parsed.toString() === currentUrl.replace(/#.*$/, "")) return null;
+      return parsed.toString();
+    } catch {
+      return null;
+    }
+  };
+
+  // 1. Разметка, сделанная специально для этого
+  const rel = doc.querySelector('link[rel="next"], a[rel="next"]');
+  const byRel = resolve(rel?.getAttribute("href") ?? null);
+  if (byRel) return byRel;
+
+  const anchors = [...doc.querySelectorAll("a[href]")];
+
+  // 2. Имя класса или идентификатор — но не у ссылки «назад»
+  for (const a of anchors) {
+    const marks = `${a.className} ${a.id}`.toLowerCase();
+    if (!marks.includes("next")) continue;
+    if (PREV_HINT.test(marks)) continue;
+    const url = resolve(a.getAttribute("href"));
+    if (url) return url;
+  }
+
+  // 3. Текст самой ссылки
+  for (const a of anchors) {
+    const text = (a.textContent ?? "").trim();
+    if (text === "" || text.length > 24) continue;
+    if (PREV_HINT.test(text)) continue;
+    if (!NEXT_TEXT.test(text)) continue;
+    const url = resolve(a.getAttribute("href"));
+    if (url) return url;
+  }
+
+  return null;
+}
+
 /** Доля текста, лежащая в ссылках. У оглавления она близка к единице. */
 export function linkDensity(html: string, source: string): number {
   const dom = new JSDOM(html, {

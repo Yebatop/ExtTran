@@ -14,6 +14,7 @@ import "./env.js";
 import { readFile, writeFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 import { USER_AGENT } from "./config.js";
+import { fetchPage, findNextLink } from "./extract.js";
 
 const USAGE = `Сборка списка глав.
 
@@ -23,6 +24,7 @@ const USAGE = `Сборка списка глав.
 
 Ключи:
   --шаблон <строка>    адрес с диапазоном в фигурных скобках: {147..196}
+  --цепочкой <url>     идти от этой главы по ссылкам «следующая»
   --оглавление <url>   страница со списком глав (или сохранённый файл)
   --база <url>         имя сайта, если оглавление читается из файла
   --содержит <кусок>   какие ссылки с неё брать (например /chapter-)
@@ -148,6 +150,77 @@ function preview(links: string[]): void {
   }
 }
 
+/**
+ * Пройти по книге от указанной главы, следуя ссылкам «вперёд».
+ *
+ * Медленно — по запросу на главу с паузой, — зато работает там, где адреса
+ * не угадываются и списка глав на сайте нет. Для выборки в десяток глав это
+ * полминуты, и другого способа часто не остаётся.
+ */
+async function byChain(start: string, count: number): Promise<string[]> {
+  const out: string[] = [start];
+  const seen = new Set([start]);
+  let current = start;
+
+  for (let i = 1; i < count; i += 1) {
+    await new Promise((r) => setTimeout(r, 1000));
+    let html: string;
+    try {
+      html = await fetchPage(current);
+    } catch (error) {
+      process.stderr.write(
+        `  оборвалось на ${i}-й: ${error instanceof Error ? error.message : error}\n`,
+      );
+      break;
+    }
+
+    const next = findNextLink(html, current);
+    if (next === null) {
+      process.stderr.write(
+        `  ссылка «следующая» не нашлась после ${i}-й главы — дальше идти некуда\n`,
+      );
+      break;
+    }
+    if (seen.has(next)) {
+      process.stderr.write("  ссылка «следующая» ведёт на уже пройденную главу — остановились\n");
+      break;
+    }
+
+    out.push(next);
+    seen.add(next);
+    current = next;
+    process.stderr.write(`  ${out.length}. ${next.replace(/^https?:\/\/[^/]+/, "")}\n`);
+  }
+
+  return out;
+}
+
+/** Записать список и показать, что в нём. */
+async function write(links: string[], out: string | undefined): Promise<void> {
+  if (links.length === 0) {
+    throw new Error(
+      "Ни одной ссылки не набралось. Если брали с оглавления — попробуйте " +
+        "другой кусок адреса в --содержит.",
+    );
+  }
+
+  const body =
+    [
+      "# Список глав для Толмача. Сгенерирован автоматически — проверьте глазами.",
+      "# Коммитить не надо: это карта чужого сайта, нужная только на время прогона.",
+      "",
+    ].join("\n") + `${links.join("\n")}\n`;
+
+  if (out !== undefined) {
+    await writeFile(out, body, "utf8");
+    process.stderr.write(`\nСсылок: ${links.length}. Записано в ${out}\n\n`);
+    preview(links);
+  } else {
+    process.stdout.write(body);
+    process.stderr.write(`\nСсылок: ${links.length}\n`);
+  }
+}
+
 async function main(): Promise<void> {
   const argv = process.argv.slice(2);
   const flags = new Map<string, string>();
@@ -164,14 +237,27 @@ async function main(): Promise<void> {
 
   const pattern = flags.get("шаблон") ?? flags.get("pattern");
   const toc = flags.get("оглавление") ?? flags.get("toc");
+  const chain = flags.get("цепочкой") ?? flags.get("chain");
 
-  if (!pattern && !toc) {
+  if (!pattern && !toc && !chain) {
     process.stdout.write(USAGE);
     process.exitCode = 1;
     return;
   }
 
   const base = flags.get("база") ?? flags.get("base");
+  const want = Number(flags.get("сколько") ?? flags.get("limit") ?? 10);
+
+  if (chain !== undefined) {
+    process.stderr.write(
+      `Идём от этой главы вперёд, ${Number.isFinite(want) && want > 0 ? want : 10} шт.\n` +
+        "  1. (с неё и начинаем)\n",
+    );
+    const links = await byChain(chain, Number.isFinite(want) && want > 0 ? want : 10);
+    await write(links, flags.get("в") ?? flags.get("out"));
+    return;
+  }
+
   let links = pattern
     ? expandPattern(pattern)
     : await fromTableOfContents(
@@ -183,29 +269,7 @@ async function main(): Promise<void> {
   const limit = flags.get("сколько") ?? flags.get("limit");
   if (limit !== undefined) links = links.slice(0, Number(limit));
 
-  if (links.length === 0) {
-    throw new Error(
-      "Ни одной ссылки не набралось. Если брали с оглавления — попробуйте " +
-        "другой кусок адреса в --содержит.",
-    );
-  }
-
-  const header = [
-    "# Список глав для Толмача. Сгенерирован автоматически — проверьте глазами.",
-    "# Коммитить не надо: это карта чужого сайта, нужная только на время прогона.",
-    "",
-  ].join("\n");
-  const body = `${header}${links.join("\n")}\n`;
-
-  const out = flags.get("в") ?? flags.get("out");
-  if (out) {
-    await writeFile(out, body, "utf8");
-    process.stderr.write(`Ссылок: ${links.length}. Записано в ${out}\n\n`);
-    preview(links);
-  } else {
-    process.stdout.write(body);
-    process.stderr.write(`\nСсылок: ${links.length}\n`);
-  }
+  await write(links, flags.get("в") ?? flags.get("out"));
 }
 
 main().catch((error: unknown) => {

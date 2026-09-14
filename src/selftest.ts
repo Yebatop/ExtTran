@@ -13,7 +13,14 @@
 import "./env.js";
 import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
 import { renderGlossary, type Glossary } from "./glossary.js";
-import { attempts, decodeMhtml, linkDensity, looksLocked, stripCredits } from "./extract.js";
+import {
+  attempts,
+  decodeMhtml,
+  findNextLink,
+  linkDensity,
+  looksLocked,
+  stripCredits,
+} from "./extract.js";
 import { mean, median } from "./stats.js";
 
 let failed = 0;
@@ -181,6 +188,40 @@ check("платная глава отличается от сломанной", 
   const broken = "<html><body><div id=\"app\"></div></body></html>";
   assert(looksLocked(locked), "платную главу не распознали");
   assert(!looksLocked(broken), "пустую страницу приняли за платную");
+});
+
+check("ссылка «вперёд» не путается с «назад»", () => {
+  const here = "https://site.invalid/novel/x/chapter-2-must-kill";
+
+  // Обычный случай: обе ссылки рядом, назад идёт первой
+  const both =
+    '<html><body><p>text</p>' +
+    '<a class="prev-chapter" href="/novel/x/chapter-1-to-that-place">Previous</a>' +
+    '<a class="next-chapter" href="/novel/x/chapter-3-the-gate">Next</a>' +
+    "</body></html>";
+  assert(
+    findNextLink(both, here) === "https://site.invalid/novel/x/chapter-3-the-gate",
+    `взяли не ту ссылку: ${findNextLink(both, here)}`,
+  );
+
+  // Без классов, только по тексту — и «назад» стоит раньше
+  const byText =
+    '<html><body><a href="/novel/x/chapter-1-to-that-place">« Prev</a>' +
+    '<a href="/novel/x/chapter-3-the-gate">Next »</a></body></html>';
+  assert(
+    findNextLink(byText, here) === "https://site.invalid/novel/x/chapter-3-the-gate",
+    "по тексту ссылку не нашли или взяли «назад»",
+  );
+
+  // Последняя глава: вперёд идти некуда
+  const last =
+    '<html><body><a class="prev" href="/novel/x/chapter-1-to-that-place">Previous</a></body></html>';
+  assert(findNextLink(last, here) === null, "придумали следующую главу там, где её нет");
+
+  // Чужой сайт — не наш путь
+  const offsite =
+    '<html><body><a rel="next" href="https://elsewhere.invalid/c/3">Next</a></body></html>';
+  assert(findNextLink(offsite, here) === null, "ушли на посторонний сайт");
 });
 
 check("регистры перевода на месте", () => {
