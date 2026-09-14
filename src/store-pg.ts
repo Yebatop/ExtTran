@@ -347,6 +347,20 @@ export class PostgresStore implements Store {
     return rows.map(listed);
   }
 
+  async termCounts(): Promise<Map<string, number>> {
+    await this.init();
+    // Считает база, а не мы: иначе на каждую книгу пришлось бы вытащить весь
+    // её глоссарий целиком ради одного числа.
+    const { rows } = await this.pool.query<{ book_key: string; n: string }>(
+      `select book_key,
+              case when jsonb_typeof(data->'terms') = 'array'
+                   then jsonb_array_length(data->'terms')
+                   else 0 end as n
+         from glossaries`,
+    );
+    return new Map(rows.map((row) => [row.book_key, Number(row.n)]));
+  }
+
   /** Убрать книгу вместе с её глоссарием. Нужно уборке после проверки базы. */
   async removeBook(key: string): Promise<void> {
     await this.init();

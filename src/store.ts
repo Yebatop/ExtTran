@@ -121,6 +121,15 @@ export interface Store {
     owner: string,
     limit: number,
   ): Promise<Array<Omit<TranslationRecord, "text">>>;
+  /**
+   * Сколько терминов в глоссарии каждой книги.
+   *
+   * Отдельный вопрос, а не чтение глоссариев по одному: в каталоге нужно
+   * только число, а глоссарий на трёхстах главах — это сотни терминов со
+   * всеми пометами. Тянуть их целиком ради одной цифры в строке списка
+   * незачем, тем более по разу на книгу.
+   */
+  termCounts(): Promise<Map<string, number>>;
 }
 
 /** Ключ перевода: читатель, глава, регистр, модель. Всё это меняет текст. */
@@ -197,6 +206,10 @@ export class MemoryStore implements Store {
       .map(({ text: _text, ...rest }) => rest)
       .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt))
       .slice(0, limit);
+  }
+
+  async termCounts(): Promise<Map<string, number>> {
+    return new Map([...this.glossaries].map(([key, g]) => [key, g.terms.length]));
   }
 }
 
@@ -343,6 +356,14 @@ export class FileStore implements Store {
   ): Promise<Array<Omit<TranslationRecord, "text">>> {
     const all = await this.allTranslations(owner);
     return all.slice(0, limit);
+  }
+
+  async termCounts(): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    for (const book of await this.listBooks()) {
+      counts.set(book.key, (await this.readGlossary(book.key))?.terms.length ?? 0);
+    }
+    return counts;
   }
 }
 

@@ -97,3 +97,45 @@ button, input, textarea, select { font: inherit; }
   padding: 0;
   color: inherit;
 }
+
+/* Каталог: слева колонка фильтров, справа список. На телефоне — друг под
+   другом, потому что 212 пикселей отдать не из чего. */
+.catalogue {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .catalogue { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+}
+
+/* Строка фильтра: название слева, число справа. Это ссылка, а не кнопка —
+   фильтры должны работать без единой строчки клиентского кода. */
+.fbtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: #b0a693;
+  font-size: 13px;
+}
+.fbtn:hover { color: var(--ink); background: #1c1813; }
+.fbtn .n { color: var(--dim); font-weight: 400; font-variant-numeric: tabular-nums; }
+.fbtn.on { background: #241f18; border-color: #4a3527; color: var(--ink); font-weight: 600; }
+.fbtn.on .n { color: var(--muted); }
+
+/* Строка книги в каталоге. */
+.row {
+  display: flex;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #1a1611;
+  border: 1px solid #262019;
+  color: var(--ink);
+}
+.row:hover { border-color: #3a3129; color: var(--ink); }

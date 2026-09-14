@@ -153,6 +153,11 @@ async function main(): Promise<void> {
       (await store.recentTranslations("кто-то-другой", 10)).length === 0,
     );
     check("счёт последних глав ограничен", (await store.recentTranslations(READER, 1)).length === 1);
+
+    // Размеры глоссариев: по ним каталог сортирует и фильтрует.
+    const counts = await store.termCounts();
+    check("размер глоссария считает база", counts.get(KEY) === 2);
+    check("пустой глоссарий считается нулём, а не пропадает", counts.get(OTHER) === 0);
   } finally {
     await store.removeBook(KEY).catch(() => undefined);
     await store.removeBook(OTHER).catch(() => undefined);

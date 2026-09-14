@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Nav } from "../../../nav";
 import { chooseStore, storageKey, type Glossary, type Term } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +20,9 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
 
   if (!book || !glossary || glossary.terms.length === 0) {
     return (
-      <main style={{ maxWidth: 560, margin: "0 auto", padding: "clamp(40px, 12vw, 120px) 16px" }}>
+      <>
+        <Nav here="книги" />
+        <main style={{ maxWidth: 560, margin: "0 auto", padding: "clamp(40px, 12vw, 120px) 16px" }}>
         <h1 className="display" style={{ fontSize: 30, margin: "0 0 14px" }}>
           Глоссария этой книги у нас нет
         </h1>
@@ -33,7 +36,8 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           у нас пока нет.
         </p>
         <Link href="/">← На главную</Link>
-      </main>
+        </main>
+      </>
     );
   }
 
@@ -46,7 +50,9 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
   const kinds = [...byKind].sort((a, b) => b[1].length - a[1].length);
 
   return (
-    <main style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
+    <>
+      <Nav here="книги" />
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
       <nav style={{ marginBottom: 36, fontSize: 13, display: "flex", gap: 16 }}>
         <Link href={`/book/${encodeURIComponent(slug)}`}>← К книге</Link>
         <Link href="/books" style={{ color: "var(--dim)" }}>Все книги</Link>
@@ -117,6 +123,7 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           </section>
         )}
       </div>
-    </main>
+      </main>
+    </>
   );
 }
