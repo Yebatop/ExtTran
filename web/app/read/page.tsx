@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { checkSource } from "@/lib/source";
-import { isRegister } from "@/lib/core";
+import { isRegister, isTier } from "@/lib/core";
 import Reader from "./reader";
 
 /**
@@ -12,12 +12,16 @@ import Reader from "./reader";
 export default async function Read({
   searchParams,
 }: {
-  searchParams: Promise<{ src?: string; register?: string }>;
+  searchParams: Promise<{ src?: string; register?: string; tier?: string }>;
 }) {
   const params = await searchParams;
   const checked = checkSource(params.src ?? "");
   const register =
     params.register && isRegister(params.register) ? params.register : "ровный";
+  const tier =
+    params.tier && isTier(params.tier) && params.tier !== "strong"
+      ? params.tier
+      : "fast";
 
   if (!checked.ok) {
     return (
@@ -31,5 +35,5 @@ export default async function Read({
     );
   }
 
-  return <Reader src={checked.url} register={register} />;
+  return <Reader src={checked.url} register={register} tier={tier} />;
 }

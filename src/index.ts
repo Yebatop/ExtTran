@@ -73,6 +73,8 @@ export {
   type TermKind,
 } from "./glossary.js";
 
+export { polish } from "./polish.js";
+
 export { mean, median, spread } from "./stats.js";
 
 export {
