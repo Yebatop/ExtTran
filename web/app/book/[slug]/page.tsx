@@ -1,122 +1,145 @@
 import Link from "next/link";
-import { chooseStore, storageKey, type Glossary, type Term } from "@/lib/core";
+import { chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 
 /**
- * Глоссарий книги.
+ * Карточка книги.
  *
- * По нашим же правилам это единственное, что мы отдаём поиску: справочник имён
- * наш, а текст перевода — нет. Поэтому страница открытая и человеческая, а не
- * служебная выгрузка JSON.
+ * Отсюда видно, что у нас по этой книге есть, и отсюда можно вернуться к
+ * прочитанной главе. До сих пор вернуться было нельзя вовсе: адрес главы
+ * живёт у первоисточника, и по каталогу до неё не дойти.
+ *
+ * Жанров и тегов из макета здесь нет намеренно: взять их неоткуда, а
+ * придумывать на карточке чужой книги — врать читателю.
  */
 export default async function Book({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const store = await chooseStore();
-  const books = await store.listBooks();
-  const book = books.find((b) => storageKey(b.key) === slug);
-  const glossary: Glossary | null = book ? await store.readGlossary(book.key) : null;
+  const book = (await store.listBooks()).find((b) => storageKey(b.key) === slug);
 
-  if (!book || !glossary || glossary.terms.length === 0) {
+  if (!book) {
     return (
       <main style={{ maxWidth: 560, margin: "0 auto", padding: "clamp(40px, 12vw, 120px) 16px" }}>
         <h1 className="display" style={{ fontSize: 30, margin: "0 0 14px" }}>
-          Глоссария этой книги у нас нет
+          Такой книги у нас нет
         </h1>
-        <p style={{ color: "#c8bfae", lineHeight: 1.65, margin: "0 0 12px" }}>
-          Он собирается сам, пока переводятся первые главы. Переведите одну — и
-          страница наполнится.
-        </p>
-        <p style={{ color: "var(--dim)", lineHeight: 1.6, margin: "0 0 28px", fontSize: 14 }}>
-          Если главы уже переводились, а здесь пусто — значит, хранилище не
-          настроено и глоссарий живёт только до перезапуска. Это ожидаемо: базы
-          у нас пока нет.
+        <p style={{ color: "#c8bfae", lineHeight: 1.65, margin: "0 0 28px" }}>
+          Переведите из неё главу — книга появится здесь вместе с глоссарием.
         </p>
         <Link href="/">← На главную</Link>
       </main>
     );
   }
 
-  const byKind = new Map<string, Term[]>();
-  for (const term of glossary.terms) {
-    const list = byKind.get(term.kind) ?? [];
-    list.push(term);
-    byKind.set(term.kind, list);
-  }
-  const kinds = [...byKind].sort((a, b) => b[1].length - a[1].length);
+  const [glossary, chapters] = await Promise.all([
+    store.readGlossary(book.key),
+    store.listTranslations(SOLE_READER, book.key),
+  ]);
+
+  const words = median(chapters.map((c) => c.words).filter((w) => w > 0));
+  const spent = chapters.reduce((sum, c) => sum + c.rub, 0);
+
+  const cell = {
+    border: "1px solid var(--line)",
+    borderRadius: 12,
+    padding: "16px 18px",
+    background: "var(--bg-raised)",
+  } as const;
 
   return (
     <main style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
-      <nav style={{ marginBottom: 36, fontSize: 13, display: "flex", gap: 16 }}>
-        <Link href="/">← На главную</Link>
-        <Link href="/books" style={{ color: "var(--dim)" }}>Все книги</Link>
+      <nav style={{ marginBottom: 32, fontSize: 13, display: "flex", gap: 16 }}>
+        <Link href="/books">← Каталог</Link>
+        <a
+          href={`https://${book.key}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: "var(--dim)" }}
+        >
+          Оригинал
+        </a>
       </nav>
 
-      <header style={{ marginBottom: 44 }}>
-        <div className="label" style={{ marginBottom: 12 }}>Глоссарий</div>
-        <h1 className="display" style={{ fontSize: "clamp(28px, 6.5vw, 42px)", margin: "0 0 12px", lineHeight: 1.12 }}>
+      <header style={{ marginBottom: 36 }}>
+        <div className="label" style={{ marginBottom: 12 }}>{book.host}</div>
+        <h1 className="display" style={{ fontSize: "clamp(30px, 7vw, 46px)", margin: 0, lineHeight: 1.1 }}>
           {book.title}
         </h1>
-        <p style={{ color: "var(--muted)", margin: 0, fontSize: 14, lineHeight: 1.6 }}>
-          {glossary.terms.length} терминов, {glossary.addresses.length} пар обращений ·{" "}
-          переведено глав: {book.chaptersTranslated} · {book.host}
-        </p>
       </header>
 
-      <div style={{ display: "grid", gap: 40 }}>
-        {kinds.map(([kind, terms]) => (
-          <section key={kind}>
-            <h2 className="label" style={{ marginBottom: 14 }}>
-              {kind} — {terms.length}
-            </h2>
-            <dl style={{ margin: 0, display: "grid", gap: 10 }}>
-              {[...terms]
-                .sort((a, b) => a.en.localeCompare(b.en, "en"))
-                .map((t) => (
-                  <div
-                    key={t.en}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.2fr)",
-                      gap: 14,
-                      paddingBottom: 10,
-                      borderBottom: "1px solid var(--line-soft)",
-                    }}
-                  >
-                    <dt style={{ color: "var(--muted)", fontSize: 15 }}>{t.en}</dt>
-                    <dd style={{ margin: 0, fontSize: 15 }}>
-                      {t.ru}
-                      {t.note && (
-                        <span style={{ color: "var(--dim)", fontSize: 13 }}> — {t.note}</span>
-                      )}
-                    </dd>
-                  </div>
-                ))}
-            </dl>
-          </section>
-        ))}
-
-        {glossary.addresses.length > 0 && (
-          <section>
-            <h2 className="label" style={{ marginBottom: 14 }}>Кто кому «ты»</h2>
-            <p style={{ color: "var(--dim)", fontSize: 13, lineHeight: 1.6, margin: "0 0 14px" }}>
-              В английском этого различия нет. Вывести его можно только из
-              отношений — и держать одинаково во всех главах.
-            </p>
-            <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 8 }}>
-              {glossary.addresses.map((a) => (
-                <li
-                  key={`${a.from}|${a.to}`}
-                  style={{ fontSize: 15, paddingBottom: 8, borderBottom: "1px solid var(--line-soft)" }}
-                >
-                  {a.from} → {a.to}:{" "}
-                  <strong style={{ color: "var(--accent)", fontWeight: 600 }}>{a.form}</strong>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+          gap: 12,
+          marginBottom: 40,
+        }}
+      >
+        <div style={cell}>
+          <div style={{ fontSize: 26, fontWeight: 600 }}>{chapters.length}</div>
+          <div className="label" style={{ marginTop: 4 }}>переведено глав</div>
+        </div>
+        <div style={cell}>
+          <div style={{ fontSize: 26, fontWeight: 600 }}>
+            {words > 0 ? Math.round(words).toLocaleString("ru") : "—"}
+          </div>
+          <div className="label" style={{ marginTop: 4 }}>слов в главе</div>
+        </div>
+        <div style={cell}>
+          <div style={{ fontSize: 26, fontWeight: 600 }}>{glossary?.terms.length ?? 0}</div>
+          <div className="label" style={{ marginTop: 4 }}>терминов</div>
+        </div>
       </div>
+
+      <section style={{ marginBottom: 40 }}>
+        <Link
+          href={`/book/${encodeURIComponent(slug)}/glossary`}
+          style={{ fontSize: 17, fontWeight: 600 }}
+        >
+          Глоссарий книги →
+        </Link>
+        <p style={{ margin: "6px 0 0", color: "var(--dim)", fontSize: 14, lineHeight: 1.6 }}>
+          Открыт для всех: справочник имён наш, и мы его отдаём. Текст перевода —
+          нет, так записано в <Link href="/rules">правилах</Link>.
+        </p>
+      </section>
+
+      <section>
+        <h2 className="label" style={{ marginBottom: 14 }}>
+          Переведённые главы — {chapters.length}
+        </h2>
+        {chapters.length === 0 ? (
+          <p style={{ color: "var(--dim)", fontSize: 15, lineHeight: 1.6 }}>
+            Пока ни одной. Вставьте ссылку на главу на главной странице.
+          </p>
+        ) : (
+          <ul style={{ margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 2 }}>
+            {chapters.map((c) => (
+              <li
+                key={`${c.source}|${c.register}|${c.tier}`}
+                style={{ padding: "12px 0", borderBottom: "1px solid var(--line-soft)" }}
+              >
+                <Link
+                  href={`/read?src=${encodeURIComponent(c.source)}&register=${encodeURIComponent(c.register)}&tier=${encodeURIComponent(c.tier)}`}
+                  style={{ fontSize: 16 }}
+                >
+                  {c.title || "Глава без заголовка"}
+                </Link>
+                <div style={{ color: "var(--dim)", fontSize: 12.5, marginTop: 4 }}>
+                  {c.words.toLocaleString("ru")} слов · регистр {c.register} ·{" "}
+                  открыть заново — бесплатно
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+        {chapters.length > 0 && (
+          <p style={{ marginTop: 18, color: "var(--dim)", fontSize: 13 }}>
+            Перевод этих глав стоил {spent.toFixed(2)} ₽. Перечитывание — ноль.
+          </p>
+        )}
+      </section>
     </main>
   );
 }
