@@ -269,6 +269,22 @@ export class FileStore implements Store {
  * Импорт базы ленивый: без строки подключения драйвер не понадобится, и
  * тащить его в запуск незачем.
  */
+export type StorageMode = "база" | "папка" | "память";
+
+/**
+ * Чем мы сейчас храним — одним словом.
+ *
+ * Нужно на странице: сайт с неработающим хранилищем выглядит точно так же,
+ * как с работающим, просто каждый раз переводит заново. Вопрос «почему не
+ * сохранилось» должен отвечаться взглядом, а не перепиской.
+ */
+export function storageMode(): StorageMode {
+  if (process.env.TOLMACH_DATABASE_URL ?? process.env.DATABASE_URL ?? process.env.POSTGRES_URL) {
+    return "база";
+  }
+  return process.env.TOLMACH_STORE_DIR ? "папка" : "память";
+}
+
 export async function chooseStore(): Promise<Store> {
   const { connectionString, PostgresStore } = await import("./store-pg.js");
   const url = connectionString();

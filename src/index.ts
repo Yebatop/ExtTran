@@ -36,11 +36,13 @@ export { connectionString, PostgresStore } from "./store-pg.js";
 
 export {
   chooseStore,
+  storageMode,
   translationKey,
   FileStore,
   MemoryStore,
   SOLE_READER,
   type BookRecord,
+  type StorageMode,
   type Store,
   type TranslationRecord,
 } from "./store.js";
@@ -63,6 +65,7 @@ export {
   linkDensity,
   loadChapter,
   looksLocked,
+  nextFromIndex,
   stripCredits,
   type Chapter,
   type ExtractionAttempt,

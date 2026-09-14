@@ -19,6 +19,7 @@ import {
   findNextLink,
   linkDensity,
   looksLocked,
+  nextFromIndex,
   stripCredits,
 } from "./extract.js";
 import { mean, median, spread } from "./stats.js";
@@ -277,6 +278,45 @@ check("ссылка «вперёд» не путается с «назад»", (
   const offsite =
     '<html><body><a rel="next" href="https://elsewhere.invalid/c/3">Next</a></body></html>';
   assert(findNextLink(offsite, here) === null, "ушли на посторонний сайт");
+});
+
+check("следующая глава берётся из оглавления, когда её нет на странице", () => {
+  // Запасной путь: на части сайтов ссылки «вперёд» в главе нет вовсе.
+  const index =
+    '<html><body><h1>Книга</h1><ul>' +
+    '<li><a href="/novel/x/chapter-1-start">1</a></li>' +
+    '<li><a href="/novel/x/chapter-2-must-kill">2</a></li>' +
+    '<li><a href="/novel/x/chapter-3-the-gate">3</a></li>' +
+    '</ul><a href="/novel/y/chapter-1">чужая книга</a>' +
+    '<a href="https://elsewhere.invalid/novel/x/chapter-4">чужой сайт</a></body></html>';
+  const book = "https://site.invalid/novel/x";
+
+  assert(
+    nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-1-start") ===
+      "https://site.invalid/novel/x/chapter-2-must-kill",
+    `не та следующая: ${nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-1-start")}`,
+  );
+  assert(
+    nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-2-must-kill") ===
+      "https://site.invalid/novel/x/chapter-3-the-gate",
+    "из середины списка следующая не найдена",
+  );
+  // Последняя глава: идти некуда, и придумывать нельзя.
+  assert(
+    nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-3-the-gate") === null,
+    "придумали главу после последней",
+  );
+  // Текущей в оглавлении нет — честнее промолчать, чем гадать.
+  assert(
+    nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-99") === null,
+    "вернули случайную главу вместо признания, что не нашли",
+  );
+  // Якорь и параметры не должны мешать узнать текущую главу.
+  assert(
+    nextFromIndex(index, book, "https://site.invalid/novel/x/chapter-1-start#comments") ===
+      "https://site.invalid/novel/x/chapter-2-must-kill",
+    "якорь помешал узнать текущую главу",
+  );
 });
 
 check("разбор аргументов переживает лишний --", () => {

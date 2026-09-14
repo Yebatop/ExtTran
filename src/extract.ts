@@ -342,6 +342,55 @@ export function findNextLink(html: string, currentUrl: string): string | null {
 }
 
 /** Доля текста, лежащая в ссылках. У оглавления она близка к единице. */
+/**
+ * Следующая глава — по оглавлению книги.
+ *
+ * Запасной путь к findNextLink. На части сайтов ссылки «вперёд» на странице
+ * главы нет вовсе: навигацию рисует скрипт, или её просто не сделали. Тогда
+ * единственное место, где порядок глав записан, — страница книги.
+ *
+ * Берём ссылки, которые ведут внутрь той же книги, находим среди них текущую
+ * и возвращаем следующую. Если текущей в списке нет — молчим: угадывать,
+ * какая из трёхсот ссылок «следующая», хуже, чем честно ничего не вернуть.
+ */
+export function nextFromIndex(
+  indexHtml: string,
+  indexUrl: string,
+  currentUrl: string,
+): string | null {
+  const dom = new JSDOM(indexHtml, { url: indexUrl });
+  const here = new URL(currentUrl);
+  const bookPath = new URL(indexUrl).pathname.replace(/\/$/, "");
+
+  const chapters: string[] = [];
+  const seen = new Set<string>();
+
+  for (const anchor of dom.window.document.querySelectorAll("a[href]")) {
+    const href = anchor.getAttribute("href");
+    if (!href) continue;
+    let url: URL;
+    try {
+      url = new URL(href, indexUrl);
+    } catch {
+      continue;
+    }
+    url.hash = "";
+    url.search = "";
+    if (url.origin !== here.origin) continue;
+    // Внутрь книги, но не сама книга: /novel/x/chapter-2, а не /novel/x
+    if (!url.pathname.startsWith(`${bookPath}/`)) continue;
+    const link = url.toString();
+    if (seen.has(link)) continue;
+    seen.add(link);
+    chapters.push(link);
+  }
+
+  const current = `${here.origin}${here.pathname}`;
+  const at = chapters.findIndex((link) => link.replace(/\/$/, "") === current.replace(/\/$/, ""));
+  if (at === -1 || at + 1 >= chapters.length) return null;
+  return chapters[at + 1] as string;
+}
+
 export function linkDensity(html: string, source: string): number {
   const dom = new JSDOM(html, {
     url: /^https?:\/\//i.test(source) ? source : "https://example.invalid/",
