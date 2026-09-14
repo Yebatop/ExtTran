@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 /** Каталог: пока просто то, что через нас уже проходило. */
 export default async function Books() {
-  const books = await chooseStore().listBooks();
+  const books = await (await chooseStore()).listBooks();
 
   return (
     <main style={{ maxWidth: 660, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>

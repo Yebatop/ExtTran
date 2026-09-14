@@ -12,7 +12,7 @@ export const dynamic = "force-dynamic";
  */
 export default async function Book({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const store = chooseStore();
+  const store = await chooseStore();
   const books = await store.listBooks();
   const book = books.find((b) => storageKey(b.key) === slug);
   const glossary: Glossary | null = book ? await store.readGlossary(book.key) : null;

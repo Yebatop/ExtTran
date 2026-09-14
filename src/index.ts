@@ -32,6 +32,8 @@ export {
 
 export { bookRef, storageKey, type BookRef } from "./book.js";
 
+export { connectionString, PostgresStore } from "./store-pg.js";
+
 export {
   chooseStore,
   FileStore,
