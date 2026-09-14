@@ -129,7 +129,7 @@ async function fromTableOfContents(
  * в него легко попадают страницы комментариев, оглавление и ссылки
  * «следующая глава», и выясняется это только на прогоне.
  */
-function preview(links: string[]): void {
+function preview(links: string[], fromToc: boolean): void {
   const tail = (u: string) => u.replace(/^https?:\/\/[^/]+/, "");
   const show = links.length <= 8 ? links : [...links.slice(0, 5), "…", ...links.slice(-2)];
   process.stderr.write("Что набралось:\n");
@@ -137,15 +137,19 @@ function preview(links: string[]): void {
     process.stderr.write(link === "…" ? "  …\n" : `  ${tail(link)}\n`);
   }
   process.stderr.write(
-    "\nПробегитесь глазами: адреса должны отличаться только номером главы.\n" +
+    "\nПробегитесь глазами: это должны быть главы подряд, без пропусков.\n" +
       "Если среди них видно оглавление, комментарии или что-то постороннее —\n" +
-      "уточните --содержит или вычистите файл руками.\n",
+      "вычистите файл руками.\n",
   );
-  if (links.length < 20) {
+
+  // Только для оглавления: в шаблоне и цепочке число глав задаёт сам человек,
+  // и говорить ему, что их мало, — сбивать с толку.
+  if (fromToc && links.length < 20) {
     process.stderr.write(
       "\nСсылок мало для книги. Обычно это значит, что список глав на странице\n" +
-        "подгружается скриптом или разбит на страницы — тогда со страницы\n" +
-        "оглавления его не снять, и адреса придётся собирать иначе.\n",
+        "подгружается скриптом или показаны только первая и последние — тогда\n" +
+        "со страницы его не снять. Есть обход: `--цепочкой <адрес первой главы>`\n" +
+        "идёт по ссылкам «вперёд» и собирает главы подряд.\n",
     );
   }
 }
@@ -196,7 +200,11 @@ async function byChain(start: string, count: number): Promise<string[]> {
 }
 
 /** Записать список и показать, что в нём. */
-async function write(links: string[], out: string | undefined): Promise<void> {
+async function write(
+  links: string[],
+  out: string | undefined,
+  fromToc: boolean,
+): Promise<void> {
   if (links.length === 0) {
     throw new Error(
       "Ни одной ссылки не набралось. Если брали с оглавления — попробуйте " +
@@ -214,7 +222,7 @@ async function write(links: string[], out: string | undefined): Promise<void> {
   if (out !== undefined) {
     await writeFile(out, body, "utf8");
     process.stderr.write(`\nСсылок: ${links.length}. Записано в ${out}\n\n`);
-    preview(links);
+    preview(links, fromToc);
   } else {
     process.stdout.write(body);
     process.stderr.write(`\nСсылок: ${links.length}\n`);
@@ -254,7 +262,7 @@ async function main(): Promise<void> {
         "  1. (с неё и начинаем)\n",
     );
     const links = await byChain(chain, Number.isFinite(want) && want > 0 ? want : 10);
-    await write(links, flags.get("в") ?? flags.get("out"));
+    await write(links, flags.get("в") ?? flags.get("out"), false);
     return;
   }
 
@@ -269,7 +277,7 @@ async function main(): Promise<void> {
   const limit = flags.get("сколько") ?? flags.get("limit");
   if (limit !== undefined) links = links.slice(0, Number(limit));
 
-  await write(links, flags.get("в") ?? flags.get("out"));
+  await write(links, flags.get("в") ?? flags.get("out"), toc !== undefined);
 }
 
 main().catch((error: unknown) => {
