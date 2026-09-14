@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .fld { display: flex; align-items: center; height: 46px; padding: 0 15px; border-radius: 10px;
+           background: #14120f; border: 1px solid #322c25; font-size: 14.5px; color: #5c5346; }
+  </style>
+</helmet>
+
+<div style="width: 940px; height: 820px; background: #14120f; display: flex; overflow: hidden">
+
+  <!-- Оплата -->
+  <div style="flex-grow: 1; padding: 40px 40px 34px; display: flex; flex-direction: column">
+
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 28px">
+      <svg width="22" height="22" viewBox="0 0 26 26" fill="none">
+        <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px">Толмач</span>
+    </div>
+
+    <h1 style="font-family: 'Prata', Georgia, serif; font-size: 30px; font-weight: 400; line-height: 1.2; margin: 0 0 28px; color: #f8f3e9">Оплата</h1>
+
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="lbl">Номер карты</span>
+        <div class="fld" style="justify-content: space-between">
+          <span>0000 0000 0000 0000</span>
+          <div style="display: flex; gap: 5px">
+            <div style="width: 26px; height: 17px; border-radius: 3px; background: #2c261f"></div>
+            <div style="width: 26px; height: 17px; border-radius: 3px; background: #2c261f"></div>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+          <span class="lbl">Действует до</span>
+          <div class="fld">ММ / ГГ</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+          <span class="lbl">Код на обороте</span>
+          <div class="fld">000</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="lbl">Имя на карте</span>
+        <div class="fld">IVAN IVANOV</div>
+      </div>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <button style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 52px; border-radius: 11px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 15.5px; font-weight: 600; cursor: pointer; margin-top: 28px">
+      Оплатить 490 ₽
+    </button>
+    <p style="font-size: 12px; line-height: 1.55; color: #6b6459; margin: 14px 0 0; text-align: center">Данные карты уходят напрямую платёжному сервису — у Толмача их нет и не будет.</p>
+  </div>
+
+  <!-- Что покупаем -->
+  <div style="width: 372px; flex-shrink: 0; padding: 40px 36px 34px; background: #191510; border-left: 1px solid #262019; display: flex; flex-direction: column">
+
+    <span class="lbl" style="margin-bottom: 20px">Что оформляем</span>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 8px">
+      <span style="font-size: 17px; font-weight: 600; color: #e08160">Читатель</span>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 26px; color: #f6f0e5">490 ₽</span>
+    </div>
+    <span style="font-size: 13px; color: #79726a; margin-bottom: 22px">100 глав в месяц</span>
+
+    <div style="height: 1px; background: #262019; margin-bottom: 20px"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 13px; margin-bottom: 24px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <span style="font-size: 13.5px; color: #b0a693">Списываем сегодня</span>
+        <span style="font-size: 13.5px; color: #f2ece0; font-weight: 600; font-variant-numeric: tabular-nums">490 ₽</span>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <span style="font-size: 13.5px; color: #b0a693">Следующее списание</span>
+        <span style="font-size: 13.5px; color: #c4b9a8; font-variant-numeric: tabular-nums">12 октября</span>
+      </div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <span style="font-size: 13.5px; color: #b0a693">Квота обновится</span>
+        <span style="font-size: 13.5px; color: #c4b9a8; font-variant-numeric: tabular-nums">12 октября</span>
+      </div>
+    </div>
+
+    <!-- Годовая скидка -->
+    <div style="display: flex; flex-direction: column; gap: 11px; padding: 16px 18px; border-radius: 11px; background: #1e1a14; border: 1px solid #2c261f; margin-bottom: 22px">
+      <div style="display: flex; align-items: center; gap: 9px">
+        <span style="font-size: 11px; padding: 2px 8px; border-radius: 5px; background: rgba(122,148,104,.18); color: #8fac7c; font-weight: 600">−20%</span>
+        <span style="font-size: 13px; color: #e4dbcb; font-weight: 500">За год — 390 ₽ в месяц</span>
+      </div>
+      <span style="font-size: 12px; color: #79726a; line-height: 1.45">4 680 ₽ разом. Если через месяц передумаете — вернём остаток за неиспользованные месяцы.</span>
+      <button style="height: 34px; border-radius: 8px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 12.5px; font-weight: 500; cursor: pointer">Перейти на годовую</button>
+    </div>
+
+    <div style="flex-grow: 1"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="display: flex; gap: 9px; font-size: 12.5px; line-height: 1.45; color: #9a8f80">
+        <span style="color: #7a9468; flex-shrink: 0">✓</span>
+        <span>Отмена в один клик из настроек, без писем и звонков</span>
+      </div>
+      <div style="display: flex; gap: 9px; font-size: 12.5px; line-height: 1.45; color: #9a8f80">
+        <span style="color: #7a9468; flex-shrink: 0">✓</span>
+        <span>Отменили в первую неделю и прочли меньше десяти глав — вернём всё</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

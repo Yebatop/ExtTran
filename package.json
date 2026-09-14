@@ -1,0 +1,45 @@
+{
+  "name": "tolmach",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Перевод англоязычных веб-новелл на русский",
+  "workspaces": [
+    "web"
+  ],
+  "scripts": {
+    "check": "tsx src/check.ts",
+    "selftest": "tsx src/selftest.ts",
+    "проверка": "tsx src/check.ts",
+    "list": "tsx src/sources-build.ts",
+    "список": "tsx src/sources-build.ts",
+    "glossary": "tsx src/glossary-build.ts",
+    "глоссарий": "tsx src/glossary-build.ts",
+    "measure": "tsx src/measure.ts",
+    "замер": "tsx src/measure.ts",
+    "translate": "tsx src/cli.ts",
+    "tolmach": "tsx src/cli.ts",
+    "typecheck": "tsc --noEmit",
+    "build:core": "tsc -p tsconfig.core.json",
+    "web:deps": "[ -x node_modules/.bin/next ] || npm install",
+    "web": "npm run build:core && npm run web:deps && npm run dev --prefix web",
+    "сайт": "npm run build:core && npm run web:deps && npm run dev --prefix web",
+    "web:webpack": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack",
+    "сайт-запасной": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.125.0",
+    "@mozilla/readability": "^0.5.0",
+    "jsdom": "^25.0.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/jsdom": "^21.1.7",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

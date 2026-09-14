@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400;0,500&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .av { width: 38px; height: 38px; border-radius: 50%; background: #2a241d; border: 1px solid #3a3129; flex-shrink: 0; }
+    .ver { display: flex; align-items: center; gap: 15px; padding: 15px 18px; border-radius: 12px;
+           background: #1a1611; border: 1px solid #262019; }
+    .rd { font-family: 'Literata', Georgia, serif; font-size: 16px; line-height: 1.78; color: #ece4d6; margin: 0; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 880px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 26px; height: 64px; padding: 0 40px; border-bottom: 1px solid #221d17; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 16px">Толмач</span>
+    </div>
+    <span style="font-size: 13px; color: #79726a">Путь Пепельного Клинка · глава 147</span>
+  </div>
+
+  <div style="flex-grow: 1; overflow: auto; padding: 30px 40px 34px">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 22px">
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span class="lbl">Глава 147</span>
+        <h1 style="font-family: 'Prata', Georgia, serif; font-size: 32px; font-weight: 400; margin: 0; color: #f8f3e9">Тот, кто считает шаги</h1>
+      </div>
+      <p style="font-size: 13px; line-height: 1.55; color: #79726a; margin: 0; max-width: 380px; text-align: right">Эту главу выложили трое. Можно читать любую версию или перевести своей — за главу из квоты.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px">
+
+      <div class="ver" style="background: #201b15; border-color: #4a3527">
+        <span class="av"></span>
+        <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+          <span style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 15px; font-weight: 600; color: #f2ece0">Фурия</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 5px; background: rgba(212,80,46,.15); color: #e08160">открывается по умолчанию</span>
+          </span>
+          <span style="font-size: 12.5px; color: #79726a">возвышенный регистр · глоссарий на 142 термина · выложено 8 сентября</span>
+        </span>
+        <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0">
+          <span style="font-size: 14px; color: #e4dbcb; font-variant-numeric: tabular-nums">312</span>
+          <span style="font-size: 11.5px; color: #6b6459">прочтений</span>
+        </span>
+        <button style="height: 40px; padding: 0 20px; border-radius: 9px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; flex-shrink: 0">Читать</button>
+      </div>
+
+      <div class="ver">
+        <span class="av"></span>
+        <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 15px; font-weight: 600; color: #e4dbcb">Костя Пепел</span>
+          <span style="font-size: 12.5px; color: #79726a">живой регистр · глоссарий на 96 терминов · выложено 2 сентября</span>
+        </span>
+        <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0">
+          <span style="font-size: 14px; color: #e4dbcb; font-variant-numeric: tabular-nums">184</span>
+          <span style="font-size: 11.5px; color: #6b6459">прочтений</span>
+        </span>
+        <button style="height: 40px; padding: 0 20px; border-radius: 9px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; flex-shrink: 0">Читать</button>
+      </div>
+
+      <div class="ver">
+        <span class="av"></span>
+        <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+          <span style="display: flex; align-items: center; gap: 10px">
+            <span style="font-size: 15px; font-weight: 600; color: #e4dbcb">Марина Д.</span>
+            <span style="font-size: 11px; padding: 2px 8px; border-radius: 5px; background: #2a241d; color: #a49a89">ваша</span>
+          </span>
+          <span style="font-size: 12.5px; color: #79726a">ровный регистр · глоссарий на 31 термин · выложено вчера</span>
+        </span>
+        <span style="display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0">
+          <span style="font-size: 14px; color: #e4dbcb; font-variant-numeric: tabular-nums">6</span>
+          <span style="font-size: 11.5px; color: #6b6459">прочтений</span>
+        </span>
+        <button style="height: 40px; padding: 0 20px; border-radius: 9px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; flex-shrink: 0">Читать</button>
+      </div>
+
+      <button style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 46px; border-radius: 12px; background: transparent; border: 1.5px dashed #3a3129; color: #8a806f; font-family: inherit; font-size: 13.5px; cursor: pointer; margin-top: 4px">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+        Перевести свою версию — 1 глава из квоты
+      </button>
+    </div>
+
+    <!-- Сравнение -->
+    <div style="display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span class="lbl">Первый абзац у двух верхних</span>
+        <span style="font-size: 12.5px; color: #6b6459">так проще выбрать, чем по описанию регистра</span>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 13px; padding: 22px 24px; border-radius: 13px; background: #1a1611; border: 1px solid #262019">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span class="av" style="width: 26px; height: 26px"></span>
+            <span style="font-size: 13.5px; font-weight: 600; color: #e4dbcb">Фурия</span>
+            <span style="font-size: 11.5px; color: #79726a">возвышенный</span>
+          </div>
+          <p class="rd">Наставник не обернулся. Он стоял у края обрыва, где ветер срывал с камней сухую пыль, и считал вдохи — так же, как считал их тридцать лет назад, поднимаясь по этой тропе сам.</p>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 13px; padding: 22px 24px; border-radius: 13px; background: #1a1611; border: 1px solid #262019">
+          <div style="display: flex; align-items: center; gap: 10px">
+            <span class="av" style="width: 26px; height: 26px"></span>
+            <span style="font-size: 13.5px; font-weight: 600; color: #e4dbcb">Костя Пепел</span>
+            <span style="font-size: 11.5px; color: #79726a">живой</span>
+          </div>
+          <p class="rd">Наставник даже не повернулся. Стоял у самого обрыва, ветер сдувал с камней сухую пыль, а он считал вдохи — как считал их тридцать лет назад, когда лез сюда сам.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

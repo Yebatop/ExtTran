@@ -1,0 +1,218 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .card { padding: 24px 26px; border-radius: 14px; background: #1a1611; border: 1px solid #262019; }
+    .num { font-variant-numeric: tabular-nums; }
+    .mbtn { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 9px;
+            background: transparent; border: none; color: #8a806f; font-family: inherit;
+            font-size: 13.5px; cursor: pointer; text-align: left; }
+    .hrow { display: grid; grid-template-columns: 1fr 92px 130px 104px 128px; align-items: center;
+            gap: 14px; padding: 11px 14px; border-radius: 8px; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 900px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Навигация -->
+  <div style="display: flex; align-items: center; gap: 26px; height: 66px; padding: 0 40px; border-bottom: 1px solid #221d17; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none">
+        <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px">Толмач</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 22px">
+      <a href="#" style="font-size: 13.5px; color: #8a806f">Читать</a>
+      <a href="#" style="font-size: 13.5px; color: #8a806f">Каталог</a>
+      <a href="#" style="font-size: 13.5px; color: #8a806f">Глоссарии</a>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <div style="width: 32px; height: 32px; border-radius: 50%; background: #2a241d; border: 1px solid #4a3527"></div>
+  </div>
+
+  <div style="display: flex; gap: 30px; padding: 28px 40px 32px; flex-grow: 1; overflow: hidden">
+
+    <!-- Боковое меню -->
+    <div style="width: 212px; flex-shrink: 0; display: flex; flex-direction: column; gap: 22px">
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <span style="font-size: 14px; color: #e4dbcb; font-weight: 500">Читатель</span>
+        <span style="font-size: 12.5px; color: #79726a; overflow: hidden; text-overflow: ellipsis">furia@почта.рф</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px">
+        <button class="mbtn" style="background: #241f18; color: #f2ece0; font-weight: 600">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7.4" stroke="currentColor" stroke-width="1.5"/><path d="M10 10V5.5M10 10l3.5 2.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          Квота и расход
+        </button>
+        <button class="mbtn">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><rect x="2.6" y="4.6" width="14.8" height="10.8" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M2.6 8.2h14.8" stroke="currentColor" stroke-width="1.5"/></svg>
+          Подписка
+        </button>
+        <button class="mbtn">
+          <svg width="17" height="17" viewBox="0 0 26 26" fill="none"><path d="M5 6.5A2.5 2.5 0 0 1 7.5 4H22v18H7.5A2.5 2.5 0 0 0 5 24.5z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>
+          Мои книги и глоссарии
+        </button>
+        <button class="mbtn">
+          <svg width="17" height="17" viewBox="0 0 20 20" fill="none"><path d="M10 2.5 3.2 5.3v5c0 4 2.8 6.4 6.8 7.2 4-.8 6.8-3.2 6.8-7.2v-5z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          Данные и выход
+        </button>
+      </div>
+    </div>
+
+    <!-- Основное -->
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px; overflow: auto; padding-right: 4px">
+
+      <!-- Квота -->
+      <div class="card" style="display: flex; align-items: center; gap: 36px">
+        <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1">
+          <span class="lbl">Осталось в этом месяце</span>
+          <div style="display: flex; align-items: baseline; gap: 10px">
+            <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 52px; line-height: 1; color: #f8f3e9">73</span>
+            <span class="num" style="font-size: 16px; color: #8a806f">из 100 глав</span>
+          </div>
+          <div style="height: 10px; border-radius: 5px; background: #262019; max-width: 480px; overflow: hidden">
+            <div style="width: 73%; height: 100%; border-radius: 0 5px 5px 0; background: #d4502e"></div>
+          </div>
+          <span style="font-size: 12.5px; color: #79726a">Обновится 3 октября. Сверх этого — <span style="color: #e08160">32 главы, вернувшиеся за ваши переводы</span>: они тратятся первыми.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px; flex-shrink: 0">
+          <button style="height: 44px; padding: 0 20px; border-radius: 10px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Докупить 50 глав — 250 ₽</button>
+          <span style="font-size: 12px; color: #6b6459; text-align: center">Докупленные действуют до конца подписки</span>
+        </div>
+      </div>
+
+      <!-- Куда ушло -->
+      <div class="card" style="display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span class="lbl">Куда ушли 27 глав</span>
+          <span style="font-size: 12.5px; color: #79726a">с 3 сентября</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 13px">
+          <div style="display: flex; align-items: center; gap: 16px">
+            <span style="width: 250px; flex-shrink: 0; font-size: 13.5px; color: #e4dbcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Путь Пепельного Клинка</span>
+            <span style="flex-grow: 1; height: 10px; border-radius: 5px; background: #221d17; display: block">
+              <span style="display: block; width: 100%; height: 100%; border-radius: 0 5px 5px 0; background: #d4502e"></span>
+            </span>
+            <span class="num" style="width: 66px; flex-shrink: 0; text-align: right; font-size: 13.5px; color: #c4b9a8">15 глав</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px">
+            <span style="width: 250px; flex-shrink: 0; font-size: 13.5px; color: #e4dbcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Сорок седьмой контракт</span>
+            <span style="flex-grow: 1; height: 10px; border-radius: 5px; background: #221d17; display: block">
+              <span style="display: block; width: 60%; height: 100%; border-radius: 0 5px 5px 0; background: #d4502e"></span>
+            </span>
+            <span class="num" style="width: 66px; flex-shrink: 0; text-align: right; font-size: 13.5px; color: #c4b9a8">9 глав</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 16px">
+            <span style="width: 250px; flex-shrink: 0; font-size: 13.5px; color: #e4dbcb; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">Дом, который считает гостей</span>
+            <span style="flex-grow: 1; height: 10px; border-radius: 5px; background: #221d17; display: block">
+              <span style="display: block; width: 20%; height: 100%; border-radius: 0 5px 5px 0; background: #d4502e"></span>
+            </span>
+            <span class="num" style="width: 66px; flex-shrink: 0; text-align: right; font-size: 13.5px; color: #c4b9a8">3 главы</span>
+          </div>
+        </div>
+
+        <span style="font-size: 12px; color: #6b6459; line-height: 1.5">Из них 3 главы ушли на одну главу «Сорок седьмого контракта», переведённую сильной моделью. Переводы заново квоту не тратили.</span>
+      </div>
+
+      <!-- Вернулось за переводы -->
+      <div class="card" style="display: flex; align-items: center; gap: 30px">
+        <div style="display: flex; flex-direction: column; gap: 8px; flex-grow: 1">
+          <span class="lbl">Вернулось за ваши переводы</span>
+          <div style="display: flex; align-items: baseline; gap: 22px">
+            <span style="display: flex; align-items: baseline; gap: 7px">
+              <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 26px; color: #f6f0e5">84</span>
+              <span style="font-size: 13px; color: #8a806f">главы выложено</span>
+            </span>
+            <span style="display: flex; align-items: baseline; gap: 7px">
+              <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 26px; color: #f6f0e5">320</span>
+              <span style="font-size: 13px; color: #8a806f">прочтений в этом месяце</span>
+            </span>
+            <span style="display: flex; align-items: baseline; gap: 7px">
+              <span class="num" style="font-family: 'Prata', Georgia, serif; font-size: 26px; color: #e08160">+32</span>
+              <span style="font-size: 13px; color: #8a806f">главы обратно</span>
+            </span>
+          </div>
+          <span style="font-size: 12px; color: #6b6459">Глава возвращается за каждые десять прочтений. Снять любую с публикации можно в один клик.</span>
+        </div>
+        <button style="height: 40px; padding: 0 18px; border-radius: 9px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer; flex-shrink: 0">Мои выложенные главы</button>
+      </div>
+
+      <!-- История -->
+      <div class="card" style="display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; align-items: baseline; justify-content: space-between">
+          <span class="lbl">Последние переводы</span>
+          <a href="#" style="font-size: 12.5px; color: #8a806f">Вся история</a>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1px">
+          <div class="hrow" style="padding-top: 0; padding-bottom: 4px">
+            <span class="lbl" style="font-size: 10px">Книга</span>
+            <span class="lbl" style="font-size: 10px">Глава</span>
+            <span class="lbl" style="font-size: 10px">Модель</span>
+            <span class="lbl" style="font-size: 10px; text-align: right">Списано</span>
+            <span class="lbl" style="font-size: 10px; text-align: right">Когда</span>
+          </div>
+
+          <div class="hrow" style="background: #191510">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Путь Пепельного Клинка</span>
+            <span class="num" style="font-size: 13px; color: #b0a693">148</span>
+            <span style="font-size: 12.5px; color: #8a806f">быстрая, заранее</span>
+            <span class="num" style="font-size: 13px; color: #c4b9a8; text-align: right">1</span>
+            <span style="font-size: 12.5px; color: #79726a; text-align: right">сегодня, 21:05</span>
+          </div>
+          <div class="hrow" style="background: #191510">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Путь Пепельного Клинка</span>
+            <span class="num" style="font-size: 13px; color: #b0a693">147</span>
+            <span style="font-size: 12.5px; color: #8a806f">быстрая</span>
+            <span class="num" style="font-size: 13px; color: #c4b9a8; text-align: right">1</span>
+            <span style="font-size: 12.5px; color: #79726a; text-align: right">сегодня, 21:04</span>
+          </div>
+          <div class="hrow" style="background: #191510">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Сорок седьмой контракт</span>
+            <span class="num" style="font-size: 13px; color: #b0a693">62</span>
+            <span style="font-size: 12.5px; color: #c9a24a">сильная</span>
+            <span class="num" style="font-size: 13px; color: #c4b9a8; text-align: right">3</span>
+            <span style="font-size: 12.5px; color: #79726a; text-align: right">вчера, 23:40</span>
+          </div>
+          <div class="hrow" style="background: #191510">
+            <span style="font-size: 13px; color: #e4dbcb; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">Дом, который считает гостей</span>
+            <span class="num" style="font-size: 13px; color: #b0a693">9</span>
+            <span style="font-size: 12.5px; color: #8a806f">быстрая, заново</span>
+            <span style="font-size: 13px; color: #7a9468; text-align: right">бесплатно</span>
+            <span style="font-size: 12.5px; color: #79726a; text-align: right">8 сентября</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Подписка -->
+      <div class="card" style="display: flex; align-items: center; gap: 26px">
+        <div style="display: flex; flex-direction: column; gap: 6px; flex-grow: 1">
+          <span style="font-size: 14.5px; color: #e4dbcb"><span style="color: #e08160; font-weight: 600">Читатель</span> — 490 ₽ в месяц</span>
+          <span style="font-size: 12.5px; color: #79726a">Следующее списание 3 октября. Карта •• 4417.</span>
+        </div>
+        <button style="height: 40px; padding: 0 18px; border-radius: 9px; background: transparent; border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 13.5px; font-weight: 500; cursor: pointer">Сменить тариф</button>
+        <button style="height: 40px; padding: 0 18px; border-radius: 9px; background: transparent; border: none; color: #79726a; font-family: inherit; font-size: 13.5px; cursor: pointer">Отменить</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

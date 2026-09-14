@@ -1,0 +1,169 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .grain::after { content: ''; position: absolute; inset: 0; pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.4'/%3E%3C/svg%3E");
+      opacity: .05; mix-blend-mode: overlay; }
+    .lbl { font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .feat { display: flex; gap: 10px; font-size: 13.5px; line-height: 1.5; color: #b0a693; }
+    .tick { color: #7a9468; flex-shrink: 0; font-size: 13px; }
+  </style>
+</helmet>
+
+<div class="grain" style="position: relative; width: 1440px; height: 1320px; background: #14120f; overflow: hidden">
+
+  <div style="padding: 72px 92px 0; position: relative; z-index: 2">
+
+    <!-- Заголовок -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 44px">
+      <div class="lbl">Тарифы</div>
+      <h1 style="font-family: 'Prata', Georgia, serif; font-size: 50px; font-weight: 400; line-height: 1.14; margin: 0; text-align: center; color: #f8f3e9; max-width: 760px; text-wrap: balance">Платите за главы, а не за «безлимит»</h1>
+      <p style="font-size: 16px; line-height: 1.6; color: #b0a693; margin: 0; text-align: center; max-width: 580px">Каждая переведённая глава стоит нам денег: за неё мы платим поставщику модели. Поэтому счётчик честный: видно, сколько потратили и на что.</p>
+
+      <!-- Переключатель периода -->
+      <div style="display: flex; gap: 4px; padding: 4px; border-radius: 11px; background: #1c1813; border: 1px solid #262019; margin-top: 10px">
+        <button onClick="{{ setMonthly }}" style="height: 36px; padding: 0 20px; border-radius: 8px; border: none; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .15s; {{ mStyle }}">Помесячно</button>
+        <button onClick="{{ setYearly }}" style="display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 20px; border-radius: 8px; border: none; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; transition: all .15s; {{ yStyle }}">
+          За год
+          <span style="font-size: 11px; padding: 2px 7px; border-radius: 4px; background: rgba(122,148,104,.18); color: #8fac7c; font-weight: 600">−20%</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Карточки -->
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px; margin-bottom: 56px">
+
+      <!-- Проба -->
+      <div style="display: flex; flex-direction: column; gap: 20px; padding: 32px 30px 30px; border-radius: 16px; background: #1a1611; border: 1px solid #262019">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 15px; font-weight: 600; color: #c4b9a8">Проба</span>
+          <span style="font-size: 13px; color: #79726a; line-height: 1.45">Понять, стоит ли оно того</span>
+        </div>
+        <div style="display: flex; align-items: baseline; gap: 8px">
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 44px; color: #f6f0e5">0 ₽</span>
+        </div>
+        <div style="height: 1px; background: #262019"></div>
+        <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1">
+          <div class="feat"><span class="tick">✓</span><span><strong style="color: #e4dbcb; font-weight: 600">3 главы целиком</strong> — один раз на аккаунт, не в месяц</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Первые три абзаца любой главы — 20 раз в день, бессрочно</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Глоссарий и ридер работают полностью</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Карту не спрашиваем — списывать нечего</span></div>
+        </div>
+        <button style="height: 46px; border-radius: 10px; background: transparent; border: 1px solid #322c25; color: #e4dbcb; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">Начать</button>
+      </div>
+
+      <!-- Читатель -->
+      <div style="display: flex; flex-direction: column; gap: 20px; padding: 32px 30px 30px; border-radius: 16px; background: #201b15; border: 1px solid #4a3527; position: relative">
+        <span style="position: absolute; top: -1px; right: 26px; padding: 5px 12px; border-radius: 0 0 7px 7px; background: #d4502e; color: #17130f; font-size: 11px; font-weight: 700; letter-spacing: .04em">ЧАЩЕ ВСЕГО БЕРУТ</span>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 15px; font-weight: 600; color: #e08160">Читатель</span>
+          <span style="font-size: 13px; color: #79726a; line-height: 1.45">Три-четыре главы вечером</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; align-items: baseline; gap: 7px">
+            <span style="font-family: 'Prata', Georgia, serif; font-size: 44px; color: #f6f0e5">{{ readerPrice }}</span>
+            <span style="font-size: 15px; color: #8a806f">₽ / мес</span>
+          </div>
+          <span style="font-size: 12px; color: #79726a">{{ readerNote }}</span>
+        </div>
+        <div style="height: 1px; background: #322c25"></div>
+        <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1">
+          <div class="feat"><span class="tick">✓</span><span><strong style="color: #e4dbcb; font-weight: 600">100 глав в месяц</strong> — примерно три в день</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Глоссарий синхронизируется между устройствами</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Следующая глава переводится, пока читаете эту</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Сильная модель по кнопке — 3 главы из квоты</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Один бесплатный перевод заново на каждую главу</span></div>
+        </div>
+        <button style="height: 46px; border-radius: 10px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">Оформить</button>
+      </div>
+
+      <!-- Запойный -->
+      <div style="display: flex; flex-direction: column; gap: 20px; padding: 32px 30px 30px; border-radius: 16px; background: #1a1611; border: 1px solid #262019">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 15px; font-weight: 600; color: #c9a24a">Запойный</span>
+          <span style="font-size: 13px; color: #79726a; line-height: 1.45">«Ещё одну и спать»</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <div style="display: flex; align-items: baseline; gap: 7px">
+            <span style="font-family: 'Prata', Georgia, serif; font-size: 44px; color: #f6f0e5">{{ bingePrice }}</span>
+            <span style="font-size: 15px; color: #8a806f">₽ / мес</span>
+          </div>
+          <span style="font-size: 12px; color: #79726a">{{ bingeNote }}</span>
+        </div>
+        <div style="height: 1px; background: #262019"></div>
+        <div style="display: flex; flex-direction: column; gap: 12px; flex-grow: 1">
+          <div class="feat"><span class="tick">✓</span><span><strong style="color: #e4dbcb; font-weight: 600">250 глав в месяц</strong> — восемь в день</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Всё из «Читателя»</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Очередь без ожидания в часы пик</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Сильная модель дешевле — 2 главы вместо 3</span></div>
+          <div class="feat"><span class="tick">✓</span><span>Выгрузка прочитанного в EPUB</span></div>
+        </div>
+        <button style="height: 46px; border-radius: 10px; background: transparent; border: 1px solid #4a3d22; color: #c9a24a; font-family: inherit; font-size: 14.5px; font-weight: 600; cursor: pointer">Оформить</button>
+      </div>
+    </div>
+
+    <!-- Механика -->
+    <div style="padding: 38px 40px; border-radius: 16px; background: #171410; border: 1px solid #221d17">
+      <div class="lbl" style="margin-bottom: 26px">Что считается главой</div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 34px">
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 20px; color: #f2ece0">До 5 000 слов</span>
+          <span style="font-size: 13.5px; line-height: 1.55; color: #9a8f80">Столько влезает в одну главу по счётчику. Что длиннее — считается за две, и Толмач предупредит до перевода.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 20px; color: #f2ece0">Сильная модель — ×3</span>
+          <span style="font-size: 13.5px; line-height: 1.55; color: #9a8f80">Включается кнопкой на конкретной главе, не по умолчанию. На «Запойном» — ×2. Быстрая модель для большинства новелл справляется.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 20px; color: #f2ece0">Кончились — докупите</span>
+          <span style="font-size: 13.5px; line-height: 1.55; color: #9a8f80">50 глав за 250 ₽, действуют до конца подписки. Неизрасходованные главы на следующий месяц не переносятся.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px">
+          <span style="font-family: 'Prata', Georgia, serif; font-size: 20px; color: #f2ece0">Не понравилось — переделаем</span>
+          <span style="font-size: 13.5px; line-height: 1.55; color: #9a8f80">Каждую главу можно один раз перевести заново — другим регистром или после правки глоссария. Квота не тратится.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+
+<script data-dc-script data-props='{"$preview":{"width":1440,"height":1320}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { yearly: false };
+  }
+  renderVals() {
+    const y = !!this.state.yearly;
+    const on  = 'background:#d4502e;color:#17130f';
+    const off = 'background:transparent;color:#8a806f';
+    return {
+      readerPrice: y ? '390' : '490',
+      bingePrice:  y ? '950' : '1 190',
+      readerNote:  y ? '4 680 ₽ разом за год' : 'отмена в один клик',
+      bingeNote:   y ? '11 400 ₽ разом за год' : 'отмена в один клик',
+      mStyle: y ? off : on,
+      yStyle: y ? on : off,
+      setMonthly: () => this.setState({ yearly: false }),
+      setYearly:  () => this.setState({ yearly: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

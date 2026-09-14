@@ -1,0 +1,118 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .card { display: flex; flex-direction: column; gap: 14px; padding: 24px 26px;
+            border-radius: 14px; background: #1a1611; border: 1px solid #262019; }
+    .h { font-size: 18px; font-weight: 600; color: #f2ece0; margin: 0; line-height: 1.3; }
+    .p { font-size: 13.5px; line-height: 1.55; color: #b0a693; margin: 0; }
+    .prim { height: 42px; padding: 0 18px; border-radius: 9px; background: #d4502e; border: none;
+            color: #17130f; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer; }
+    .sec { height: 42px; padding: 0 18px; border-radius: 9px; background: transparent;
+           border: 1px solid #322c25; color: #c4b9a8; font-family: inherit; font-size: 13.5px;
+           font-weight: 500; cursor: pointer; }
+    .quota { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding-top: 2px; }
+  </style>
+</helmet>
+
+<div style="width: 1240px; height: 1060px; background: #14120f; padding: 30px 30px 34px; overflow: hidden">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 30px; margin-bottom: 24px">
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <span class="lbl">Состояния ошибок</span>
+      <h1 style="font-family: 'Prata', Georgia, serif; font-size: 30px; font-weight: 400; margin: 0; color: #f8f3e9">Когда что-то пошло не так</h1>
+    </div>
+    <p style="font-size: 13px; line-height: 1.55; color: #79726a; margin: 0; max-width: 430px; text-align: right">Каждое сообщение говорит, списали квоту или нет. Без этой строки человек после любого сбоя идёт проверять кабинет — и перестаёт нам верить.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px">
+
+    <!-- 1 -->
+    <div class="card">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 6.5h18M4 13h18M4 19.5h18" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round"/><path d="m7 7 12 12" stroke="#d4502e" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <h2 class="h">Сайт не отдал нам эту страницу</h2>
+      <p class="p">RoyalRoad закрыл её от нашего сервера — так бывает с платными главами и когда сайт защищается от роботов.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Вставить текст главы вручную</button>
+        <button class="sec">Поставить расширение</button>
+      </div>
+      <div class="quota"><span style="color: #7a9468">✓</span><span style="color: #8fac7c">Квоту не списали</span></div>
+    </div>
+
+    <!-- 2 -->
+    <div class="card">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 4.5h13.5L22 9v12.5H4z" stroke="#5c5346" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 12h6M8 16h4" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round"/><circle cx="19" cy="18" r="5" fill="#1a1611" stroke="#c9a24a" stroke-width="1.8"/><path d="M19 15.6v2.6M19 20.4v.3" stroke="#c9a24a" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <h2 class="h">Это не похоже на главу</h2>
+      <p class="p">По ссылке нашлось оглавление, а не текст — 180 слов и сорок ссылок. Возможно, вы дали адрес страницы книги вместо главы.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Открыть оглавление и выбрать главу</button>
+        <button class="sec">Всё равно перевести</button>
+      </div>
+      <div class="quota"><span style="color: #7a9468">✓</span><span style="color: #8fac7c">Квоту не списали</span></div>
+    </div>
+
+    <!-- 3 -->
+    <div class="card">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M4 6h18M4 11h18M4 16h11" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round"/><path d="M15 20.5h7" stroke="#d4502e" stroke-width="1.7" stroke-linecap="round" stroke-dasharray="2 3"/></svg>
+      <h2 class="h">Перевод оборвался на 14-м абзаце</h2>
+      <p class="p">Модель перестала отвечать на середине главы. Переведённое сохранили — можно дочитать до обрыва и продолжить оттуда же.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Дописать с 14-го абзаца</button>
+        <button class="sec">Начать главу заново</button>
+      </div>
+      <div class="quota"><span style="color: #7a9468">✓</span><span style="color: #8fac7c">Квоту не списали — спишем, когда глава дойдёт до конца</span></div>
+    </div>
+
+    <!-- 4 -->
+    <div class="card">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><path d="M3 9.5a16 16 0 0 1 20 0M6.5 14a11 11 0 0 1 13 0M10 18.5a6 6 0 0 1 6 0" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round"/><path d="m5 4 16 18" stroke="#d4502e" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <h2 class="h">Связи нет</h2>
+      <p class="p">Новую главу сейчас не перевести. Зато три скачанные лежат на устройстве и открываются без сети — в метро это и нужно.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Открыть скачанные — 3 главы</button>
+      </div>
+      <div class="quota"><span style="color: #79726a">·</span><span style="color: #79726a">Переведём, как только появится сеть</span></div>
+    </div>
+
+    <!-- 5 -->
+    <div class="card">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="13" r="9.5" stroke="#5c5346" stroke-width="1.7"/><path d="M13 13V7" stroke="#5c5346" stroke-width="1.7" stroke-linecap="round"/><path d="M13 13l4.6 2.9" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <h2 class="h">Главы кончились на 62-й</h2>
+      <p class="p">Квота на этот месяц израсходована. Всё, что уже переведено, остаётся с вами — и читается дальше без всяких условий.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Докупить 50 глав — 250 ₽</button>
+        <button class="sec">Подождать до 3 октября</button>
+      </div>
+      <div class="quota"><span style="color: #79726a">·</span><span style="color: #79726a">Списаний без вашего согласия не будет</span></div>
+    </div>
+
+    <!-- 6 -->
+    <div class="card" style="border-color: #4a3527">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none"><rect x="3" y="6" width="20" height="14" rx="2.4" stroke="#5c5346" stroke-width="1.7"/><path d="M3 10.5h20" stroke="#5c5346" stroke-width="1.7"/><path d="m9 19 8-8" stroke="#d4502e" stroke-width="2.2" stroke-linecap="round"/></svg>
+      <h2 class="h">Банк отклонил списание</h2>
+      <p class="p">Подписка продолжает работать ещё семь дней — читайте спокойно. Если за это время оплата не пройдёт, тариф просто станет бесплатным, ничего не пропадёт.</p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap">
+        <button class="prim">Другая карта</button>
+        <button class="sec">Повторить списание</button>
+      </div>
+      <div class="quota"><span style="color: #c9a24a">·</span><span style="color: #c9a24a">Осталось 6 дней из семи</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

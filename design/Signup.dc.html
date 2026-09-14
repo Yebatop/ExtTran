@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+  </style>
+</helmet>
+
+<div style="width: 560px; height: 720px; background: #1a1611; border-radius: 18px; border: 1px solid #2c261f; display: flex; flex-direction: column; padding: 40px 44px 34px; overflow: hidden">
+
+  <svg width="30" height="30" viewBox="0 0 26 26" fill="none" style="margin-bottom: 24px">
+    <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.5" stroke-linejoin="round"/>
+    <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.8" stroke-linecap="round"/>
+  </svg>
+
+  <h1 style="font-family: 'Prata', Georgia, serif; font-size: 32px; font-weight: 400; line-height: 1.2; margin: 0 0 14px; color: #f8f3e9">Глава готова и ждёт</h1>
+  <p style="font-size: 15px; line-height: 1.6; color: #b0a693; margin: 0 0 26px">Оставьте почту — и читайте. Она нужна, чтобы посчитать ваши три бесплатные главы: без неё их берут по кругу через переустановку, и бесплатных не остаётся ни у кого.</p>
+
+  <!-- Что уже сделано -->
+  <div style="display: flex; align-items: center; gap: 11px; padding: 13px 16px; border-radius: 10px; background: #191510; border: 1px solid #262019; margin-bottom: 26px">
+    <span style="width: 7px; height: 7px; border-radius: 50%; background: #7a9468; flex-shrink: 0"></span>
+    <span style="font-size: 13px; color: #c4b9a8; line-height: 1.45">«Путь Пепельного Клинка», глава 147 — переведена целиком, 3 412 слов</span>
+  </div>
+
+  <!-- Почта -->
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px">
+    <span class="lbl">Почта</span>
+    <div style="display: flex; align-items: center; height: 50px; padding: 0 16px; border-radius: 11px; background: #14120f; border: 1px solid #322c25">
+      <span style="font-size: 15px; color: #5c5346">вы@почта.рф</span>
+    </div>
+    <button style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 50px; border-radius: 11px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">
+      Прислать ссылку для входа
+    </button>
+    <span style="font-size: 12px; color: #6b6459; text-align: center">Пароль придумывать не надо — войдёте по ссылке из письма</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 14px; margin: 8px 0 18px">
+    <div style="flex-grow: 1; height: 1px; background: #262019"></div>
+    <span class="lbl" style="font-size: 10px">или</span>
+    <div style="flex-grow: 1; height: 1px; background: #262019"></div>
+  </div>
+
+  <button style="display: flex; align-items: center; justify-content: center; gap: 10px; height: 48px; border-radius: 11px; background: transparent; border: 1px solid #322c25; color: #e4dbcb; font-family: inherit; font-size: 14.5px; font-weight: 500; cursor: pointer; margin-bottom: 26px">
+    <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="7.5" stroke="#8a806f" stroke-width="1.5"/>
+      <path d="M10 2.5v15M2.9 6.5h14.2M2.9 13.5h14.2" stroke="#8a806f" stroke-width="1.3"/>
+      <path d="M10 2.5c2.2 2.4 3.3 5 3.3 7.5S12.2 15.1 10 17.5C7.8 15.1 6.7 12.5 6.7 10S7.8 4.9 10 2.5z" stroke="#8a806f" stroke-width="1.3"/>
+    </svg>
+    Войти через аккаунт браузера
+  </button>
+
+  <div style="flex-grow: 1"></div>
+
+  <p style="font-size: 12px; line-height: 1.55; color: #6b6459; margin: 0">Карту не спрашиваем и на этом шаге, и на следующем. Почта нужна только для входа и счётчика глав — писем от нас не будет, кроме той самой ссылки.</p>
+</div>
+</x-dc>
+</body>
+</html>

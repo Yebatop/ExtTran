@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #f7f6f3; color: #1c1c1a;
+           font-family: system-ui, -apple-system, 'Segoe UI', sans-serif; }
+    * { box-sizing: border-box; }
+    a { color: #2f6fb0; } a:hover { color: #24578a; }
+    .bar { height: 9px; border-radius: 4px; background: #ddd9d2; }
+    .cap { font-size: 10px; letter-spacing: .13em; text-transform: uppercase; color: #9a958c; font-weight: 700; }
+  </style>
+</helmet>
+
+<div style="width: 900px; height: 620px; background: #f7f6f3; display: flex; flex-direction: column; overflow: hidden">
+
+  <div style="display: flex; align-items: center; gap: 14px; padding: 16px 26px; border-bottom: 1px solid #e4e0d9">
+    <span class="cap" style="color: #2f6fb0">Направление Б</span>
+    <span style="font-size: 13px; font-weight: 600">Дневная читалка</span>
+    <div style="flex-grow: 1"></div>
+    <span style="font-size: 12px; color: #9a958c">светлая, почти без бренда</span>
+  </div>
+
+  <div style="display: flex; gap: 0; flex-grow: 1; overflow: hidden">
+
+    <!-- Набросок ридера -->
+    <div style="flex-grow: 1; padding: 28px 34px; display: flex; flex-direction: column; gap: 18px; border-right: 1px solid #e4e0d9">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 20px; height: 20px; border-radius: 5px; background: #2f6fb0"></div>
+        <div class="bar" style="width: 130px"></div>
+        <div style="flex-grow: 1"></div>
+        <div class="bar" style="width: 54px; background: #e8e4dd"></div>
+        <div class="bar" style="width: 32px; background: #e8e4dd"></div>
+      </div>
+
+      <div style="height: 1px; background: #e4e0d9"></div>
+
+      <div style="max-width: 470px; display: flex; flex-direction: column; gap: 13px; padding-top: 8px">
+        <div class="bar" style="width: 68px; height: 7px; background: #e2ded6"></div>
+        <div style="font-family: Georgia, serif; font-size: 26px; line-height: 1.25; color: #201f1c">Тот, кто считает шаги</div>
+        <div style="display: flex; flex-direction: column; gap: 9px; padding-top: 8px">
+          <div class="bar"></div><div class="bar"></div><div class="bar" style="width: 92%"></div>
+          <div class="bar" style="width: 74%"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px; padding-top: 10px">
+          <div class="bar"></div>
+          <div class="bar" style="width: 88%"></div>
+          <div class="bar" style="width: 96%"></div>
+          <div class="bar" style="width: 58%"></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 9px; padding-top: 10px">
+          <div class="bar" style="width: 94%"></div>
+          <div class="bar" style="width: 66%"></div>
+        </div>
+      </div>
+
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; align-items: center; gap: 12px; align-self: center; padding: 9px 9px 9px 16px; border-radius: 10px; background: #fff; border: 1px solid #e0dcd4; box-shadow: 0 6px 18px rgba(0,0,0,.06)">
+        <div class="bar" style="width: 128px; height: 8px"></div>
+        <div style="height: 30px; padding: 0 14px; border-radius: 7px; background: #2f6fb0; display: grid; place-items: center; color: #fff; font-size: 12px; font-weight: 600">Дальше</div>
+      </div>
+    </div>
+
+    <!-- Разбор -->
+    <div style="width: 274px; flex-shrink: 0; padding: 26px 24px; display: flex; flex-direction: column; gap: 20px; background: #fbfaf8">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="cap">За что</span>
+        <p style="font-size: 12.5px; line-height: 1.55; color: #55524c; margin: 0">Читают в метро и на работе, при свете. Светлая тема без бренда ощущается как обычная страница с текстом, а не как ещё одно приложение. Проще принять, дешевле рисовать и поддерживать.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span class="cap" style="color: #b0563f">Чем платим</span>
+        <p style="font-size: 12.5px; line-height: 1.55; color: #55524c; margin: 0">Ничем не запоминается. Поставьте рядом со скриншотом любого конкурента — разница будет только в качестве текста, а его на витрине не видно.</p>
+      </div>
+      <div style="flex-grow: 1"></div>
+      <div style="display: flex; flex-direction: column; gap: 7px">
+        <span class="cap">Палитра</span>
+        <div style="display: flex; gap: 6px">
+          <div style="width: 30px; height: 30px; border-radius: 6px; background: #f7f6f3; border: 1px solid #e0dcd4"></div>
+          <div style="width: 30px; height: 30px; border-radius: 6px; background: #ddd9d2"></div>
+          <div style="width: 30px; height: 30px; border-radius: 6px; background: #55524c"></div>
+          <div style="width: 30px; height: 30px; border-radius: 6px; background: #2f6fb0"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

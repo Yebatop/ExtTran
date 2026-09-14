@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .ch { display: flex; align-items: center; gap: 12px; padding: 11px 13px; border-radius: 10px; background: #1a1611; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Полоса «сети нет» -->
+  <div style="display: flex; align-items: center; gap: 9px; padding: 10px 18px; background: #2a2119; flex-shrink: 0">
+    <svg width="15" height="15" viewBox="0 0 26 26" fill="none" style="flex-shrink: 0"><path d="M3 9.5a16 16 0 0 1 20 0M6.5 14a11 11 0 0 1 13 0M10 18.5a6 6 0 0 1 6 0" stroke="#c9a24a" stroke-width="1.9" stroke-linecap="round"/><path d="m5 4 16 18" stroke="#c9a24a" stroke-width="2.2" stroke-linecap="round"/></svg>
+    <span style="font-size: 12.5px; color: #d9b45e">Сети нет — показываем скачанное</span>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 9px; padding: 14px 18px 10px; flex-shrink: 0">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <path d="M10 2.5v10M10 12.5 6.3 8.8M10 12.5l3.7-3.7" stroke="#f2ece0" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3.5 14v2.5a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V14" stroke="#d4502e" stroke-width="1.7" stroke-linecap="round"/>
+    </svg>
+    <span style="font-family: 'Prata', Georgia, serif; font-size: 16px">Скачано</span>
+    <div style="flex-grow: 1"></div>
+    <span style="font-size: 12px; color: #79726a">14 МБ из 200</span>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px; padding: 6px 18px 0; flex-grow: 1; overflow: auto">
+
+    <!-- Книга 1 -->
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span class="lbl">Путь Пепельного Клинка</span>
+        <span style="font-size: 11.5px; color: #79726a">3 главы</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px">
+        <div class="ch">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #7a9468; flex-shrink: 0"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 13.5px; color: #e4dbcb">147 · Тот, кто считает шаги</span>
+            <span style="font-size: 11.5px; color: #79726a">прочитано на треть</span>
+          </span>
+          <span style="font-size: 11.5px; color: #6b6459; flex-shrink: 0">62 КБ</span>
+        </div>
+        <div class="ch">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #7a9468; flex-shrink: 0"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 13.5px; color: #e4dbcb">148 · Ворота, которых не считали</span>
+            <span style="font-size: 11.5px; color: #79726a">не открывали</span>
+          </span>
+          <span style="font-size: 11.5px; color: #6b6459; flex-shrink: 0">58 КБ</span>
+        </div>
+        <div class="ch">
+          <span style="width: 7px; height: 7px; border-radius: 50%; background: #7a9468; flex-shrink: 0"></span>
+          <span style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1; min-width: 0">
+            <span style="font-size: 13.5px; color: #e4dbcb">149 · Счёт, который сбился</span>
+            <span style="font-size: 11.5px; color: #79726a">не открывали</span>
+          </span>
+          <span style="font-size: 11.5px; color: #6b6459; flex-shrink: 0">61 КБ</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Книга 2, качается -->
+    <div style="display: flex; flex-direction: column; gap: 9px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <span class="lbl">Сорок седьмой контракт</span>
+        <span style="font-size: 11.5px; color: #c9a24a">ждёт сети</span>
+      </div>
+      <div class="ch" style="background: #1e1a14; border: 1px solid #2c261f">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0"><circle cx="10" cy="10" r="7.4" stroke="#5c5346" stroke-width="1.6"/><path d="M10 5.6v4.6l3 1.9" stroke="#c9a24a" stroke-width="1.6" stroke-linecap="round"/></svg>
+        <span style="display: flex; flex-direction: column; gap: 4px; flex-grow: 1; min-width: 0">
+          <span style="font-size: 13.5px; color: #c4b9a8">63 · Тот, кто подписал первым</span>
+          <span style="display: block; height: 4px; border-radius: 2px; background: #2c261f">
+            <span style="display: block; width: 46%; height: 100%; border-radius: 0 2px 2px 0; background: #c9a24a"></span>
+          </span>
+        </span>
+      </div>
+    </div>
+
+    <!-- Настройка -->
+    <div style="display: flex; align-items: center; gap: 12px; padding: 15px 15px; border-radius: 12px; background: #1a1611; border: 1px solid #262019">
+      <span style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1">
+        <span style="font-size: 13.5px; color: #e4dbcb">Держать скачанными 5 глав вперёд</span>
+        <span style="font-size: 11.5px; color: #6b6459; line-height: 1.45">Переводим и кладём на устройство, пока есть сеть. Квота тратится сразу.</span>
+      </span>
+      <span style="width: 42px; height: 24px; border-radius: 12px; background: #d4502e; position: relative; flex-shrink: 0; cursor: pointer">
+        <span style="position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: #17130f"></span>
+      </span>
+    </div>
+
+    <p style="font-size: 11.5px; line-height: 1.55; color: #6b6459; margin: 0 0 14px">Скачанное лежит только на этом устройстве и пропадает вместе с ним. Прочитанное место синхронизируется, когда появится сеть.</p>
+  </div>
+
+  <!-- Нижняя навигация -->
+  <div style="display: flex; padding: 8px 10px 22px; border-top: 1px solid #221d17; background: #17140f; flex-shrink: 0">
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#6b6459" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 14.5h9M8 18h6" stroke="#6b6459" stroke-width="1.9" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Читать</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><path d="M5 5h5v16H5zM12 5h4v16h-4zM18.5 5.8l3.4 15.6" stroke="#d4502e" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      <span style="font-size: 10.5px; color: #d4502e; font-weight: 600">Книги</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><circle cx="12" cy="12" r="7.5" stroke="#6b6459" stroke-width="1.8"/><path d="m17.5 17.5 4 4" stroke="#6b6459" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Каталог</span>
+    </button>
+    <button style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; flex-grow: 1; height: 50px; background: transparent; border: none; cursor: pointer; font-family: inherit">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none"><circle cx="13" cy="9" r="4" stroke="#6b6459" stroke-width="1.8"/><path d="M5 22c0-3.9 3.6-6.5 8-6.5s8 2.6 8 6.5" stroke="#6b6459" stroke-width="1.8" stroke-linecap="round"/></svg>
+      <span style="font-size: 10.5px; color: #6b6459">Я</span>
+    </button>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

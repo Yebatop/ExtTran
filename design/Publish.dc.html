@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; } a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Хвост дочитанной главы -->
+  <div style="padding: 26px 22px 0; flex-shrink: 0">
+    <p style="font-family: 'Literata', Georgia, serif; font-size: 17px; line-height: 1.8; color: #6b6459; margin: 0">…Мальчик сделал первый шаг прежде, чем понял, что уже начал.</p>
+    <div style="display: flex; align-items: center; gap: 12px; margin: 22px 0 0">
+      <span style="flex-grow: 1; height: 1px; background: #262019"></span>
+      <span class="lbl" style="font-size: 10px">Глава 147 дочитана</span>
+      <span style="flex-grow: 1; height: 1px; background: #262019"></span>
+    </div>
+  </div>
+
+  <div style="flex-grow: 1; overflow: auto; padding: 20px 18px 0">
+
+    <!-- Предложение выложить -->
+    <div style="display: flex; flex-direction: column; gap: 16px; padding: 22px 20px; border-radius: 15px; background: #1c1813; border: 1px solid #3a3129">
+
+      <div style="display: flex; align-items: flex-start; gap: 12px">
+        <svg width="24" height="24" viewBox="0 0 26 26" fill="none" style="flex-shrink: 0; margin-top: 1px">
+          <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#d4502e" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M15.5 3.5V10H22" stroke="#d4502e" stroke-width="1.7" stroke-linejoin="round"/>
+          <path d="M8 14.5h9M8 18h6" stroke="#8a806f" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <div style="display: flex; flex-direction: column; gap: 7px">
+          <h2 style="font-family: 'Prata', Georgia, serif; font-size: 21px; font-weight: 400; line-height: 1.25; margin: 0; color: #f8f3e9">Выложить ваш перевод?</h2>
+          <p style="font-size: 13.5px; line-height: 1.55; color: #b0a693; margin: 0">Другие читатели «Пути Пепельного Клинка» откроют вашу версию вместо того, чтобы переводить главу заново. На ней будет ваше имя.</p>
+        </div>
+      </div>
+
+      <!-- Что вложено -->
+      <div style="display: flex; flex-direction: column; gap: 9px; padding: 13px 15px; border-radius: 10px; background: #191510">
+        <span class="lbl" style="font-size: 10px">Вместе с главой уйдёт</span>
+        <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+          <span style="color: #7a9468">✓</span> Ваша правка: <span style="color: #e4dbcb">Гу Лань</span> вместо «Гу Лан»
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px; font-size: 13px; color: #c4b9a8">
+          <span style="color: #7a9468">✓</span> Регистр: возвышенный
+        </div>
+      </div>
+
+      <!-- Что взамен -->
+      <div style="display: flex; gap: 11px; padding: 13px 15px; border-radius: 10px; background: #201b15; border: 1px solid #4a3527">
+        <svg width="17" height="17" viewBox="0 0 20 20" fill="none" style="flex-shrink: 0; margin-top: 1px"><path d="M10 17.5V3.5M10 3.5 6 7.5M10 3.5l4 4" stroke="#e08160" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size: 13px; line-height: 1.5; color: #c4b9a8">За каждые десять прочтений возвращаем главу в вашу квоту. Читателей у этой книги много — 147-ю на этой неделе открывали 60 раз.</span>
+      </div>
+
+      <!-- Переключатель -->
+      <div style="display: flex; align-items: center; gap: 13px; padding-top: 2px">
+        <span style="width: 46px; height: 27px; border-radius: 14px; background: #2c261f; border: 1px solid #3a3129; position: relative; flex-shrink: 0; cursor: pointer">
+          <span style="position: absolute; top: 3px; left: 3px; width: 19px; height: 19px; border-radius: 50%; background: #6b6459"></span>
+        </span>
+        <span style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13.5px; color: #e4dbcb">Выложить от имени <span style="font-weight: 600">Фурия</span></span>
+          <span style="font-size: 11.5px; color: #6b6459">сейчас выключено</span>
+        </span>
+      </div>
+
+      <button style="height: 48px; border-radius: 11px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer">Выложить главу</button>
+      <button style="height: 44px; border-radius: 11px; background: transparent; border: none; color: #8a806f; font-family: inherit; font-size: 14px; cursor: pointer; margin-top: -6px">Не в этот раз</button>
+
+      <p style="font-size: 11.5px; line-height: 1.5; color: #6b6459; margin: 0; padding-top: 4px; border-top: 1px solid #262019">Выкладываете вы и от своего имени — мы этого за вас не делаем и по умолчанию не включаем. Снять можно в любой момент одной кнопкой, глоссарий при этом остаётся вашим.</p>
+    </div>
+
+    <div style="height: 20px"></div>
+  </div>
+
+  <!-- Дальше по книге -->
+  <div style="display: flex; align-items: center; gap: 9px; margin: 0 14px 22px; padding: 12px 16px; border-radius: 11px; background: #1a1611; border: 1px solid #262019; flex-shrink: 0">
+    <span style="width: 6px; height: 6px; border-radius: 50%; background: #7a9468; flex-shrink: 0"></span>
+    <span style="font-size: 13px; color: #c4b9a8; flex-grow: 1">Глава 148 уже переведена</span>
+    <span style="font-size: 13px; color: #e08160; font-weight: 600">Дальше</span>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

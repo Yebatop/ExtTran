@@ -1,0 +1,231 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=Literata:ital,wght@0,400&family=Prata&display=swap">
+  <style>
+    body { margin: 0; background: #14120f; color: #f2ece0;
+           font-family: 'Golos Text', system-ui, -apple-system, 'Segoe UI', sans-serif;
+           -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #d4502e; text-decoration: none; }
+    a:hover { color: #e8663f; }
+    .lbl { font-size: 10.5px; letter-spacing: .15em; text-transform: uppercase; color: #8a806f; font-weight: 600; }
+    .tag { font-size: 11px; padding: 3px 9px; border-radius: 5px; background: #221d17; color: #a49a89; white-space: nowrap; }
+    .row { display: flex; gap: 18px; padding: 16px; border-radius: 12px; background: #1a1611; border: 1px solid #262019; }
+    .cv { width: 68px; height: 94px; border-radius: 7px; flex-shrink: 0;
+          background: linear-gradient(150deg, #2e2721, #1c1813); border: 1px solid #332c25;
+          display: grid; place-items: center; }
+    .en { font-family: 'Literata', Georgia, serif; font-style: italic; color: #79848c; }
+    .fbtn { display: flex; align-items: center; justify-content: space-between; gap: 10px;
+            padding: 9px 12px; border-radius: 8px; background: transparent; border: 1px solid transparent;
+            color: #b0a693; font-family: inherit; font-size: 13px; cursor: pointer; text-align: left; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1020px; background: #14120f; display: flex; flex-direction: column; overflow: hidden">
+
+  <!-- Навигация -->
+  <div style="display: flex; align-items: center; gap: 26px; height: 66px; padding: 0 40px; border-bottom: 1px solid #221d17; flex-shrink: 0">
+    <div style="display: flex; align-items: center; gap: 9px">
+      <svg width="21" height="21" viewBox="0 0 26 26" fill="none">
+        <path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M15.5 3.5V10H22" stroke="#f2ece0" stroke-width="1.7" stroke-linejoin="round"/>
+        <path d="M8 14.5h9M8 18h6" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/>
+      </svg>
+      <span style="font-family: 'Prata', Georgia, serif; font-size: 17px">Толмач</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 22px">
+      <a href="#" style="font-size: 13.5px; color: #8a806f">Читать</a>
+      <a href="#" style="font-size: 13.5px; color: #e4dbcb">Каталог</a>
+      <a href="#" style="font-size: 13.5px; color: #8a806f">Глоссарии</a>
+    </div>
+    <div style="flex-grow: 1"></div>
+    <button style="height: 34px; padding: 0 16px; border-radius: 8px; background: #d4502e; border: none; color: #17130f; font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer">Войти</button>
+  </div>
+
+  <div style="display: flex; gap: 30px; padding: 30px 40px 0; flex-grow: 1; overflow: hidden">
+
+    <!-- Фильтры -->
+    <div style="width: 212px; flex-shrink: 0; display: flex; flex-direction: column; gap: 24px; overflow: auto; padding-bottom: 30px">
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span class="lbl">Жанр</span>
+        <div style="display: flex; flex-direction: column; gap: 1px">
+          <button class="fbtn" style="background: #241f18; border-color: #4a3527; color: #f2ece0; font-weight: 600">Все<span style="color: #79726a; font-weight: 400">312</span></button>
+          <button class="fbtn">Сянься<span style="color: #6b6459">84</span></button>
+          <button class="fbtn">ЛитРПГ<span style="color: #6b6459">71</span></button>
+          <button class="fbtn">Прогрессия<span style="color: #6b6459">58</span></button>
+          <button class="fbtn">Уся<span style="color: #6b6459">39</span></button>
+          <button class="fbtn">Мистика<span style="color: #6b6459">33</span></button>
+          <button class="fbtn">Постапокалипсис<span style="color: #6b6459">27</span></button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span class="lbl">Длина</span>
+        <div style="display: flex; flex-direction: column; gap: 1px">
+          <button class="fbtn">До 100 глав<span style="color: #6b6459">46</span></button>
+          <button class="fbtn">100–500<span style="color: #6b6459">158</span></button>
+          <button class="fbtn">Больше 500<span style="color: #6b6459">108</span></button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span class="lbl">Состояние</span>
+        <div style="display: flex; flex-direction: column; gap: 1px">
+          <button class="fbtn">Выходит<span style="color: #6b6459">184</span></button>
+          <button class="fbtn">Завершена<span style="color: #6b6459">97</span></button>
+          <button class="fbtn">Заморожена<span style="color: #6b6459">31</span></button>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 9px">
+        <span class="lbl">Глоссарий</span>
+        <button class="fbtn" style="border-color: #2c261f">Только с готовым<span style="color: #6b6459">141</span></button>
+      </div>
+    </div>
+
+    <!-- Результаты -->
+    <div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 18px; overflow: hidden">
+
+      <div style="display: flex; flex-direction: column; gap: 12px; flex-shrink: 0">
+        <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <h1 style="font-family: 'Prata', Georgia, serif; font-size: 34px; font-weight: 400; line-height: 1.18; margin: 0; color: #f8f3e9">Каталог</h1>
+            <p style="font-size: 13.5px; line-height: 1.5; color: #8a806f; margin: 0; max-width: 560px">Что читают по‑русски через Толмач. Сами книги живут на своих сайтах — мы рассказываем, о чём они, и ведём глоссарий.</p>
+          </div>
+          <div style="display: flex; align-items: center; gap: 9px; height: 36px; padding: 0 13px; border-radius: 9px; background: #1c1813; border: 1px solid #2c261f; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #79726a">Сначала</span>
+            <span style="font-size: 13px; color: #e4dbcb; font-weight: 500">по глоссарию</span>
+            <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="m4 6 4 4 4-4" stroke="#5c5346" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 11px; height: 46px; padding: 0 15px; border-radius: 11px; background: #1c1813; border: 1px solid #2c261f">
+          <svg width="17" height="17" viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.6" stroke="#5c5346" stroke-width="1.5"/><path d="m10.6 10.6 3 3" stroke="#5c5346" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span style="font-size: 14.5px; color: #5c5346">Название по‑русски или по‑английски</span>
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; overflow: auto; padding-right: 4px; padding-bottom: 30px">
+
+        <div class="row">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/><path d="M8 14.5h9" stroke="#d4502e" stroke-width="1.9" stroke-linecap="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Путь Пепельного Клинка</span>
+              <span class="en" style="font-size: 12.5px">The Ashen Blade Path</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">J. R. Calloway · 1 204 главы · выходит</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">сянься</span><span class="tag">культивация</span><span class="tag">наставник</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">142 термина</span>
+            <span style="font-size: 12px; color: #6b6459">3 главы у вас</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Сорок седьмой контракт</span>
+              <span class="en" style="font-size: 12.5px">The Forty-Seventh Contract</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">M. Oyelaran · 380 глав · выходит</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">литРПГ</span><span class="tag">подземелья</span><span class="tag">юмор</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">96 терминов</span>
+            <span style="font-size: 12px; color: #6b6459">62 главы у вас</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Лестница в девять пролётов</span>
+              <span class="en" style="font-size: 12.5px">Nine Flights Up</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">A. Vestergaard · 640 глав · выходит</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">прогрессия</span><span class="tag">башня</span><span class="tag">медленный старт</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">88 терминов</span>
+            <span style="font-size: 12px; color: #6b6459">не начата</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Тихая жатва</span>
+              <span class="en" style="font-size: 12.5px">The Quiet Harvest</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">E. Nwachukwu · 214 глав · завершена</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">постапокалипсис</span><span class="tag">выживание</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">64 термина</span>
+            <span style="font-size: 12px; color: #6b6459">дочитана</span>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Дом, который считает гостей</span>
+              <span class="en" style="font-size: 12.5px">The House That Counts Its Guests</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">S. Bergqvist · 96 глав · завершена</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">мистика</span><span class="tag">камерная</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">41 термин</span>
+            <span style="font-size: 12px; color: #6b6459">9 глав у вас</span>
+          </div>
+        </div>
+
+        <div class="row" style="opacity: .72">
+          <div class="cv"><svg width="20" height="20" viewBox="0 0 26 26" fill="none"><path d="M4 3.5h11.5L22 10v12.5H4z" stroke="#4d4437" stroke-width="1.7" stroke-linejoin="round"/></svg></div>
+          <div style="display: flex; flex-direction: column; gap: 7px; flex-grow: 1; min-width: 0">
+            <div style="display: flex; align-items: baseline; gap: 11px">
+              <span style="font-size: 16px; font-weight: 600; color: #f2ece0">Небо над Каменным Рынком</span>
+              <span class="en" style="font-size: 12.5px">Sky Over the Stone Market</span>
+            </div>
+            <span style="font-size: 12.5px; color: #79726a">L. Haraldsen · 302 главы · заморожена два года</span>
+            <div style="display: flex; gap: 6px; margin-top: 2px">
+              <span class="tag">уся</span><span class="tag">интриги</span>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: space-between; flex-shrink: 0">
+            <span style="font-size: 12.5px; color: #e08160; font-weight: 500">73 термина</span>
+            <span style="font-size: 12px; color: #6b6459">не начата</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
