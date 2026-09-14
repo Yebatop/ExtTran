@@ -18,6 +18,7 @@ interface Done {
   usd: number;
   model: string;
   seconds: number;
+  text: string;
 }
 
 interface GlossaryNews {
@@ -103,10 +104,14 @@ export default function Reader({
               case "text":
                 setText((prev) => prev + (frame.chunk as string));
                 break;
-              case "done":
-                setDone(frame as unknown as Done);
+              case "done": {
+                const finished = frame as unknown as Done;
+                setDone(finished);
+                // Поток шёл сырым; правленый текст приходит в конце целиком.
+                if (finished.text) setText(finished.text);
                 setState("done");
                 break;
+              }
               case "glossary":
                 setGlossary(frame as unknown as GlossaryNews);
                 break;
