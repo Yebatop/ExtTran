@@ -99,9 +99,39 @@ function summarise(rows: Row[], tier: Tier): TierSummary {
 
 /** Тарифы из макетов: цена за месяц и сколько глав в квоте. */
 const PLANS = [
-  { name: "Читатель", rub: 490, chapters: 100 },
-  { name: "Запойный", rub: 1190, chapters: 300 },
+  { name: "Читатель", rub: 490, chapters: 100, strongMultiplier: 3 },
+  { name: "Запойный", rub: 1190, chapters: 300, strongMultiplier: 2 },
 ] as const;
+
+/**
+ * Окупается ли сильная модель при заявленном множителе.
+ *
+ * Считается отдельно, потому что убыток тут прячется: на «Читателе» сильная
+ * модель стоит три главы квоты, на «Запойном» две, и вторая цифра опаснее
+ * первой — глава квоты там дешевле.
+ */
+function strongVerdict(costPerChapter: number): string[] {
+  const lines = ["", "  Сильная модель по кнопке:"];
+  for (const plan of PLANS) {
+    const perQuotaChapter = plan.rub / plan.chapters;
+    const revenue = perQuotaChapter * plan.strongMultiplier;
+    const margin = (revenue - costPerChapter) / revenue;
+    lines.push(
+      `    ${plan.name}: списываем ${plan.strongMultiplier} главы = ${revenue.toFixed(2)} ₽, ` +
+        `обходится в ${costPerChapter.toFixed(2)} ₽ → ${(margin * 100).toFixed(0)}%`,
+    );
+    if (margin < 0) {
+      lines.push(
+        `      УБЫТОК. Множителя ${plan.strongMultiplier} мало: нужен ` +
+          `${Math.ceil(costPerChapter / perQuotaChapter)}, либо сильной моделью ` +
+          "назначить что-то дешевле.",
+      );
+    } else if (margin < 0.25) {
+      lines.push("      Маржа тонкая: любое подорожание модели уводит в минус.");
+    }
+  }
+  return lines;
+}
 
 function verdict(summary: TierSummary): string[] {
   if (summary.chapters === 0) return [];
@@ -330,6 +360,7 @@ async function main(): Promise<void> {
         "",
         "  Что это значит для тарифов:",
         ...verdict(s),
+        ...(s.tier === "strong" ? strongVerdict(s.medianRub) : []),
       );
     }
     out.push("");
