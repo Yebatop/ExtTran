@@ -14,7 +14,7 @@
 import "./env.js";
 import { readFile, writeFile } from "node:fs/promises";
 import Anthropic from "@anthropic-ai/sdk";
-import { MODELS, USD_RUB, type Tier } from "./config.js";
+import { MODELS, TIERS, USD_RUB, isTier, type Tier } from "./config.js";
 import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { loadChapter } from "./extract.js";
 import { type Glossary, type Term } from "./glossary.js";
@@ -35,7 +35,7 @@ const USAGE = `Сборка глоссария из глав.
 Ключи:
   --в <файл>        куда писать глоссарий (обязательно; дописывается, если есть)
   --книга <имя>     название книги для заголовка глоссария
-  --модель <какая>  strong | fast   (по умолчанию strong)
+  --модель <какая>  fast | middle | strong   (по умолчанию strong)
   --предел <рубли>  оборвать, когда потрачено больше
   --предел-usd <$>  то же, но сразу в долларах — их и списывают
   --глав <N>        ограничить число глав из списка
@@ -58,8 +58,8 @@ function parseArgs(argv: string[]): Args {
   const { flags, positional } = parseArgv(argv);
 
   const tier = flags.get("модель") ?? flags.get("tier") ?? "strong";
-  if (tier !== "fast" && tier !== "strong") {
-    throw new Error(`Модель «${tier}» не из списка: strong, fast.`);
+  if (!isTier(tier)) {
+    throw new Error(`Модель «${tier}» не из списка: ${TIERS.join(", ")}.`);
   }
 
   const args: Args = {

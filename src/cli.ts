@@ -10,7 +10,15 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { writeFile } from "node:fs/promises";
-import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.js";
+import {
+  MODELS,
+  TIERS,
+  USD_RUB,
+  isRegister,
+  isTier,
+  type Register,
+  type Tier,
+} from "./config.js";
 import { formatSpend } from "./cost.js";
 import { loadChapter } from "./extract.js";
 import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
@@ -24,7 +32,7 @@ const USAGE = `Толмач — перевод главы веб-новеллы 
 Ключи:
   --глоссарий <файл>   JSON с терминами и обращениями
   --регистр <какой>    живой | ровный | возвышенный   (по умолчанию ровный)
-  --модель <какая>     strong | fast                  (по умолчанию strong)
+  --модель <какая>     fast | middle | strong         (по умолчанию strong)
   --усердие <какое>    low | medium | high            (по умолчанию medium)
   --в <файл>           куда положить перевод; иначе печатается в консоль
 
@@ -57,8 +65,8 @@ function parseArgs(argv: string[]): Args {
   }
 
   const tier = flags.get("модель") ?? flags.get("tier") ?? "strong";
-  if (tier !== "fast" && tier !== "strong") {
-    throw new Error(`Модель «${tier}» не из списка: strong, fast.`);
+  if (!isTier(tier)) {
+    throw new Error(`Модель «${tier}» не из списка: ${TIERS.join(", ")}.`);
   }
 
   const effort = flags.get("усердие") ?? flags.get("effort") ?? "medium";

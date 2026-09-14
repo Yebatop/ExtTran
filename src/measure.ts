@@ -16,12 +16,20 @@ import "./env.js";
 import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import Anthropic from "@anthropic-ai/sdk";
-import { MODELS, USD_RUB, isRegister, type Register, type Tier } from "./config.js";
+import {
+  MODELS,
+  TIERS,
+  USD_RUB,
+  isRegister,
+  isTier,
+  type Register,
+  type Tier,
+} from "./config.js";
 import { loadChapter } from "./extract.js";
 import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
 import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
-import { mean, median } from "./stats.js";
+import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
 import { readList } from "./files.js";
 
@@ -35,8 +43,9 @@ const USAGE = `Замер себестоимости главы.
 Ключи:
   --глоссарий <файл>   JSON с терминами (сильно влияет на вход, берите настоящий)
   --регистр <какой>    живой | ровный | возвышенный   (по умолчанию ровный)
-  --модели <список>    fast,strong                     (по умолчанию обе)
+  --модели <список>    fast,middle,strong              (по умолчанию все три)
   --пилот <N>          сколько глав в пилоте           (по умолчанию 3)
+  --слов <N>           типичная глава книги в словах — считать тарифы по ней
   --все                прогнать весь список, а не только пилот
   --предел <рубли>     оборвать прогон, когда потрачено больше
   --предел-usd <$>     то же, но сразу в долларах — их и списывают
@@ -113,6 +122,21 @@ const PLANS = [
  * модель стоит три главы квоты, на «Запойном» две, и вторая цифра опаснее
  * первой — глава квоты там дешевле.
  */
+/**
+ * Себестоимость типичной главы книги.
+ *
+ * Медиана пилота — это медиана трёх глав, а не книги. Если известна настоящая
+ * типичная длина (её печатает npm run проверка по всему списку), честнее
+ * пересчитать через цену за тысячу слов: она от длины главы почти не зависит,
+ * а цена главы зависит целиком.
+ */
+function chapterCost(summary: TierSummary, typicalWords?: number): number {
+  if (typicalWords === undefined || summary.rubPer1000Words === 0) {
+    return summary.medianRub;
+  }
+  return (summary.rubPer1000Words * typicalWords) / 1000;
+}
+
 function strongVerdict(costPerChapter: number): string[] {
   const lines = ["", "  Сильная модель по кнопке:"];
   for (const plan of PLANS) {
@@ -136,10 +160,38 @@ function strongVerdict(costPerChapter: number): string[] {
   return lines;
 }
 
-function verdict(summary: TierSummary): string[] {
+/**
+ * Почему кэш не сработал ни разу.
+ *
+ * Порог кэширования у моделей разный, и молчаливый: префикс короче порога
+ * не кэшируется вовсе, без ошибки и предупреждения. У Haiku 4.5 порог 4096
+ * токенов — наши правила с глоссарием в него не укладываются, и на дешёвой
+ * модели кэш не работает просто потому, что нечего кэшировать.
+ */
+function cacheNote(summary: TierSummary): string[] {
+  if (summary.chapters < 2 || summary.cacheHitChapters > 0) return [];
+  const min = MODELS[summary.tier].minCacheTokens;
+  return [
+    `    Кэш не сработал ни разу. У этой модели порог кэширования ` +
+      `${min.toLocaleString("ru")} токенов,`,
+    "    и наш неизменный кусок промпта до него не дотягивает — кэшировать нечего.",
+    "    Это не поломка, но и экономии на входе здесь ждать не нужно.",
+  ];
+}
+
+function verdict(summary: TierSummary, typicalWords?: number): string[] {
   if (summary.chapters === 0) return [];
-  const cost = summary.medianRub;
+  const cost = chapterCost(summary, typicalWords);
   const lines: string[] = [];
+
+  if (typicalWords !== undefined) {
+    lines.push(
+      `  Считаем по типичной главе книги в ${typicalWords.toLocaleString("ru")} слов: ` +
+        `${cost.toFixed(2)} ₽`,
+      `  (в пилоте главы были по ${summary.medianWords.toLocaleString("ru")} слов и ` +
+        `стоили ${summary.medianRub.toFixed(2)} ₽)`,
+    );
+  }
 
   for (const plan of PLANS) {
     const revenuePerChapter = plan.rub / plan.chapters;
@@ -168,6 +220,7 @@ interface Args {
   register: Register;
   tiers: Tier[];
   pilot: number;
+  typicalWords?: number;
   all: boolean;
   ceiling?: Ceiling;
   report?: string;
@@ -181,13 +234,13 @@ function parseArgs(argv: string[]): Args {
     throw new Error(`Регистр «${register}» не из списка: живой, ровный, возвышенный.`);
   }
 
-  const tierList = (flags.get("модели") ?? flags.get("tiers") ?? "fast,strong")
+  const tierList = (flags.get("модели") ?? flags.get("tiers") ?? TIERS.join(","))
     .split(",")
     .map((t) => t.trim())
     .filter(Boolean);
   for (const t of tierList) {
-    if (t !== "fast" && t !== "strong") {
-      throw new Error(`Модель «${t}» не из списка: fast, strong.`);
+    if (!isTier(t)) {
+      throw new Error(`Модель «${t}» не из списка: ${TIERS.join(", ")}.`);
     }
   }
 
@@ -200,6 +253,8 @@ function parseArgs(argv: string[]): Args {
   };
   const glossary = flags.get("глоссарий") ?? flags.get("glossary");
   if (glossary !== undefined) args.glossary = glossary;
+  const words = flags.get("слов") ?? flags.get("words");
+  if (words !== undefined) args.typicalWords = Number(words);
   const rub = flags.get("предел") ?? flags.get("ceiling");
   const usd = flags.get("предел-usd") ?? flags.get("ceiling-usd");
   const ceiling = makeCeiling(
@@ -234,7 +289,9 @@ async function main(): Promise<void> {
     );
   }
 
-  const planned = args.all ? sources : sources.slice(0, args.pilot);
+  // Не первые N, а вразброс: первая глава книги систематически длиннее
+  // остальных, и пилот по первым главам завышает себестоимость.
+  const planned = args.all ? sources : spread(sources, args.pilot);
   const client = new Anthropic();
   const rows: Row[] = [];
   let spentRub = 0;
@@ -361,10 +418,11 @@ async function main(): Promise<void> {
         `  на 1000 слов       ${s.rubPer1000Words.toFixed(2)} ₽`,
         `  медиана длины      ${s.medianWords.toLocaleString("ru")} слов`,
         `  глав с попаданием в кэш  ${s.cacheHitChapters} из ${s.chapters}`,
+        ...cacheNote(s),
         "",
         "  Что это значит для тарифов:",
-        ...verdict(s),
-        ...(s.tier === "strong" ? strongVerdict(s.medianRub) : []),
+        ...verdict(s, args.typicalWords),
+        ...(s.tier === "fast" ? [] : strongVerdict(chapterCost(s, args.typicalWords))),
       );
     }
     out.push("");

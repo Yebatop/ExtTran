@@ -11,7 +11,7 @@
 
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
-import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
+import { USER_AGENT, REGISTERS, MODELS, TIERS, isRegister } from "./config.js";
 import { renderGlossary, renderKnownCompact, type Glossary } from "./glossary.js";
 import {
   attempts,
@@ -21,7 +21,7 @@ import {
   looksLocked,
   stripCredits,
 } from "./extract.js";
-import { mean, median } from "./stats.js";
+import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
 import { missingFileMessage } from "./files.js";
 
@@ -187,6 +187,25 @@ check("медиана не ведётся на одну длинную глав�
   assert(median([1, 2, 3, 4]) === 2.5, "чётная длина считается неверно");
 });
 
+check("пилот берёт главы вразброс, а не первые подряд", () => {
+  // Первый замер считал себестоимость по главам 1-3, а первая глава книги
+  // была 2 729 слов против медианы 1 738 — тарифы считались от завышенной
+  // цены. Середины равных отрезков заодно обходят главу номер один.
+  const book = Array.from({ length: 10 }, (_, i) => i + 1);
+  const picked = spread(book, 3);
+  assert(picked.length === 3, `взяли ${picked.length} глав вместо трёх`);
+  assert(!picked.includes(1), `первая глава снова в выборке: ${picked.join(", ")}`);
+  assert(
+    Math.max(...picked) > 7,
+    `до конца книги не дошли: ${picked.join(", ")}`,
+  );
+  assert(new Set(picked).size === 3, "одна и та же глава взята дважды");
+
+  // Список короче запрошенного — берём его целиком, а не падаем
+  assert(spread([1, 2], 5).length === 2, "короткий список должен браться целиком");
+  assert(spread([1, 2, 3], 0).length === 0, "ноль глав — это ноль глав");
+});
+
 check("страница, сохранённая как MHTML, распаковывается", () => {
   // Chrome на Android по умолчанию сохраняет именно так. Тело кодируется
   // quoted-printable: знак равенства в конце строки это перенос, а не символ.
@@ -311,12 +330,18 @@ check("регистры перевода на месте", () => {
   }
 });
 
-check("модели и цены заданы", () => {
-  for (const tier of ["fast", "strong"] as const) {
+check("модели, цены и пороги кэша заданы", () => {
+  for (const tier of TIERS) {
     const m = MODELS[tier];
     assert(m.id.length > 0, `у ${tier} нет идентификатора модели`);
     assert(m.inputPerMTok > 0 && m.outputPerMTok > 0, `у ${tier} нулевая цена`);
+    assert(m.minCacheTokens > 0, `у ${tier} не задан порог кэширования`);
   }
+  assert(
+    MODELS.fast.outputPerMTok < MODELS.middle.outputPerMTok &&
+      MODELS.middle.outputPerMTok < MODELS.strong.outputPerMTok,
+    "уровни перестали идти по возрастанию цены",
+  );
 });
 
 process.stdout.write(

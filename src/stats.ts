@@ -18,3 +18,25 @@ export function mean(values: number[]): number {
   if (values.length === 0) return 0;
   return values.reduce((a, b) => a + b, 0) / values.length;
 }
+
+/**
+ * Выбрать n элементов, равномерно разбросанных по списку.
+ *
+ * Появилось после первого замера: пилот брал первые три главы, а первые главы
+ * систематически длиннее остальных — у нашей книги 2 729 слов против медианы
+ * 1 738. Себестоимость выходила завышенной почти в полтора раза, и тарифы
+ * считались от неё.
+ *
+ * Берём середины n равных отрезков, а не края: так первая глава, самая
+ * нетипичная, в выборку сама собой не попадает.
+ */
+export function spread<T>(list: T[], n: number): T[] {
+  if (n >= list.length) return [...list];
+  if (n <= 0) return [];
+  const picked: T[] = [];
+  for (let i = 0; i < n; i += 1) {
+    const index = Math.floor(((i + 0.5) * list.length) / n);
+    picked.push(list[Math.min(index, list.length - 1)] as T);
+  }
+  return picked;
+}

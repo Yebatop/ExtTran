@@ -6,7 +6,13 @@
  * стоит сверить с прайсом.
  */
 
-export type Tier = "fast" | "strong";
+export type Tier = "fast" | "middle" | "strong";
+
+export const TIERS = ["fast", "middle", "strong"] as const;
+
+export function isTier(value: string): value is Tier {
+  return (TIERS as readonly string[]).includes(value);
+}
 
 export interface ModelSpec {
   /** Идентификатор модели для API. */
@@ -20,12 +26,26 @@ export interface ModelSpec {
    * Haiku 4.5 на нём падает, поэтому для неё не отправляем.
    */
   supportsEffort: boolean;
+  /**
+   * Сколько токенов должно быть в префиксе, чтобы он вообще закэшировался.
+   * Порог у моделей разный и не по возрастанию поколений: у Haiku 4.5 он
+   * 4096, у Opus 5 — 512. Префикс короче порога не кэшируется молча: ни
+   * ошибки, ни предупреждения, просто cache_creation_input_tokens = 0.
+   */
+  minCacheTokens: number;
 }
 
 /**
- * Два тарифных уровня из продуктового замысла: дешёвый для основной массы
- * глав и дорогой по кнопке. Оба переопределяются переменными окружения,
- * чтобы замер можно было прогнать на любой паре, ничего не пересобирая.
+ * Три уровня. Дешёвый — для основной массы глав; средний — то, что имеет
+ * смысл ставить на кнопку «перевести получше»; дорогой — потолок качества.
+ *
+ * Средний появился после первого замера: Opus обошёлся в двадцать рублей за
+ * главу при выручке в четыре, то есть на кнопку его не поставить ни при каком
+ * разумном множителе. Sonnet стоит ровно вдвое дороже Haiku — вот его и надо
+ * мерить, прежде чем рисовать тариф.
+ *
+ * Все три переопределяются переменными окружения, чтобы замер можно было
+ * прогнать на любой тройке, ничего не пересобирая.
  */
 export const MODELS: Record<Tier, ModelSpec> = {
   fast: {
@@ -33,12 +53,21 @@ export const MODELS: Record<Tier, ModelSpec> = {
     inputPerMTok: 1,
     outputPerMTok: 5,
     supportsEffort: false,
+    minCacheTokens: 4096,
+  },
+  middle: {
+    id: process.env.TOLMACH_MODEL_MIDDLE ?? "claude-sonnet-5",
+    inputPerMTok: 2,
+    outputPerMTok: 10,
+    supportsEffort: true,
+    minCacheTokens: 1024,
   },
   strong: {
     id: process.env.TOLMACH_MODEL_STRONG ?? "claude-opus-5",
     inputPerMTok: 5,
     outputPerMTok: 25,
     supportsEffort: true,
+    minCacheTokens: 512,
   },
 };
 
