@@ -21,6 +21,7 @@ import { loadChapter } from "./extract.js";
 import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
 import { mean, median } from "./stats.js";
+import { parseArgv } from "./args.js";
 
 const USAGE = `Замер себестоимости главы.
 
@@ -140,28 +141,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const positional: string[] = [];
-  const flags = new Map<string, string>();
-  const bare = new Set<string>();
-
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === undefined) continue;
-    if (arg === "--все" || arg === "--all") {
-      bare.add("все");
-      continue;
-    }
-    if (arg.startsWith("--")) {
-      const value = argv[i + 1];
-      if (value === undefined || value.startsWith("--")) {
-        throw new Error(`У ключа ${arg} нет значения.`);
-      }
-      flags.set(arg.slice(2), value);
-      i += 1;
-    } else {
-      positional.push(arg);
-    }
-  }
+  const { flags, bare, positional } = parseArgv(argv, ["все", "all"]);
 
   const register = flags.get("регистр") ?? flags.get("register") ?? "ровный";
   if (!isRegister(register)) {
@@ -183,7 +163,7 @@ function parseArgs(argv: string[]): Args {
     register,
     tiers: tierList as Tier[],
     pilot: Number(flags.get("пилот") ?? flags.get("pilot") ?? 3),
-    all: bare.has("все"),
+    all: bare.has("все") || bare.has("all"),
   };
   const glossary = flags.get("глоссарий") ?? flags.get("glossary");
   if (glossary !== undefined) args.glossary = glossary;

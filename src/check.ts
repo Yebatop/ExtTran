@@ -25,6 +25,7 @@ import {
 } from "./extract.js";
 import { MODELS, USD_RUB } from "./config.js";
 import { mean, median } from "./stats.js";
+import { parseArgv } from "./args.js";
 
 const USAGE = `Проверка страниц глав.
 
@@ -336,23 +337,7 @@ async function batch(listPath: string, limit: number): Promise<void> {
 }
 
 async function main(): Promise<void> {
-  const argv = process.argv.slice(2);
-  const flags = new Map<string, string>();
-  const positional: string[] = [];
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === undefined) continue;
-    if (arg.startsWith("--")) {
-      const value = argv[i + 1];
-      if (value === undefined || value.startsWith("--")) {
-        throw new Error(`У ключа ${arg} нет значения.`);
-      }
-      flags.set(arg.slice(2), value);
-      i += 1;
-    } else {
-      positional.push(arg);
-    }
-  }
+  const { flags, positional } = parseArgv(process.argv.slice(2));
 
   const list = flags.get("список") ?? flags.get("list");
   if (list !== undefined) {

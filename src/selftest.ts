@@ -22,6 +22,7 @@ import {
   stripCredits,
 } from "./extract.js";
 import { mean, median } from "./stats.js";
+import { parseArgv } from "./args.js";
 
 let failed = 0;
 
@@ -222,6 +223,30 @@ check("ссылка «вперёд» не путается с «назад»", (
   const offsite =
     '<html><body><a rel="next" href="https://elsewhere.invalid/c/3">Next</a></body></html>';
   assert(findNextLink(offsite, here) === null, "ушли на посторонний сайт");
+});
+
+check("разбор аргументов переживает лишний --", () => {
+  // Ровно то, обо что споткнулись: npm подставляет -- сам, и терминал
+  // иногда добавляет ещё один. Это разделитель, а не ключ.
+  const a = parseArgv(["--", "--список", "главы.txt"]);
+  assert(a.flags.get("список") === "главы.txt", `ключ потерялся: ${[...a.flags]}`);
+  assert(a.positional.length === 0, "разделитель попал в позиционные");
+
+  const b = parseArgv(["перевести", "глава.txt", "--регистр", "живой"]);
+  assert(b.positional[0] === "перевести" && b.positional[1] === "глава.txt", "позиционные съехали");
+  assert(b.flags.get("регистр") === "живой", "ключ со значением не разобрался");
+
+  const c = parseArgv(["список.txt", "--все", "--предел", "300"], ["все"]);
+  assert(c.bare.has("все"), "ключ без значения не распознан");
+  assert(c.flags.get("предел") === "300", "ключ после булева потерялся");
+
+  let threw = false;
+  try {
+    parseArgv(["--глоссарий"]);
+  } catch {
+    threw = true;
+  }
+  assert(threw, "ключ без значения должен ругаться, а не молчать");
 });
 
 check("регистры перевода на месте", () => {

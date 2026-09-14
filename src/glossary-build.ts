@@ -18,6 +18,7 @@ import { MODELS, USD_RUB, type Tier } from "./config.js";
 import { loadChapter } from "./extract.js";
 import { type Glossary } from "./glossary.js";
 import { extractTerms, mergeIntoGlossary } from "./terms.js";
+import { parseArgv } from "./args.js";
 
 const USAGE = `Сборка глоссария из глав.
 
@@ -45,23 +46,7 @@ interface Args {
 }
 
 function parseArgs(argv: string[]): Args {
-  const positional: string[] = [];
-  const flags = new Map<string, string>();
-
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === undefined) continue;
-    if (arg.startsWith("--")) {
-      const value = argv[i + 1];
-      if (value === undefined || value.startsWith("--")) {
-        throw new Error(`У ключа ${arg} нет значения.`);
-      }
-      flags.set(arg.slice(2), value);
-      i += 1;
-    } else {
-      positional.push(arg);
-    }
-  }
+  const { flags, positional } = parseArgv(argv);
 
   const tier = flags.get("модель") ?? flags.get("tier") ?? "strong";
   if (tier !== "fast" && tier !== "strong") {

@@ -15,6 +15,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { JSDOM } from "jsdom";
 import { USER_AGENT } from "./config.js";
 import { fetchPage, findNextLink } from "./extract.js";
+import { parseArgv } from "./args.js";
 
 const USAGE = `Сборка списка глав.
 
@@ -230,18 +231,7 @@ async function write(
 }
 
 async function main(): Promise<void> {
-  const argv = process.argv.slice(2);
-  const flags = new Map<string, string>();
-  for (let i = 0; i < argv.length; i += 1) {
-    const arg = argv[i];
-    if (arg === undefined || !arg.startsWith("--")) continue;
-    const value = argv[i + 1];
-    if (value === undefined || value.startsWith("--")) {
-      throw new Error(`У ключа ${arg} нет значения.`);
-    }
-    flags.set(arg.slice(2), value);
-    i += 1;
-  }
+  const { flags } = parseArgv(process.argv.slice(2));
 
   const pattern = flags.get("шаблон") ?? flags.get("pattern");
   const toc = flags.get("оглавление") ?? flags.get("toc");
