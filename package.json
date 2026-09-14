@@ -6,6 +6,7 @@
   "description": "Перевод англоязычных веб-новелл на русский",
   "scripts": {
     "tolmach": "tsx src/cli.ts",
+    "замер": "tsx src/measure.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
