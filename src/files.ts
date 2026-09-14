@@ -8,6 +8,7 @@
  */
 
 import { readFile, readdir } from "node:fs/promises";
+import type { Glossary } from "./glossary.js";
 import path from "node:path";
 
 function isMissing(error: unknown): boolean {
@@ -82,4 +83,14 @@ export async function readList(listPath: string, limit?: number): Promise<string
     );
   }
   return limit === undefined ? lines : lines.slice(0, limit);
+}
+
+/** Глоссарий с диска. Живёт здесь, а не рядом с типами: это чтение файла. */
+export async function loadGlossary(path: string): Promise<Glossary> {
+  const raw = JSON.parse(await readTextFile(path, "глоссарий")) as Partial<Glossary>;
+  return {
+    novel: raw.novel ?? "",
+    terms: raw.terms ?? [],
+    addresses: raw.addresses ?? [],
+  };
 }

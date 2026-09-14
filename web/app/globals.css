@@ -1,0 +1,76 @@
+/*
+ * «Ночной скрипторий»: тёплая чернь, текст цвета бумаги, единственный
+ * акцент — киноварь, которой переписчики выводили заголовки и первую букву.
+ * Палитра взята из холста дизайна и должна с ним совпадать.
+ */
+
+:root {
+  --bg: #14120f;
+  --bg-raised: #1a1713;
+  --ink: #f2ece0;
+  --ink-read: #ece4d6;
+  --muted: #8a806f;
+  --dim: #6b6459;
+  --accent: #d4502e;
+  --accent-hover: #e8663f;
+  --line: #2b2620;
+  --line-soft: #221e19;
+  --term: #8f5b45;
+
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-ui), system-ui, -apple-system, "Segoe UI", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); }
+
+/* Текст главы. Literata — та же гарнитура, что в макетах ридера. */
+.reading {
+  font-family: var(--font-read), Georgia, "Times New Roman", serif;
+  font-size: 19px;
+  line-height: 1.78;
+  color: var(--ink-read);
+  text-wrap: pretty;
+}
+.reading p { margin: 0 0 26px; }
+
+/* Буквица киноварью — единственное украшение, и только у первого абзаца. */
+.reading > p:first-of-type::first-letter {
+  float: left;
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 64px;
+  line-height: 52px;
+  padding: 6px 10px 0 0;
+  color: var(--accent);
+}
+
+.display { font-family: var(--font-display), Georgia, serif; font-weight: 400; }
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+button, input, textarea, select { font: inherit; }
+
+/* Полоса прокрутки в тон, иначе на тёмной странице она бьёт по глазам. */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #322c25; border-radius: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+@media (max-width: 640px) {
+  .reading { font-size: 18px; line-height: 1.75; }
+}

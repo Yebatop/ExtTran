@@ -16,7 +16,10 @@
     "замер": "tsx src/measure.ts",
     "translate": "tsx src/cli.ts",
     "tolmach": "tsx src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build:core": "tsc -p tsconfig.core.json",
+    "web": "npm run build:core && npm run dev --prefix web",
+    "сайт": "npm run build:core && npm run dev --prefix web"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",

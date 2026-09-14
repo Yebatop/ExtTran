@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "moduleResolution": "nodenext",
+    "module": "nodenext"
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": [
+    "src/check.ts",
+    "src/cli.ts",
+    "src/glossary-build.ts",
+    "src/measure.ts",
+    "src/selftest.ts",
+    "src/sources-build.ts"
+  ]
+}

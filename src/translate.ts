@@ -59,6 +59,15 @@ export interface TranslateOptions {
   /** Глубина обдумывания. На моделях без поддержки не отправляется. */
   effort?: "low" | "medium" | "high";
   client?: Anthropic;
+  /**
+   * Вызывается по мере того, как приходит перевод.
+   *
+   * Глава переводится от минуты до двух — ждать её молча значит показывать
+   * пустой экран дольше, чем человек готов ждать. Текст, который появляется
+   * по абзацу, ту же минуту делает терпимой, поэтому сайт читает перевод
+   * потоком, а консоли это просто не нужно и она колбэк не передаёт.
+   */
+  onText?: (chunk: string) => void;
 }
 
 export async function translateChapter(
@@ -99,6 +108,7 @@ export async function translateChapter(
   let message: Anthropic.Message;
   try {
     const stream = client.messages.stream(request);
+    if (options.onText) stream.on("text", options.onText);
     message = await stream.finalMessage();
   } catch (error) {
     throw describeApiError(error);

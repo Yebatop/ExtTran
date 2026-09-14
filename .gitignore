@@ -6,3 +6,11 @@ design/tolmach-design.html
 
 # Результаты замеров
 out/
+
+# Собранное ядро — пересобирается командой npm run build:core
+dist/
+*.tsbuildinfo
+
+# Сборка сайта
+web/.next/
+web/out/

@@ -21,9 +21,10 @@ import {
 } from "./config.js";
 import { formatSpend } from "./cost.js";
 import { loadChapter } from "./extract.js";
-import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
+import { EMPTY_GLOSSARY, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
 import { parseArgv } from "./args.js";
+import { loadGlossary } from "./files.js";
 
 const USAGE = `Толмач — перевод главы веб-новеллы на русский.
 

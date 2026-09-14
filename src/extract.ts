@@ -154,6 +154,18 @@ export function attempts(html: string, source: string): ExtractionAttempt[] {
   return out;
 }
 
+/**
+ * Снять главу с уже полученного HTML.
+ *
+ * Отдельно от loadChapter, потому что сайту нужно посмотреть на страницу до
+ * того, как он начнёт с неё что-то снимать: платную главу мы не переводим,
+ * а понять это можно только по разметке. Качать страницу дважды ради этого
+ * незачем.
+ */
+export function chapterFromHtml(html: string, source: string): Chapter {
+  return fromHtml(html, source);
+}
+
 function fromHtml(html: string, source: string): Chapter {
   const tries = attempts(html, source);
   if (tries.length === 0) {

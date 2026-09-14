@@ -6,8 +6,6 @@
  * его можно было закэшировать.
  */
 
-import { readTextFile } from "./files.js";
-
 export type TermKind =
   | "имя"
   | "обращение"
@@ -50,15 +48,6 @@ export const EMPTY_GLOSSARY: Glossary = {
   terms: [],
   addresses: [],
 };
-
-export async function loadGlossary(path: string): Promise<Glossary> {
-  const raw = JSON.parse(await readTextFile(path, "глоссарий")) as Partial<Glossary>;
-  return {
-    novel: raw.novel ?? "",
-    terms: raw.terms ?? [],
-    addresses: raw.addresses ?? [],
-  };
-}
 
 /**
  * Глоссарий в текст для промпта.

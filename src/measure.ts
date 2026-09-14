@@ -26,12 +26,12 @@ import {
   type Tier,
 } from "./config.js";
 import { loadChapter } from "./extract.js";
-import { EMPTY_GLOSSARY, loadGlossary, type Glossary } from "./glossary.js";
+import { EMPTY_GLOSSARY, type Glossary } from "./glossary.js";
 import { translateChapter } from "./translate.js";
 import { describeCeiling, makeCeiling, type Ceiling } from "./cost.js";
 import { mean, median, spread } from "./stats.js";
 import { parseArgv } from "./args.js";
-import { readList } from "./files.js";
+import { loadGlossary, readList } from "./files.js";
 
 const USAGE = `Замер себестоимости главы.
 
