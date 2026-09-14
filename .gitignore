@@ -1,2 +1,8 @@
+node_modules/
+.env
+
 # Собранный холст дизайна — пересобирается из design/*.dc.html
 design/tolmach-design.html
+
+# Результаты замеров
+out/
