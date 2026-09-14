@@ -218,6 +218,8 @@ async function main(): Promise<void> {
   const client = new Anthropic();
   let spentRub = 0;
   let totalAdded = 0;
+  let totalIn = 0;
+  let totalOut = 0;
   let totalAddresses = 0;
 
   process.stderr.write(
@@ -267,9 +269,15 @@ async function main(): Promise<void> {
         "utf8",
       );
 
+      const sp = found.spend;
+      totalIn += sp.inputTokens + sp.cacheReadTokens + sp.cacheWriteTokens;
+      totalOut += sp.outputTokens;
       process.stderr.write(
-        `  ${index + 1}/${planned.length} ✓ +${report.added} терминов, ` +
-          `+${report.addressesAdded} обращений  ${found.spend.rub.toFixed(2)} ₽\n`,
+        `  ${index + 1}/${planned.length} ✓ +${report.added} терм., ` +
+          `+${report.addressesAdded} обращ.  ` +
+          `вход ${(sp.inputTokens + sp.cacheReadTokens + sp.cacheWriteTokens).toLocaleString("ru")}` +
+          `${sp.cacheReadTokens > 0 ? ` (из кэша ${sp.cacheReadTokens.toLocaleString("ru")})` : ""}` +
+          `, выход ${sp.outputTokens.toLocaleString("ru")}  ${sp.rub.toFixed(2)} ₽\n`,
       );
     } catch (error) {
       process.stderr.write(
@@ -284,7 +292,11 @@ async function main(): Promise<void> {
       "─".repeat(56),
       `Глоссарий: ${glossary.terms.length} терминов, ${glossary.addresses.length} пар обращений`,
       `Добавлено за прогон: ${totalAdded} терминов, ${totalAddresses} обращений`,
-      `Сборка стоила ${spentRub.toFixed(2)} ₽ (курс ${USD_RUB})`,
+      `Сборка стоила ${spentRub.toFixed(2)} ₽ ($${(spentRub / USD_RUB).toFixed(2)})`,
+      `Токенов: вход ${totalIn.toLocaleString("ru")}, выход ${totalOut.toLocaleString("ru")}`,
+      totalOut > totalIn / 2
+        ? "Выход велик для списка имён — значит, платим за обдумывание."
+        : "Расход в основном на вход: это пересылаемый список уже известного.",
       "",
       `Файл: ${args.out}`,
       "",

@@ -18,7 +18,13 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { MODELS, type Tier } from "./config.js";
 import { priceUsage, type Spend } from "./cost.js";
 import type { Chapter } from "./extract.js";
-import { renderGlossary, type Address, type Glossary, type Term, type TermKind } from "./glossary.js";
+import {
+  renderKnownCompact,
+  type Address,
+  type Glossary,
+  type Term,
+  type TermKind,
+} from "./glossary.js";
 
 const KINDS = [
   "имя",
@@ -96,7 +102,7 @@ export async function extractTerms(options: {
     { type: "text", text: INSTRUCTIONS, cache_control: { type: "ephemeral" } },
     {
       type: "text",
-      text: `УЖЕ В ГЛОССАРИИ\n\n${renderGlossary(known)}`,
+      text: renderKnownCompact(known),
       cache_control: { type: "ephemeral" },
     },
   ];

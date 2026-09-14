@@ -12,7 +12,7 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { USER_AGENT, REGISTERS, MODELS, isRegister } from "./config.js";
-import { renderGlossary, type Glossary } from "./glossary.js";
+import { renderGlossary, renderKnownCompact, type Glossary } from "./glossary.js";
 import {
   attempts,
   decodeMhtml,
@@ -104,6 +104,36 @@ check("глоссарий собирается одинаково при люб�
   assert(
     renderGlossary(a) === renderGlossary(b),
     "порядок терминов влияет на промпт — кэш будет обнуляться каждый раз",
+  );
+});
+
+check("список известного уходит коротким и одинаковым", () => {
+  // Полный глоссарий пересылался в каждый запрос целиком — с ростом книги это
+  // и оказалось главной статьёй расхода на разбор. Модели здесь нужно знать
+  // только, чего не предлагать повторно.
+  const big: Glossary = {
+    novel: "X",
+    terms: [
+      { en: "Bravo", ru: "Браво", kind: "имя", note: "капитан городской стражи" },
+      { en: "Alpha", ru: "Альфа", kind: "место", note: "столица южного предела" },
+    ],
+    addresses: [{ from: "Б", to: "А", form: "ты" }],
+  };
+  const compact = renderKnownCompact(big);
+  assert(compact.includes("Alpha") && compact.includes("Bravo"), "термины потерялись");
+  assert(!compact.includes("Браво"), "перевод уходит в запрос, хотя там не нужен");
+  assert(!compact.includes("капитан"), "помета уходит в запрос, хотя там не нужна");
+  assert(
+    compact.length < renderGlossary(big).length,
+    "короткий список не короче полного глоссария",
+  );
+  assert(
+    compact === renderKnownCompact({ ...big, terms: [...big.terms].reverse() }),
+    "порядок терминов меняет промпт — кэш будет обнуляться каждую главу",
+  );
+  assert(
+    renderKnownCompact({ novel: "X", terms: [], addresses: [] }).length > 0,
+    "на первой главе список пуст, но блок должен быть непустым",
   );
 });
 
