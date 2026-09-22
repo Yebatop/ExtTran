@@ -27,7 +27,8 @@
     "web": "npm run build:core && npm run web:deps && npm run dev --prefix web",
     "сайт": "npm run build:core && npm run web:deps && npm run dev --prefix web",
     "web:webpack": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack",
-    "сайт-запасной": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack"
+    "сайт-запасной": "npm run build:core && npm run web:deps && npm run dev --prefix web -- --webpack",
+    "проверка-шлюза": "tsx src/gateway-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.125.0",
