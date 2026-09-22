@@ -475,3 +475,52 @@ function countWords(text: string): number {
   const words = text.match(/[\p{L}\p{N}'’-]+/gu);
   return words ? words.length : 0;
 }
+
+/**
+ * Обложка книги со страницы книги.
+ *
+ * Берём только адрес картинки, саму картинку к себе не тащим: показывает её
+ * браузер читателя прямо с сайта-первоисточника. Это та же картинка, которую
+ * сайт сам отдаёт мессенджерам и поисковикам для превью — og:image ставят
+ * ровно для того, чтобы её показывали снаружи.
+ *
+ * Сначала мета-теги превью, потом картинка с говорящим классом. Если ничего
+ * не нашлось — пусто, и на полке останется нарисованная нами обложка.
+ */
+export function coverFromHtml(html: string, pageUrl: string): string | null {
+  const dom = new JSDOM(html, { url: pageUrl });
+  const doc = dom.window.document;
+
+  const metas = [
+    'meta[property="og:image"]',
+    'meta[property="og:image:url"]',
+    'meta[name="twitter:image"]',
+    'meta[name="twitter:image:src"]',
+    'link[rel="image_src"]',
+  ];
+  for (const selector of metas) {
+    const node = doc.querySelector(selector);
+    const raw = node?.getAttribute("content") ?? node?.getAttribute("href");
+    const found = absolute(raw, pageUrl);
+    if (found) return found;
+  }
+
+  // Картинка с говорящим именем: cover, thumbnail, poster, обложка.
+  const named = [...doc.querySelectorAll("img")].find((img) =>
+    /cover|thumb|poster|обложк/i.test(
+      `${img.getAttribute("class") ?? ""} ${img.getAttribute("id") ?? ""} ${img.getAttribute("alt") ?? ""}`,
+    ),
+  );
+  return absolute(named?.getAttribute("src") ?? named?.getAttribute("data-src"), pageUrl);
+}
+
+/** Адрес картинки целиком — и только http(s), чтобы не подсунуть javascript:. */
+function absolute(raw: string | null | undefined, base: string): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw.trim(), base);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}

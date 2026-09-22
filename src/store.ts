@@ -25,8 +25,25 @@ export interface BookRecord {
   slug: string;
   /** Настоящее название, когда узнаем его из заголовка главы. */
   title: string;
+  /**
+   * Как книга называлась у первоисточника — то, что стояло в заголовке первой
+   * главы. Переименование его не трогает.
+   *
+   * Нужно не для показа, а чтобы вычищать это имя из названий глав: на многих
+   * сайтах в заголовке страницы стоит имя книги, и в сохранённых главах оно
+   * останется даже после того, как книгу переименуют.
+   */
+  sourceTitle?: string | null;
   /** Сколько глав этой книги мы уже перевели. */
   chaptersTranslated: number;
+  /**
+   * Адрес обложки у первоисточника — саму картинку мы не храним.
+   *
+   * Это та же картинка, которую сайт отдаёт мессенджерам для превью. Пусто —
+   * значит, не нашлась или её убрали руками; тогда на полке остаётся
+   * нарисованная нами.
+   */
+  coverUrl?: string | null;
   firstSeen: string;
   lastSeen: string;
 }
@@ -74,6 +91,52 @@ export interface TranslationRecord {
 }
 
 /**
+ * Что с главой, поставленной в очередь на перевод наперёд.
+ *
+ * «Ждёт» — стоит в очереди, ещё не отправлена. «Отправлена» — ушла в пакет,
+ * ответа пока нет. «Готова» — перевод записан, строка остаётся ради истории.
+ * «Не вышло» — с пояснением, почему: страница не открылась, модель отказалась,
+ * глава оказалась платной.
+ */
+export type QueueState = "ждёт" | "отправлена" | "готова" | "не вышло";
+
+/**
+ * Глава, которую мы переводим наперёд, пока читатель читает предыдущую.
+ *
+ * Смысл всей затеи — в пакетном API: он вдвое дешевле обычного, но отвечает не
+ * сразу. Там, где читатель ждёт главу сейчас, это не годится; там, где мы
+ * переводим впрок, ожидание никого не касается, а половина себестоимости —
+ * касается напрямую.
+ */
+export interface QueueRecord {
+  owner: string;
+  /** Адрес главы у первоисточника. */
+  source: string;
+  bookKey: string;
+  register: string;
+  tier: string;
+  state: QueueState;
+  /** Идентификатор пакета, пока он в работе. */
+  batchId: string | null;
+  /**
+   * Снятое со страницы при отправке: заголовок, длина и адрес следующей главы.
+   *
+   * Иначе их взять неоткуда. Пакет отвечает часами позже и возвращает только
+   * текст; страница к тому времени давно закрыта, а второй раз её качать ради
+   * заголовка — лишний поход к чужому сайту. Без адреса следующей главы
+   * переведённая наперёд глава вообще оказалась бы тупиком: кнопка «дальше»
+   * никуда не ведёт.
+   */
+  title: string;
+  words: number;
+  nextUrl: string | null;
+  /** Почему не вышло — для показа человеку, а не для разбора кодом. */
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
  * Единственный читатель, пока нет учётных записей.
  *
  * Значение осмысленное, а не пустое: когда записи появятся, по нему будет
@@ -110,6 +173,67 @@ export interface Store {
     owner: string,
     bookKey: string,
   ): Promise<Array<Omit<TranslationRecord, "text">>>;
+  /**
+   * Последние главы читателя по всем книгам сразу — от новых к старым.
+   *
+   * Отдельный вопрос к хранилищу, а не сложение ответов на сайте: «продолжить
+   * читать» на главной иначе спрашивало бы по разу на каждую книгу, и на
+   * десятке книг это десяток запросов к базе ради одной строки.
+   */
+  recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>>;
+  /**
+   * Сколько терминов в глоссарии каждой книги.
+   *
+   * Отдельный вопрос, а не чтение глоссариев по одному: в каталоге нужно
+   * только число, а глоссарий на трёхстах главах — это сотни терминов со
+   * всеми пометами. Тянуть их целиком ради одной цифры в строке списка
+   * незачем, тем более по разу на книгу.
+   */
+  termCounts(): Promise<Map<string, number>>;
+  /**
+   * Поставить главу в очередь на перевод наперёд.
+   *
+   * Уже стоящую не трогаем и отвечаем false: очередь пополняется при каждом
+   * открытии главы, и складывать туда одно и то же по разу на открытие —
+   * верный способ отправить в пакет одну главу десять раз.
+   */
+  enqueue(record: QueueRecord): Promise<boolean>;
+  /** Главы очереди в заданных состояниях — от старых к новым. */
+  listQueue(
+    owner: string,
+    states: readonly QueueState[],
+    limit: number,
+  ): Promise<QueueRecord[]>;
+  /** Отметить, что с главой стало. */
+  markQueue(
+    owner: string,
+    source: string,
+    register: string,
+    tier: string,
+    patch: {
+      state: QueueState;
+      batchId?: string | null;
+      note?: string | null;
+      title?: string;
+      words?: number;
+      nextUrl?: string | null;
+    },
+  ): Promise<void>;
+  /** Сколько глав книги в каком состоянии — для карточки книги. */
+  countQueue(owner: string, bookKey: string): Promise<Map<QueueState, number>>;
+}
+
+/** Ключ очереди: тот же, что у перевода. Одна глава в одном виде — одна строка. */
+export function queueKey(
+  owner: string,
+  source: string,
+  register: string,
+  tier: string,
+): string {
+  return [owner, source, register, tier].join("\u0000");
 }
 
 /** Ключ перевода: читатель, глава, регистр, модель. Всё это меняет текст. */
@@ -127,6 +251,7 @@ export class MemoryStore implements Store {
   private books = new Map<string, BookRecord>();
   private glossaries = new Map<string, Glossary>();
   private translations = new Map<string, TranslationRecord>();
+  private queue = new Map<string, QueueRecord>();
 
   async readBook(key: string): Promise<BookRecord | null> {
     return this.books.get(key) ?? null;
@@ -175,6 +300,73 @@ export class MemoryStore implements Store {
       .filter((t) => t.owner === owner && t.bookKey === bookKey)
       .map(({ text: _text, ...rest }) => rest)
       .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
+  }
+
+  async recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    return [...this.translations.values()]
+      .filter((t) => t.owner === owner)
+      .map(({ text: _text, ...rest }) => rest)
+      .sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt))
+      .slice(0, limit);
+  }
+
+  async termCounts(): Promise<Map<string, number>> {
+    return new Map([...this.glossaries].map(([key, g]) => [key, g.terms.length]));
+  }
+
+  async enqueue(record: QueueRecord): Promise<boolean> {
+    const key = queueKey(record.owner, record.source, record.register, record.tier);
+    if (this.queue.has(key)) return false;
+    this.queue.set(key, { ...record });
+    return true;
+  }
+
+  async listQueue(
+    owner: string,
+    states: readonly QueueState[],
+    limit: number,
+  ): Promise<QueueRecord[]> {
+    return [...this.queue.values()]
+      .filter((q) => q.owner === owner && states.includes(q.state))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .slice(0, limit);
+  }
+
+  async markQueue(
+    owner: string,
+    source: string,
+    register: string,
+    tier: string,
+    patch: {
+      state: QueueState;
+      batchId?: string | null;
+      note?: string | null;
+      title?: string;
+      words?: number;
+      nextUrl?: string | null;
+    },
+  ): Promise<void> {
+    const found = this.queue.get(queueKey(owner, source, register, tier));
+    if (!found) return;
+    found.state = patch.state;
+    if (patch.batchId !== undefined) found.batchId = patch.batchId;
+    if (patch.note !== undefined) found.note = patch.note;
+    if (patch.title !== undefined) found.title = patch.title;
+    if (patch.words !== undefined) found.words = patch.words;
+    if (patch.nextUrl !== undefined) found.nextUrl = patch.nextUrl;
+    found.updatedAt = new Date().toISOString();
+  }
+
+  async countQueue(owner: string, bookKey: string): Promise<Map<QueueState, number>> {
+    const counts = new Map<QueueState, number>();
+    for (const item of this.queue.values()) {
+      if (item.owner !== owner || item.bookKey !== bookKey) continue;
+      counts.set(item.state, (counts.get(item.state) ?? 0) + 1);
+    }
+    return counts;
   }
 }
 
@@ -278,9 +470,16 @@ export class FileStore implements Store {
     );
   }
 
-  async listTranslations(
+  /**
+   * Все переводы читателя, от новых к старым.
+   *
+   * Папка обходится целиком: имя файла — свёртка ключа, по нему не видно ни
+   * книги, ни владельца. Для файлового хранилища это нормально — оно и так
+   * только для «посмотреть, как работает», а в настоящей работе под сайтом
+   * база.
+   */
+  private async allTranslations(
     owner: string,
-    bookKey: string,
   ): Promise<Array<Omit<TranslationRecord, "text">>> {
     let names: string[];
     try {
@@ -293,11 +492,104 @@ export class FileStore implements Store {
       const record = await this.readJson<TranslationRecord>(
         path.join(this.root, "переводы", name),
       );
-      if (!record || record.owner !== owner || record.bookKey !== bookKey) continue;
+      if (!record || record.owner !== owner) continue;
       const { text: _text, ...rest } = record;
       found.push(rest);
     }
     return found.sort((a, b) => b.lastReadAt.localeCompare(a.lastReadAt));
+  }
+
+  async listTranslations(
+    owner: string,
+    bookKey: string,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    const all = await this.allTranslations(owner);
+    return all.filter((t) => t.bookKey === bookKey);
+  }
+
+  async recentTranslations(
+    owner: string,
+    limit: number,
+  ): Promise<Array<Omit<TranslationRecord, "text">>> {
+    const all = await this.allTranslations(owner);
+    return all.slice(0, limit);
+  }
+
+  async termCounts(): Promise<Map<string, number>> {
+    const counts = new Map<string, number>();
+    for (const book of await this.listBooks()) {
+      counts.set(book.key, (await this.readGlossary(book.key))?.terms.length ?? 0);
+    }
+    return counts;
+  }
+
+  /** Вся очередь одним файлом: она короткая, а искать по ней надо целиком. */
+  private queueFile(): string {
+    return path.join(this.root, "очередь.json");
+  }
+
+  private async queueAll(): Promise<QueueRecord[]> {
+    return (await this.readJson<QueueRecord[]>(this.queueFile())) ?? [];
+  }
+
+  async enqueue(record: QueueRecord): Promise<boolean> {
+    const all = await this.queueAll();
+    const key = queueKey(record.owner, record.source, record.register, record.tier);
+    if (all.some((q) => queueKey(q.owner, q.source, q.register, q.tier) === key)) {
+      return false;
+    }
+    all.push(record);
+    await this.writeJson(this.queueFile(), all);
+    return true;
+  }
+
+  async listQueue(
+    owner: string,
+    states: readonly QueueState[],
+    limit: number,
+  ): Promise<QueueRecord[]> {
+    const all = await this.queueAll();
+    return all
+      .filter((q) => q.owner === owner && states.includes(q.state))
+      .sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+      .slice(0, limit);
+  }
+
+  async markQueue(
+    owner: string,
+    source: string,
+    register: string,
+    tier: string,
+    patch: {
+      state: QueueState;
+      batchId?: string | null;
+      note?: string | null;
+      title?: string;
+      words?: number;
+      nextUrl?: string | null;
+    },
+  ): Promise<void> {
+    const all = await this.queueAll();
+    const key = queueKey(owner, source, register, tier);
+    const found = all.find((q) => queueKey(q.owner, q.source, q.register, q.tier) === key);
+    if (!found) return;
+    found.state = patch.state;
+    if (patch.batchId !== undefined) found.batchId = patch.batchId;
+    if (patch.note !== undefined) found.note = patch.note;
+    if (patch.title !== undefined) found.title = patch.title;
+    if (patch.words !== undefined) found.words = patch.words;
+    if (patch.nextUrl !== undefined) found.nextUrl = patch.nextUrl;
+    found.updatedAt = new Date().toISOString();
+    await this.writeJson(this.queueFile(), all);
+  }
+
+  async countQueue(owner: string, bookKey: string): Promise<Map<QueueState, number>> {
+    const counts = new Map<QueueState, number>();
+    for (const item of await this.queueAll()) {
+      if (item.owner !== owner || item.bookKey !== bookKey) continue;
+      counts.set(item.state, (counts.get(item.state) ?? 0) + 1);
+    }
+    return counts;
   }
 }
 

@@ -14,10 +14,18 @@
 // Первым импортом: загружает .env до того, как его прочитает config.
 import "./env.js";
 import { connectionString, PostgresStore } from "./store-pg.js";
-import { SOLE_READER } from "./store.js";
 
 const KEY = "проверка-толмача.invalid/книга";
 const OTHER = "проверка-толмача.invalid/другая-книга";
+/**
+ * Читатель у проверки свой, не тот, под которым живут настоящие переводы.
+ *
+ * Иначе проверка ломается от чужих данных: «последние главы по всем книгам»
+ * у настоящего читателя вернут и его собственные, а сколько их — проверке
+ * знать неоткуда. Свой читатель делает счёт предсказуемым и заодно не даёт
+ * прогону на рабочей базе смешаться с чужим чтением.
+ */
+const READER = "проверка-читателя";
 
 let failed = 0;
 
@@ -67,12 +75,23 @@ async function main(): Promise<void> {
     });
     const book = await store.readBook(KEY);
     check("книга читается обратно", book?.chaptersTranslated === 1);
+    check("обложки у новой книги нет", (book?.coverUrl ?? null) === null);
 
     // Вторая глава той же книги: обновление, а не второй ряд.
     await store.writeBook({ ...book!, chaptersTranslated: 2 });
     const again = await store.readBook(KEY);
     check("вторая глава обновляет, а не задваивает", again?.chaptersTranslated === 2);
     check("дата первой встречи цела", again?.firstSeen === book?.firstSeen);
+
+    // Обложка: храним адрес, а не картинку.
+    const withCover = { ...(again as NonNullable<typeof again>), coverUrl: "https://проверка.invalid/cover.jpg" };
+    await store.writeBook(withCover);
+    check(
+      "адрес обложки сохраняется",
+      (await store.readBook(KEY))?.coverUrl === "https://проверка.invalid/cover.jpg",
+    );
+    await store.writeBook({ ...withCover, coverUrl: null });
+    check("обложку можно убрать", ((await store.readBook(KEY))?.coverUrl ?? null) === null);
 
     await store.writeGlossary(KEY, {
       novel: "Проверка",
@@ -92,16 +111,16 @@ async function main(): Promise<void> {
     const stamp = new Date().toISOString();
     check(
       "непереведённой главы в хранилище нет",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "middle")) === null,
     );
     await store.writeTranslation({
-      owner: SOLE_READER, source: "https://проверка.invalid/c/1", bookKey: KEY,
+      owner: READER, source: "https://проверка.invalid/c/1", bookKey: KEY,
       register: "ровный", tier: "middle", title: "Глава 1", words: 1738,
       text: "Первый абзац.\n\nВторой абзац.", model: "claude-sonnet-5",
       rub: 5.75, published: false, nextUrl: "https://проверка.invalid/c/2",
       createdAt: stamp, lastReadAt: stamp,
     });
-    const back = await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "middle");
+    const back = await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "middle");
     check("перевод читается обратно целиком", back?.text.includes("Второй абзац") === true);
     check("цена сохранилась", back?.rub === 5.75);
     check(
@@ -111,15 +130,95 @@ async function main(): Promise<void> {
     check("галочка публикации выключена", back?.published === false);
     check(
       "другой регистр — другой перевод, а не этот же",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "живой", "middle")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "живой", "middle")) === null,
     );
     check(
       "другая модель — другой перевод",
-      (await store.readTranslation(SOLE_READER, "https://проверка.invalid/c/1", "ровный", "strong")) === null,
+      (await store.readTranslation(READER, "https://проверка.invalid/c/1", "ровный", "strong")) === null,
     );
     check(
       "чужому читателю перевод не отдаётся",
       (await store.readTranslation("кто-то-другой", "https://проверка.invalid/c/1", "ровный", "middle")) === null,
+    );
+
+    // Списки глав: по ним работают карточка книги и «продолжить» на главной.
+    await store.writeTranslation({
+      owner: READER, source: "https://проверка.invalid/другая/c/1", bookKey: OTHER,
+      register: "ровный", tier: "middle", title: "Другая книга, глава 1", words: 900,
+      text: "Текст другой книги.", model: "claude-sonnet-5",
+      rub: 3.1, published: false, nextUrl: null,
+      createdAt: stamp, lastReadAt: new Date(Date.now() + 1000).toISOString(),
+    });
+    const ofBook = await store.listTranslations(READER, KEY);
+    check("главы книги перечисляются", ofBook.length === 1);
+    check("чужая книга в список не попала", ofBook.every((t) => t.bookKey === KEY));
+    check(
+      "текст в списке не тянется",
+      ofBook.every((t) => !("text" in t)),
+    );
+    const recent = await store.recentTranslations(READER, 10);
+    check("последние главы видны по всем книгам сразу", recent.length === 2);
+    check("сверху та, что читали позже", recent[0]?.bookKey === OTHER);
+    check(
+      "чужие главы в «последние» не попадают",
+      (await store.recentTranslations("кто-то-другой", 10)).length === 0,
+    );
+    check("счёт последних глав ограничен", (await store.recentTranslations(READER, 1)).length === 1);
+
+    // Размеры глоссариев: по ним каталог сортирует и фильтрует.
+    const counts = await store.termCounts();
+    check("размер глоссария считает база", counts.get(KEY) === 2);
+    check("пустой глоссарий считается нулём, а не пропадает", counts.get(OTHER) === 0);
+
+    // Очередь перевода наперёд: по ней работает пакетная отправка.
+    const queued = {
+      owner: READER, source: "https://проверка.invalid/c/7", bookKey: KEY,
+      register: "ровный", tier: "middle", state: "ждёт" as const,
+      batchId: null, note: null, title: "", words: 0, nextUrl: null,
+      createdAt: stamp, updatedAt: stamp,
+    };
+    check("глава встаёт в очередь", (await store.enqueue(queued)) === true);
+    check("та же глава второй раз не встаёт", (await store.enqueue(queued)) === false);
+    check(
+      "очередь отдаётся по состоянию",
+      (await store.listQueue(READER, ["ждёт"], 10)).length === 1,
+    );
+    check(
+      "чужое состояние не попадает в выборку",
+      (await store.listQueue(READER, ["готова"], 10)).length === 0,
+    );
+
+    await store.markQueue(READER, queued.source, "ровный", "middle", {
+      state: "отправлена",
+      batchId: "msgbatch_проверка",
+      title: "Глава 7 «Тот, кто считает шаги»",
+      words: 1812,
+      nextUrl: "https://проверка.invalid/c/8",
+    });
+    const sent = (await store.listQueue(READER, ["отправлена"], 10))[0];
+    check("состояние меняется", sent?.state === "отправлена");
+    check("номер пакета сохраняется", sent?.batchId === "msgbatch_проверка");
+    check("заголовок со страницы сохраняется", sent?.title === "Глава 7 «Тот, кто считает шаги»");
+    check("длина главы сохраняется", sent?.words === 1812);
+    check(
+      "адрес следующей главы сохраняется — иначе переведённая наперёд глава тупик",
+      sent?.nextUrl === "https://проверка.invalid/c/8",
+    );
+
+    await store.markQueue(READER, queued.source, "ровный", "middle", { state: "не вышло", note: "страница не открылась" });
+    const failedItem = (await store.listQueue(READER, ["не вышло"], 10))[0];
+    check("причина неудачи сохраняется", failedItem?.note === "страница не открылась");
+    check(
+      "непереданный номер пакета не затирается",
+      failedItem?.batchId === "msgbatch_проверка",
+    );
+    check(
+      "очередь считается по книге",
+      (await store.countQueue(READER, KEY)).get("не вышло") === 1,
+    );
+    check(
+      "чужая книга в счёт не попадает",
+      (await store.countQueue(READER, OTHER)).size === 0,
     );
   } finally {
     await store.removeBook(KEY).catch(() => undefined);

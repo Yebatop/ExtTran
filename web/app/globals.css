@@ -88,7 +88,7 @@ button, input, textarea, select { font: inherit; }
    перевод, и при этом текст остаётся читаемым, а не превращается в справку. */
 .reading.original p {
   font-style: italic;
-  color: #a9a294;
+  color: var(--ink-original);
 }
 .reading.original > p:first-of-type::first-letter {
   float: none;
@@ -96,4 +96,163 @@ button, input, textarea, select { font: inherit; }
   line-height: inherit;
   padding: 0;
   color: inherit;
+}
+
+/* Каталог: слева колонка фильтров, справа список. На телефоне — друг под
+   другом, потому что 212 пикселей отдать не из чего. */
+.catalogue {
+  display: grid;
+  grid-template-columns: 212px minmax(0, 1fr);
+  gap: 30px;
+  align-items: start;
+}
+@media (max-width: 760px) {
+  .catalogue { grid-template-columns: minmax(0, 1fr); gap: 22px; }
+}
+
+/* Строка фильтра: название слева, число справа. Это ссылка, а не кнопка —
+   фильтры должны работать без единой строчки клиентского кода. */
+.fbtn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: #b0a693;
+  font-size: 13px;
+}
+.fbtn:hover { color: var(--ink); background: #1c1813; }
+.fbtn .n { color: var(--dim); font-weight: 400; font-variant-numeric: tabular-nums; }
+.fbtn.on { background: #241f18; border-color: #4a3527; color: var(--ink); font-weight: 600; }
+.fbtn.on .n { color: var(--muted); }
+
+/* Строка книги в каталоге. */
+.row {
+  display: flex;
+  gap: 18px;
+  padding: 16px;
+  border-radius: 12px;
+  background: #1a1611;
+  border: 1px solid #262019;
+  color: var(--ink);
+}
+.row:hover { border-color: #3a3129; color: var(--ink); }
+
+/*
+ * Три темы ридера с холста ReaderThemes. Меняются только цвета: кегль,
+ * интерлиньяж и ширина строки везде одни и те же — иначе это уже не тема,
+ * а другой ридер.
+ *
+ * Ночная — это :root выше, её здесь нет. Остальные две переопределяют те же
+ * переменные внутри своей ветки, поэтому весь ридер разворачивается целиком,
+ * а не пятнами: цвета в нём заданы переменными, а не числами.
+ */
+:root {
+  /* Оригинал: серо-синий, чтобы был рядом, но не спорил с русским. */
+  --ink-original: #a9a294;
+  /* Текст поверх киновари. */
+  --on-accent: #14120f;
+}
+
+[data-reader-theme="сепия"] {
+  --bg: #f0e4cf;
+  --bg-raised: #e7dabf;
+  --ink: #2e2820;
+  --ink-read: #3a3129;
+  --muted: #7a6a52;
+  --dim: #8a7a60;
+  --accent: #a83a1f;
+  --accent-hover: #8f3018;
+  --line: #ddd0b6;
+  --line-soft: #e4d8c0;
+  --term: #a86a45;
+  --ink-original: #6b6353;
+  --on-accent: #f6efe2;
+  color-scheme: light;
+}
+
+[data-reader-theme="дневная"] {
+  --bg: #f8f6f1;
+  --bg-raised: #efece5;
+  --ink: #1c1a16;
+  --ink-read: #26231e;
+  --muted: #6f6a5e;
+  --dim: #837d71;
+  --accent: #b8452a;
+  --accent-hover: #9d3823;
+  --line: #e0dbd0;
+  --line-soft: #e8e4dc;
+  --term: #a8674a;
+  --ink-original: #5e594f;
+  --on-accent: #faf8f4;
+  color-scheme: light;
+}
+
+/* Полоса прочитанного: сколько главы осталось под пальцем. */
+.progress {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--line-soft);
+}
+.progress .bar { flex-grow: 1; height: 4px; border-radius: 2px; background: var(--line); }
+.progress .bar span { display: block; height: 100%; border-radius: 2px; background: var(--accent); }
+.progress .pct { font-size: 11.5px; color: var(--dim); font-variant-numeric: tabular-nums; }
+
+/* Правки глоссария: поля формы одним видом на всю страницу. */
+.edit { display: grid; gap: 10px; padding: 14px 0 4px; }
+.edit label { display: grid; gap: 6px; font-size: 12px; color: var(--muted); }
+.edit input, .edit select {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 9px;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--ink);
+  font-size: 15px;
+}
+.edit .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+.edit .buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 2px; }
+.edit button {
+  padding: 10px 18px;
+  border-radius: 9px;
+  border: none;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.edit button.quiet {
+  background: transparent;
+  border: 1px solid var(--line);
+  color: var(--dim);
+  font-weight: 400;
+}
+
+/* Строка глоссария: раскрывается в форму по нажатию, без единой строчки
+   клиентского кода. Читать это не должно мешать, поэтому по умолчанию
+   свёрнуто и выглядит как обычная строка списка. */
+.term-row { border-bottom: 1px solid var(--line-soft); padding-bottom: 10px; }
+.term-row > summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 14px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 15px;
+}
+.term-row > summary::-webkit-details-marker { display: none; }
+.term-row > summary:hover { color: var(--accent); }
+.term-row[open] > summary { color: var(--accent); }
+@media (max-width: 520px) {
+  .term-row > summary { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }

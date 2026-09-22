@@ -60,6 +60,93 @@ export function bookRef(chapterUrl: string): BookRef {
 }
 
 /**
+ * Номер главы из её адреса.
+ *
+ * Порядок, в котором главы переводились, читателю ничего не говорит: если
+ * человек начал со сто шестнадцатой, она и есть сто шестнадцатая, а не
+ * «первая переведённая». Номер живёт в адресе, и это единственное место, где
+ * он есть наверняка: в заголовке страницы его может не быть вовсе.
+ *
+ * Берём последнее совпадение, а не первое: в пути до книги тоже попадаются
+ * числа — /novel/1234/chapter-5 про пятую главу, а не про тысяча двести
+ * тридцать четвёртую.
+ */
+export function chapterNumber(chapterUrl: string): number | null {
+  let url: URL;
+  try {
+    url = new URL(chapterUrl);
+  } catch {
+    return null;
+  }
+
+  // Ищем слово «глава» с номером. Отрицательный просмотр назад — чтобы «ch»
+  // не находилось внутри слов вроде search-12.
+  const marked = [
+    ...url.pathname.matchAll(
+      /(?<![a-zа-я])(?:chapter|chap|ch|episode|ep|part|глава)[-_]?(\d{1,6})/gi,
+    ),
+  ];
+  const last = marked[marked.length - 1];
+  if (last?.[1]) return Number(last[1]);
+
+  for (const key of ["chapter", "c", "глава"]) {
+    const value = url.searchParams.get(key);
+    if (value && /^\d{1,6}$/.test(value)) return Number(value);
+  }
+
+  // Голое число в пути: /novel/имя/116.
+  const bare = url.pathname.split("/").filter((s) => /^\d{1,6}$/.test(s));
+  const tail = bare[bare.length - 1];
+  return tail ? Number(tail) : null;
+}
+
+/** Убрать из заголовка главы имя книги и повтор номера. */
+function withoutBook(title: string, books: readonly string[]): string {
+  let out = title.trim();
+
+  for (const book of books) {
+    const name = book.trim();
+    if (!name) continue;
+    if (out.toLowerCase() === name.toLowerCase()) return "";
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    out = out.replace(new RegExp(`^${escaped}\\s*[-–—:|·]+\\s*`, "i"), "");
+    out = out.replace(new RegExp(`\\s*[-–—:|·]+\\s*${escaped}$`, "i"), "");
+  }
+
+  // «Chapter 116:» в начале — номер мы и так покажем отдельно.
+  out = out.replace(
+    /^(?:chapter|chap|ch\.?|episode|ep\.?|part|глава)\s*[-_№]?\s*\d+\s*[:.\-–—]*\s*/i,
+    "",
+  );
+  return out.trim();
+}
+
+/**
+ * Как назвать главу в списке.
+ *
+ * На одних сайтах в заголовке страницы имя главы, на других — имя книги, на
+ * третьих и то и другое сразу. Имя книги из заголовка убираем: в списке глав
+ * одной книги оно повторялось бы в каждой строке и не сообщало ничего.
+ *
+ * Имён книги можно передать несколько, и это не прихоть: читатель вправе
+ * переименовать книгу, а в уже сохранённых главах останется то имя, под
+ * которым её знал первоисточник. Убирать надо оба, иначе сразу после
+ * переименования старое имя вылезет в каждой строке списка.
+ */
+export function chapterName(
+  chapterUrl: string,
+  title?: string,
+  ...books: Array<string | null | undefined>
+): string {
+  const number = chapterNumber(chapterUrl);
+  const own = withoutBook(title ?? "", books.filter((b): b is string => Boolean(b)));
+
+  if (number !== null && own) return `Глава ${number} · ${own}`;
+  if (number !== null) return `Глава ${number}`;
+  return own || "Глава без заголовка";
+}
+
+/**
  * Ключ книги в виде, пригодном для имени файла, строки базы и куска адреса.
  *
  * Обратимость не нужна — нужно, чтобы разные книги не схлопнулись в один

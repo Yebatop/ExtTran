@@ -1,5 +1,8 @@
 import Link from "next/link";
-import { chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
+import { Nav } from "../../nav";
+import { renameBook } from "./actions";
+import { plural } from "../../words";
+import { chapterName, chapterNumber, chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +23,9 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
 
   if (!book) {
     return (
-      <main style={{ maxWidth: 560, margin: "0 auto", padding: "clamp(40px, 12vw, 120px) 16px" }}>
+      <>
+        <Nav here="книги" />
+        <main style={{ maxWidth: 560, margin: "0 auto", padding: "clamp(40px, 12vw, 120px) 16px" }}>
         <h1 className="display" style={{ fontSize: 30, margin: "0 0 14px" }}>
           Такой книги у нас нет
         </h1>
@@ -28,14 +33,30 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           Переведите из неё главу — книга появится здесь вместе с глоссарием.
         </p>
         <Link href="/">← На главную</Link>
-      </main>
+        </main>
+      </>
     );
   }
 
-  const [glossary, chapters] = await Promise.all([
+  const [glossary, chapters, queue] = await Promise.all([
     store.readGlossary(book.key),
     store.listTranslations(SOLE_READER, book.key),
+    store.countQueue(SOLE_READER, book.key),
   ]);
+
+  /*
+   * Главы по номеру, а не по порядку перевода. Если человек начал читать со
+   * сто шестнадцатой, она сто шестнадцатая, а не первая, — и в списке должна
+   * стоять там же, где стояла бы у первоисточника.
+   */
+  chapters.sort((a, b) => {
+    const left = chapterNumber(a.source);
+    const right = chapterNumber(b.source);
+    if (left !== null && right !== null) return left - right;
+    if (left !== null) return -1;
+    if (right !== null) return 1;
+    return a.createdAt.localeCompare(b.createdAt);
+  });
 
   const words = median(chapters.map((c) => c.words).filter((w) => w > 0));
   const spent = chapters.reduce((sum, c) => sum + c.rub, 0);
@@ -48,7 +69,9 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
   } as const;
 
   return (
-    <main style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
+    <>
+      <Nav here="книги" />
+      <main style={{ maxWidth: 760, margin: "0 auto", padding: "clamp(28px, 7vw, 72px) 16px 96px" }}>
       <nav style={{ marginBottom: 32, fontSize: 13, display: "flex", gap: 16 }}>
         <Link href="/books">← Каталог</Link>
         <a
@@ -63,9 +86,38 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
 
       <header style={{ marginBottom: 36 }}>
         <div className="label" style={{ marginBottom: 12 }}>{book.host}</div>
-        <h1 className="display" style={{ fontSize: "clamp(30px, 7vw, 46px)", margin: 0, lineHeight: 1.1 }}>
+        <h1 className="display" style={{ fontSize: "clamp(30px, 7vw, 46px)", margin: "0 0 12px", lineHeight: 1.1 }}>
           {book.title}
         </h1>
+        {/*
+          Название взято из заголовка первой главы, и это догадка: на одних
+          сайтах там имя книги, на других — имя главы, а на третьих и то и
+          другое сразу. Догадку должно быть чем поправить.
+        */}
+        <details className="term-row" style={{ borderBottom: "none", paddingBottom: 0 }}>
+          <summary style={{ gridTemplateColumns: "minmax(0, 1fr)", fontSize: 13, color: "var(--dim)" }}>
+            Название не то? Поправить
+          </summary>
+          <form action={renameBook} className="edit">
+            <input type="hidden" name="slug" value={slug} />
+            <label>
+              Как называть эту книгу
+              <input name="title" defaultValue={book.title} required />
+            </label>
+            <label>
+              Обложка — адрес картинки у первоисточника
+              <input
+                name="cover"
+                type="url"
+                defaultValue={book.coverUrl ?? ""}
+                placeholder="https://…/cover.jpg"
+              />
+            </label>
+            <div className="buttons">
+              <button type="submit">Сохранить</button>
+            </div>
+          </form>
+        </details>
       </header>
 
       <div
@@ -91,6 +143,34 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           <div className="label" style={{ marginTop: 4 }}>терминов</div>
         </div>
       </div>
+
+      {(queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0) > 0 && (
+        <p
+          style={{
+            margin: "0 0 32px",
+            padding: "14px 16px",
+            borderRadius: 12,
+            border: "1px solid var(--line)",
+            background: "var(--bg-raised)",
+            color: "var(--dim)",
+            fontSize: 13.5,
+            lineHeight: 1.6,
+          }}
+        >
+          Переводится наперёд:{" "}
+          {(queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0)}{" "}
+          {plural((queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0), "глава", "главы", "глав")}.
+          Это идёт пакетом — вдвое дешевле обычного перевода, но не мгновенно.
+          Готовая глава открывается сразу и бесплатно.
+          {(queue.get("не вышло") ?? 0) > 0 && (
+            <>
+              {" "}
+              Не вышло: {queue.get("не вышло")}. Обычно это платная глава или
+              страница, которая не открылась.
+            </>
+          )}
+        </p>
+      )}
 
       <section style={{ marginBottom: 40 }}>
         <Link
@@ -124,7 +204,7 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
                   href={`/read?src=${encodeURIComponent(c.source)}&register=${encodeURIComponent(c.register)}&tier=${encodeURIComponent(c.tier)}`}
                   style={{ fontSize: 16 }}
                 >
-                  {c.title || "Глава без заголовка"}
+                  {chapterName(c.source, c.title, book.title, book.sourceTitle)}
                 </Link>
                 <div style={{ color: "var(--dim)", fontSize: 12.5, marginTop: 4 }}>
                   {c.words.toLocaleString("ru")} слов · регистр {c.register} ·{" "}
@@ -140,6 +220,7 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           </p>
         )}
       </section>
-    </main>
+      </main>
+    </>
   );
 }
