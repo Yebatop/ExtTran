@@ -169,6 +169,57 @@ async function main(): Promise<void> {
     const counts = await store.termCounts();
     check("размер глоссария считает база", counts.get(KEY) === 2);
     check("пустой глоссарий считается нулём, а не пропадает", counts.get(OTHER) === 0);
+
+    // Очередь перевода наперёд: по ней работает пакетная отправка.
+    const queued = {
+      owner: READER, source: "https://проверка.invalid/c/7", bookKey: KEY,
+      register: "ровный", tier: "middle", state: "ждёт" as const,
+      batchId: null, note: null, title: "", words: 0, nextUrl: null,
+      createdAt: stamp, updatedAt: stamp,
+    };
+    check("глава встаёт в очередь", (await store.enqueue(queued)) === true);
+    check("та же глава второй раз не встаёт", (await store.enqueue(queued)) === false);
+    check(
+      "очередь отдаётся по состоянию",
+      (await store.listQueue(READER, ["ждёт"], 10)).length === 1,
+    );
+    check(
+      "чужое состояние не попадает в выборку",
+      (await store.listQueue(READER, ["готова"], 10)).length === 0,
+    );
+
+    await store.markQueue(READER, queued.source, "ровный", "middle", {
+      state: "отправлена",
+      batchId: "msgbatch_проверка",
+      title: "Глава 7 «Тот, кто считает шаги»",
+      words: 1812,
+      nextUrl: "https://проверка.invalid/c/8",
+    });
+    const sent = (await store.listQueue(READER, ["отправлена"], 10))[0];
+    check("состояние меняется", sent?.state === "отправлена");
+    check("номер пакета сохраняется", sent?.batchId === "msgbatch_проверка");
+    check("заголовок со страницы сохраняется", sent?.title === "Глава 7 «Тот, кто считает шаги»");
+    check("длина главы сохраняется", sent?.words === 1812);
+    check(
+      "адрес следующей главы сохраняется — иначе переведённая наперёд глава тупик",
+      sent?.nextUrl === "https://проверка.invalid/c/8",
+    );
+
+    await store.markQueue(READER, queued.source, "ровный", "middle", { state: "не вышло", note: "страница не открылась" });
+    const failedItem = (await store.listQueue(READER, ["не вышло"], 10))[0];
+    check("причина неудачи сохраняется", failedItem?.note === "страница не открылась");
+    check(
+      "непереданный номер пакета не затирается",
+      failedItem?.batchId === "msgbatch_проверка",
+    );
+    check(
+      "очередь считается по книге",
+      (await store.countQueue(READER, KEY)).get("не вышло") === 1,
+    );
+    check(
+      "чужая книга в счёт не попадает",
+      (await store.countQueue(READER, OTHER)).size === 0,
+    );
   } finally {
     await store.removeBook(KEY).catch(() => undefined);
     await store.removeBook(OTHER).catch(() => undefined);

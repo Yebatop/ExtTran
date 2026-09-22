@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Nav } from "../../nav";
 import { renameBook } from "./actions";
+import { plural } from "../../words";
 import { chapterName, chapterNumber, chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
@@ -37,9 +38,10 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
     );
   }
 
-  const [glossary, chapters] = await Promise.all([
+  const [glossary, chapters, queue] = await Promise.all([
     store.readGlossary(book.key),
     store.listTranslations(SOLE_READER, book.key),
+    store.countQueue(SOLE_READER, book.key),
   ]);
 
   /*
@@ -141,6 +143,34 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
           <div className="label" style={{ marginTop: 4 }}>терминов</div>
         </div>
       </div>
+
+      {(queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0) > 0 && (
+        <p
+          style={{
+            margin: "0 0 32px",
+            padding: "14px 16px",
+            borderRadius: 12,
+            border: "1px solid var(--line)",
+            background: "var(--bg-raised)",
+            color: "var(--dim)",
+            fontSize: 13.5,
+            lineHeight: 1.6,
+          }}
+        >
+          Переводится наперёд:{" "}
+          {(queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0)}{" "}
+          {plural((queue.get("ждёт") ?? 0) + (queue.get("отправлена") ?? 0), "глава", "главы", "глав")}.
+          Это идёт пакетом — вдвое дешевле обычного перевода, но не мгновенно.
+          Готовая глава открывается сразу и бесплатно.
+          {(queue.get("не вышло") ?? 0) > 0 && (
+            <>
+              {" "}
+              Не вышло: {queue.get("не вышло")}. Обычно это платная глава или
+              страница, которая не открылась.
+            </>
+          )}
+        </p>
+      )}
 
       <section style={{ marginBottom: 40 }}>
         <Link

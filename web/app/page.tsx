@@ -40,6 +40,22 @@ export default async function Home() {
   const last = recent[0] ?? null;
   const lastBook = last ? books.find((b) => b.key === last.bookKey) ?? null : null;
 
+  /*
+   * Готова ли следующая глава. На холсте это зелёная точка «148-я готова»,
+   * и до перевода наперёд рисовать её было нечем: наперёд мы ничего не
+   * переводили. Теперь есть чем.
+   *
+   * Смотрим по списку глав книги, а не читаем саму главу: чтение перевода
+   * продлевает срок хранения, а мы здесь не читаем, а спрашиваем.
+   */
+  const ofBook = last ? await store.listTranslations(SOLE_READER, last.bookKey) : [];
+  const nextReady =
+    last?.nextUrl !== undefined &&
+    last?.nextUrl !== null &&
+    ofBook.some(
+      (t) => t.source === last.nextUrl && t.register === last.register && t.tier === last.tier,
+    );
+
   return (
     <div style={{ minHeight: "100dvh", display: "flex", flexDirection: "column" }}>
       <Nav here="читать" />
@@ -151,6 +167,17 @@ export default async function Home() {
                     {chapterName(last.source, last.title, lastBook?.title, lastBook?.sourceTitle)} · {when(last.lastReadAt)}
                   </div>
                 </div>
+                {nextReady && (
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    <span
+                      aria-hidden
+                      style={{ width: 6, height: 6, borderRadius: "50%", background: "#7a9468" }}
+                    />
+                    <span style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                      следующая готова
+                    </span>
+                  </div>
+                )}
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
                   <Link href={readHref(last.source, last)} style={ghost}>
                     Открыть заново

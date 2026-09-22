@@ -5,6 +5,15 @@
   "functions": {
     "app/api/translate/route.ts": {
       "maxDuration": 300
+    },
+    "app/api/ahead/route.ts": {
+      "maxDuration": 300
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/ahead",
+      "schedule": "0 * * * *"
+    }
+  ]
 }

@@ -32,16 +32,28 @@ export {
 
 export { bookRef, chapterName, chapterNumber, storageKey, type BookRef } from "./book.js";
 
+export {
+  collectBatch,
+  queueNext,
+  runAhead,
+  sendBatch,
+  type CollectReport,
+  type SendReport,
+} from "./ahead.js";
+
 export { connectionString, PostgresStore } from "./store-pg.js";
 
 export {
   chooseStore,
+  queueKey,
   storageMode,
   translationKey,
   FileStore,
   MemoryStore,
   SOLE_READER,
   type BookRecord,
+  type QueueRecord,
+  type QueueState,
   type StorageMode,
   type Store,
   type TranslationRecord,

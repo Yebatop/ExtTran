@@ -85,12 +85,20 @@ export interface TranslateOptions {
   onText?: (chunk: string) => void;
 }
 
-export async function translateChapter(
-  options: TranslateOptions,
-): Promise<Translation> {
+/**
+ * Запрос на перевод главы.
+ *
+ * Отдельно от отправки, потому что отправок две: поток — когда читатель ждёт
+ * главу прямо сейчас, и пакет — когда мы переводим наперёд и ответ нужен не
+ * через минуту, а к вечеру. Промпт при этом обязан быть один и тот же: разойдись
+ * они хоть пробелом, и кэш префикса перестанет попадать, а переводы одной книги
+ * начнут отличаться по слогу в зависимости от того, каким путём шли.
+ */
+export function translateRequest(
+  options: Omit<TranslateOptions, "client" | "onText">,
+): Anthropic.MessageCreateParamsNonStreaming {
   const { chapter, glossary, register, tier } = options;
   const model = MODELS[tier];
-  const client = options.client ?? new Anthropic();
 
   const system: Anthropic.TextBlockParam[] = [
     { type: "text", text: RULES, cache_control: { type: "ephemeral" } },
@@ -101,17 +109,19 @@ export async function translateChapter(
     },
   ];
 
-  const userMessage =
-    `Регистр перевода: ${REGISTERS[register]}\n\n` +
-    "Переведи главу целиком.\n\n---\n\n" +
-    chapter.text;
-
-  const request: Anthropic.MessageCreateParamsStreaming = {
+  const request: Anthropic.MessageCreateParamsNonStreaming = {
     model: model.id,
     max_tokens: MAX_OUTPUT_TOKENS,
     system,
-    messages: [{ role: "user", content: userMessage }],
-    stream: true,
+    messages: [
+      {
+        role: "user",
+        content:
+          `Регистр перевода: ${REGISTERS[register]}\n\n` +
+          "Переведи главу целиком.\n\n---\n\n" +
+          chapter.text,
+      },
+    ],
   };
 
   // Haiku 4.5 на output_config.effort отвечает ошибкой, поэтому уровень
@@ -120,16 +130,18 @@ export async function translateChapter(
     request.output_config = { effort: options.effort ?? "medium" };
   }
 
-  let message: Anthropic.Message;
-  try {
-    const stream = client.messages.stream(request);
-    if (options.onText) stream.on("text", options.onText);
-    message = await stream.finalMessage();
-  } catch (error) {
-    throw describeApiError(error);
-  }
+  return request;
+}
 
-  const spend = priceUsage(message.usage, model);
+/**
+ * Разобрать ответ модели в перевод.
+ *
+ * Тоже отдельно и по той же причине: пакетный ответ приходит готовым
+ * сообщением, без потока, и разбирать его надо теми же правилами — включая
+ * отказ, обрыв по потолку токенов и машинальную типографику.
+ */
+export function readTranslation(message: Anthropic.Message, tier: Tier): Translation {
+  const spend = priceUsage(message.usage, MODELS[tier]);
 
   if (message.stop_reason === "refusal") {
     return {
@@ -158,6 +170,26 @@ export async function translateChapter(
   );
 
   return { text, spend, model: message.model };
+}
+
+export async function translateChapter(
+  options: TranslateOptions,
+): Promise<Translation> {
+  const client = options.client ?? new Anthropic();
+
+  let message: Anthropic.Message;
+  try {
+    const stream = client.messages.stream({
+      ...translateRequest(options),
+      stream: true,
+    });
+    if (options.onText) stream.on("text", options.onText);
+    message = await stream.finalMessage();
+  } catch (error) {
+    throw describeApiError(error);
+  }
+
+  return readTranslation(message, options.tier);
 }
 
 function describeApiError(error: unknown): Error {

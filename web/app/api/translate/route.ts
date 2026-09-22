@@ -12,6 +12,7 @@ import {
   looksLocked,
   nextFromIndex,
   mergeIntoGlossary,
+  queueNext,
   storageKey,
   translateChapter,
   SOLE_READER,
@@ -342,6 +343,21 @@ export async function POST(request: Request): Promise<Response> {
             createdAt: stamp,
             lastReadAt: stamp,
           });
+
+          /*
+           * Следующая глава — в очередь на перевод наперёд.
+           *
+           * Пока человек читает эту, та переведётся пакетом за половину цены,
+           * и к нажатию «дальше» будет готова. Ставим ровно одну: читатель,
+           * открывший главу, не заказывал перевод всей книги.
+           */
+          void queueNext(store, {
+            owner: SOLE_READER,
+            bookKey: ref.key,
+            register,
+            tier,
+            nextUrl,
+          }).catch(() => undefined);
 
           const book: BookRecord = (await store.readBook(ref.key)) ?? {
             key: ref.key,

@@ -12,7 +12,13 @@
 
 import pg from "pg";
 import type { Glossary } from "./glossary.js";
-import type { BookRecord, Store, TranslationRecord } from "./store.js";
+import type {
+  BookRecord,
+  QueueRecord,
+  QueueState,
+  Store,
+  TranslationRecord,
+} from "./store.js";
 
 /**
  * Где искать строку подключения.
@@ -151,6 +157,32 @@ export class PostgresStore implements Store {
           last_read_at timestamptz not null default now(),
           primary key (reader, source, register, tier)
         );
+        create table if not exists queue (
+          reader text not null,
+          source text not null,
+          register text not null,
+          tier text not null,
+          book_key text not null,
+          state text not null,
+          batch_id text,
+          note text,
+          title text not null default '',
+          words integer not null default 0,
+          next_url text,
+          created_at timestamptz not null default now(),
+          updated_at timestamptz not null default now(),
+          primary key (reader, source, register, tier)
+        );
+        -- Очередь могла быть заведена до того, как в неё добавили снятое со
+        -- страницы: create table if not exists её не тронет.
+        alter table queue add column if not exists title text not null default '';
+        alter table queue add column if not exists words integer not null default 0;
+        alter table queue add column if not exists next_url text;
+        -- По этому индексу ходит сборщик пакетов: ему нужны самые давние
+        -- главы в заданном состоянии, и без индекса он перебирал бы всю
+        -- очередь целиком на каждый заход.
+        create index if not exists queue_state_idx
+          on queue (reader, state, created_at);
         create index if not exists translations_last_read
           on translations (last_read_at);
       `);
@@ -345,11 +377,95 @@ export class PostgresStore implements Store {
     return new Map(rows.map((row) => [row.book_key, Number(row.n)]));
   }
 
+  async enqueue(record: QueueRecord): Promise<boolean> {
+    await this.init();
+    const { rowCount } = await this.pool.query(
+      `insert into queue (reader, source, register, tier, book_key, state, batch_id, note,
+                          title, words, next_url, created_at, updated_at)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+       on conflict (reader, source, register, tier) do nothing`,
+      [
+        record.owner, record.source, record.register, record.tier,
+        record.bookKey, record.state, record.batchId, record.note,
+        record.title, record.words, record.nextUrl,
+        record.createdAt, record.updatedAt,
+      ],
+    );
+    return (rowCount ?? 0) > 0;
+  }
+
+  async listQueue(
+    owner: string,
+    states: readonly QueueState[],
+    limit: number,
+  ): Promise<QueueRecord[]> {
+    await this.init();
+    const { rows } = await this.pool.query<QueueRow>(
+      `select * from queue
+        where reader = $1 and state = any($2)
+        order by created_at
+        limit $3`,
+      [owner, [...states], Math.max(1, Math.min(500, Math.trunc(limit)))],
+    );
+    return rows.map(asQueue);
+  }
+
+  async markQueue(
+    owner: string,
+    source: string,
+    register: string,
+    tier: string,
+    patch: {
+      state: QueueState;
+      batchId?: string | null;
+      note?: string | null;
+      title?: string;
+      words?: number;
+      nextUrl?: string | null;
+    },
+  ): Promise<void> {
+    await this.init();
+    // Признак «поле передали» отдельным параметром: не переданное остаётся как
+    // было, а переданный null именно обнуляет. coalesce так не умеет.
+    await this.pool.query(
+      `update queue
+          set state = $5,
+              batch_id = case when $6::boolean then $7 else batch_id end,
+              note = case when $8::boolean then $9 else note end,
+              title = case when $10::boolean then $11 else title end,
+              words = case when $12::boolean then $13 else words end,
+              next_url = case when $14::boolean then $15 else next_url end,
+              updated_at = now()
+        where reader = $1 and source = $2 and register = $3 and tier = $4`,
+      [
+        owner, source, register, tier, patch.state,
+        patch.batchId !== undefined, patch.batchId ?? null,
+        patch.note !== undefined, patch.note ?? null,
+        patch.title !== undefined, patch.title ?? "",
+        patch.words !== undefined, patch.words ?? 0,
+        patch.nextUrl !== undefined, patch.nextUrl ?? null,
+      ],
+    );
+  }
+
+  async countQueue(owner: string, bookKey: string): Promise<Map<QueueState, number>> {
+    await this.init();
+    const { rows } = await this.pool.query<{ state: string; n: string }>(
+      `select state, count(*) as n
+         from queue
+        where reader = $1 and book_key = $2
+        group by state`,
+      [owner, bookKey],
+    );
+    return new Map(rows.map((row) => [row.state as QueueState, Number(row.n)]));
+  }
+
   /** Убрать книгу вместе с её глоссарием. Нужно уборке после проверки базы. */
   async removeBook(key: string): Promise<void> {
     await this.init();
     await this.pool.query("delete from books where key = $1", [key]);
     await this.pool.query("delete from translations where book_key = $1", [key]);
+    await this.pool.query("delete from queue where book_key = $1", [key]);
   }
 
   async close(): Promise<void> {
@@ -416,5 +532,39 @@ function asBook(row: BookRow): BookRecord {
     lastSeen: row.last_seen.toISOString(),
     coverUrl: row.cover_url,
     sourceTitle: row.source_title,
+  };
+}
+
+interface QueueRow {
+  reader: string;
+  source: string;
+  register: string;
+  tier: string;
+  book_key: string;
+  state: string;
+  batch_id: string | null;
+  note: string | null;
+  title: string;
+  words: number;
+  next_url: string | null;
+  created_at: Date;
+  updated_at: Date;
+}
+
+function asQueue(row: QueueRow): QueueRecord {
+  return {
+    owner: row.reader,
+    source: row.source,
+    register: row.register,
+    tier: row.tier,
+    bookKey: row.book_key,
+    state: row.state as QueueState,
+    batchId: row.batch_id,
+    note: row.note,
+    title: row.title,
+    words: row.words,
+    nextUrl: row.next_url,
+    createdAt: row.created_at.toISOString(),
+    updatedAt: row.updated_at.toISOString(),
   };
 }
