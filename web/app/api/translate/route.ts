@@ -13,12 +13,14 @@ import {
   nextFromIndex,
   mergeIntoGlossary,
   queueNext,
+  runAhead,
   storageKey,
   translateChapter,
   SOLE_READER,
   type BookRecord,
   type Glossary,
 } from "@/lib/core";
+import { after } from "next/server";
 import { checkSource } from "@/lib/source";
 
 export const runtime = "nodejs";
@@ -417,6 +419,31 @@ export async function POST(request: Request): Promise<Response> {
       }
       controller.close();
     },
+  });
+
+  /*
+   * Заход перевода наперёд — после того, как читатель получил свою главу.
+   *
+   * Расписание на Vercel есть не у всех: бесплатный тариф даёт один запуск
+   * в сутки, а глава наперёд, приезжающая к следующему дню, никому не нужна.
+   * Поэтому главный повод для захода — сам читатель: он только что дочитал
+   * главу, следующая встала в очередь, и отправить её надо сейчас, а не
+   * ночью. Расписание остаётся подстраховкой на случай, если читателя долго
+   * нет, а пакет тем временем досчитался.
+   *
+   * after даёт сделать это уже после ответа: перевод читателя не ждёт ни
+   * секунды лишней, а работа не обрывается вместе с ответом, как оборвалась
+   * бы у простого вызова без ожидания.
+   *
+   * Ключа может не быть, пакет может не приняться, сеть может отвалиться —
+   * всё это не повод портить читателю главу, которую он уже получил.
+   */
+  after(async () => {
+    try {
+      await runAhead(await chooseStore(), SOLE_READER);
+    } catch {
+      // Перевод наперёд — удобство, а не обязательство.
+    }
   });
 
   return new Response(stream, {
