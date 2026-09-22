@@ -67,11 +67,13 @@ export function Cover({
   width,
   title,
   seed,
+  src,
 }: {
   height: number;
   width?: number;
   title?: string;
   seed?: string;
+  src?: string | null;
 }) {
   const tone = hue(seed ?? title ?? "");
   // Подпись влезает только на большую обложку; на маленькой — одна буква.
@@ -93,6 +95,7 @@ export function Cover({
         padding: roomy ? "0 12px" : 0,
         overflow: "hidden",
         flexShrink: 0,
+        position: "relative",
       }}
     >
       <span
@@ -105,6 +108,31 @@ export function Cover({
       >
         {initial(title)}
       </span>
+      {src && (
+        /*
+         * Настоящая обложка ложится поверх нарисованной. Если она не
+         * откроется — сайт её убрал, закрыл от чужих ссылок, у читателя не
+         * загрузилась, — снизу останется наша, и дыры на полке не будет.
+         * Ради этого здесь простая картинка, а не next/image: тот на каждый
+         * новый сайт требует разрешения в настройках сборки.
+         */
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          // Чужой сайт не должен знать, какую страницу читает человек.
+          referrerPolicy="no-referrer"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      )}
       {roomy && title && (
         <span
           style={{

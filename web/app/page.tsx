@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Cover, Nav } from "./nav";
 import { chapters as chapterWords } from "./words";
+import { chapterName } from "@/lib/chapter";
 import { chooseStore, storageKey, storageMode, SOLE_READER } from "@/lib/core";
 
 /**
@@ -135,7 +136,7 @@ export default async function Home() {
                   flexWrap: "wrap",
                 }}
               >
-                <Cover height={74} width={54} title={lastBook?.title} seed={last.bookKey} />
+                <Cover height={74} width={54} title={lastBook?.title} seed={last.bookKey} src={lastBook?.coverUrl} />
                 <div style={{ flex: "1 1 240px", minWidth: 0, display: "grid", gap: 6 }}>
                   <div style={{ fontSize: 16, fontWeight: 600 }}>
                     {lastBook ? (
@@ -147,7 +148,7 @@ export default async function Home() {
                     )}
                   </div>
                   <div style={{ fontSize: 13, color: "var(--muted)" }}>
-                    {last.title || "Глава без заголовка"} · {when(last.lastReadAt)}
+                    {chapterName(last.source, last.title, lastBook?.title, lastBook?.sourceTitle)} · {when(last.lastReadAt)}
                   </div>
                 </div>
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -192,7 +193,7 @@ export default async function Home() {
                     href={`/book/${encodeURIComponent(storageKey(b.key))}`}
                     style={{ display: "grid", gap: 10, color: "var(--ink-read)" }}
                   >
-                    <Cover height={152} title={b.title} seed={b.key} />
+                    <Cover height={152} title={b.title} seed={b.key} src={b.coverUrl} />
                     <span style={{ fontSize: 13.5, lineHeight: 1.35 }}>{b.title}</span>
                     <span style={{ fontSize: 11.5, color: "var(--dim)", marginTop: -4 }}>
                       {`переведено: ${chapterWords(b.chaptersTranslated)}`}

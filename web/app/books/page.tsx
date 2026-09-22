@@ -173,7 +173,7 @@ export default async function Books({ searchParams }: { searchParams: Promise<Qu
             ) : (
               books.map((b) => (
                 <Link key={b.key} className="row" href={`/book/${encodeURIComponent(storageKey(b.key))}`}>
-                  <Cover height={94} width={68} title={b.title} seed={b.key} />
+                  <Cover height={94} width={68} title={b.title} seed={b.key} src={b.coverUrl} />
                   <span style={{ display: "grid", gap: 7, flexGrow: 1, minWidth: 0, alignContent: "start" }}>
                     <span style={{ fontSize: 16, fontWeight: 600 }}>{b.title}</span>
                     <span style={{ fontSize: 12.5, color: "var(--muted)" }}>

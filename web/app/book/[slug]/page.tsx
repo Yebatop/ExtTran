@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Nav } from "../../nav";
 import { renameBook } from "./actions";
-import { chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
+import { chapterName, chapterNumber, chooseStore, median, storageKey, SOLE_READER } from "@/lib/core";
 
 export const dynamic = "force-dynamic";
 
@@ -41,6 +41,20 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
     store.readGlossary(book.key),
     store.listTranslations(SOLE_READER, book.key),
   ]);
+
+  /*
+   * Главы по номеру, а не по порядку перевода. Если человек начал читать со
+   * сто шестнадцатой, она сто шестнадцатая, а не первая, — и в списке должна
+   * стоять там же, где стояла бы у первоисточника.
+   */
+  chapters.sort((a, b) => {
+    const left = chapterNumber(a.source);
+    const right = chapterNumber(b.source);
+    if (left !== null && right !== null) return left - right;
+    if (left !== null) return -1;
+    if (right !== null) return 1;
+    return a.createdAt.localeCompare(b.createdAt);
+  });
 
   const words = median(chapters.map((c) => c.words).filter((w) => w > 0));
   const spent = chapters.reduce((sum, c) => sum + c.rub, 0);
@@ -87,6 +101,15 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
             <label>
               Как называть эту книгу
               <input name="title" defaultValue={book.title} required />
+            </label>
+            <label>
+              Обложка — адрес картинки у первоисточника
+              <input
+                name="cover"
+                type="url"
+                defaultValue={book.coverUrl ?? ""}
+                placeholder="https://…/cover.jpg"
+              />
             </label>
             <div className="buttons">
               <button type="submit">Сохранить</button>
@@ -151,7 +174,7 @@ export default async function Book({ params }: { params: Promise<{ slug: string 
                   href={`/read?src=${encodeURIComponent(c.source)}&register=${encodeURIComponent(c.register)}&tier=${encodeURIComponent(c.tier)}`}
                   style={{ fontSize: 16 }}
                 >
-                  {c.title || "Глава без заголовка"}
+                  {chapterName(c.source, c.title, book.title, book.sourceTitle)}
                 </Link>
                 <div style={{ color: "var(--dim)", fontSize: 12.5, marginTop: 4 }}>
                   {c.words.toLocaleString("ru")} слов · регистр {c.register} ·{" "}

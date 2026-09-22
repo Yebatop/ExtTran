@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { chapterName } from "@/lib/chapter";
 import { highlight, type HighlightTerm } from "@/lib/highlight";
 import ProblemScreen, { type Problem } from "./problem";
 
@@ -10,6 +11,8 @@ interface Meta {
   words: number;
   method: string;
   book: string;
+  /** Как книга называется на полке — читатель мог её переименовать. */
+  bookTitle: string;
   bookKey: string;
   bookSlug: string;
   terms: number;
@@ -286,7 +289,7 @@ export default function Reader({
       {meta && (
         <header style={{ marginBottom: 40 }}>
           <h1 className="display" style={{ fontSize: "clamp(28px, 6vw, 40px)", margin: "0 0 10px", lineHeight: 1.14 }}>
-            {meta.title || "Глава без заголовка"}
+            {chapterName(src, meta.title, meta.book, meta.bookTitle)}
           </h1>
           <div className="label">
             {meta.words.toLocaleString("ru")} слов в оригинале · регистр {register}

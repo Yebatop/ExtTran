@@ -42,20 +42,35 @@ function refresh(slug: string): void {
   revalidatePath("/");
 }
 
+/** Адрес картинки — и только http(s), чтобы в src не попало javascript:. */
+function imageUrl(raw: string): string | null {
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "http:" || url.protocol === "https:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
- * Переименовать книгу.
+ * Название и обложка книги.
  *
  * Название берётся из заголовка первой главы, и это догадка: на одних сайтах
  * там имя книги, на других — имя главы, а на третьих и то и другое сразу.
  * Догадку должно быть чем поправить, иначе книга навсегда останется
  * «Semi-Coercive Imperialist · Semi-Coercive Imperialist».
  *
- * Перезаписи можно не бояться: название пишется только при заведении книги,
- * следующие главы его не трогают.
+ * Обложку мы ищем сами на странице книги, но находим не всегда: мета-тега
+ * превью может не быть вовсе. Тогда адрес картинки можно вписать руками.
+ *
+ * Перезаписи можно не бояться: и название, и обложка пишутся только когда их
+ * ещё нет, следующие главы их не трогают.
  */
 export async function renameBook(form: FormData): Promise<void> {
   const slug = field(form, "slug", 300);
   const title = field(form, "title");
+  const cover = field(form, "cover", 1000);
   if (!title) return;
 
   const found = await findBook(slug);
@@ -64,6 +79,8 @@ export async function renameBook(form: FormData): Promise<void> {
   const book = await found.store.readBook(found.key);
   if (!book) return;
   book.title = title;
+  // Пустое поле — это «убрать обложку», а не «оставить как было».
+  book.coverUrl = cover ? imageUrl(cover) : null;
   await found.store.writeBook(book);
   refresh(slug);
 }

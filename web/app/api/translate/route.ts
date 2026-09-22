@@ -2,6 +2,7 @@ import {
   bookRef,
   chapterFromHtml,
   chooseStore,
+  coverFromHtml,
   extractTerms,
   fetchPage,
   findNextLink,
@@ -48,6 +49,7 @@ type Frame =
       words: number;
       method: string;
       book: string;
+      bookTitle: string;
       bookKey: string;
       bookSlug: string;
       terms: number;
@@ -160,6 +162,11 @@ export async function POST(request: Request): Promise<Response> {
           tier,
         );
 
+        // Как книга называется сейчас — читатель мог её переименовать. Нужно
+        // ридеру, чтобы вычистить имя книги из заголовка главы: на многих
+        // сайтах в заголовке страницы стоит именно оно.
+        const shelved = await store.readBook(ref.key);
+
         // Страница нужна для оригинала и свежей ссылки «дальше». Для готового
         // перевода это украшение, а не условие, поэтому неудачу здесь терпим.
         let html: string | null = null;
@@ -215,6 +222,8 @@ export async function POST(request: Request): Promise<Response> {
           words: chapter?.wordCount ?? saved?.words ?? 0,
           method: chapter?.method ?? (saved ? "из хранилища" : "неизвестно"),
           book: known.novel || ref.slug,
+          // Второе имя — то, под которым книга стоит на полке сейчас.
+          bookTitle: shelved?.title ?? "",
           bookKey: ref.key,
           bookSlug: storageKey(ref.key),
           terms: known.terms.length,
@@ -339,12 +348,14 @@ export async function POST(request: Request): Promise<Response> {
             host: ref.host,
             slug: ref.slug,
             title: chapter.title || ref.slug,
+            sourceTitle: chapter.title || null,
             chaptersTranslated: 0,
             firstSeen: new Date().toISOString(),
             lastSeen: new Date().toISOString(),
           };
           book.chaptersTranslated += 1;
           book.lastSeen = new Date().toISOString();
+          if (!book.coverUrl) book.coverUrl = await findCover(checked.url, ref.key);
           await store.writeBook(book);
 
           // Пополняем глоссарий уже после того, как читатель получил текст:
@@ -400,4 +411,24 @@ export async function POST(request: Request): Promise<Response> {
       "x-accel-buffering": "no",
     },
   });
+}
+
+/**
+ * Найти обложку книги на её странице.
+ *
+ * Ходим туда один раз — когда обложки у книги ещё нет. Лишний запрос к чужому
+ * сайту на каждую главу того не стоит, а обложка меняется раз в никогда.
+ *
+ * Молча сдаёмся при любой беде: обложка — украшение, а не глава. Если не
+ * вышло, на полке останется нарисованная нами.
+ */
+async function findCover(chapterUrl: string, bookKey: string): Promise<string | null> {
+  try {
+    const { protocol } = new URL(chapterUrl);
+    const page = `${protocol}//${bookKey}`;
+    const html = await fetchPage(page);
+    return coverFromHtml(html, page);
+  } catch {
+    return null;
+  }
 }

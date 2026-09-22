@@ -121,8 +121,14 @@ export class PostgresStore implements Store {
           title text not null,
           chapters_translated integer not null default 0,
           first_seen timestamptz not null,
-          last_seen timestamptz not null
+          last_seen timestamptz not null,
+          cover_url text,
+          source_title text
         );
+        -- Таблица могла быть создана до того, как появились эти колонки:
+        -- create table if not exists её не тронет, а добавить их надо.
+        alter table books add column if not exists cover_url text;
+        alter table books add column if not exists source_title text;
         create table if not exists glossaries (
           book_key text primary key references books(key) on delete cascade,
           data jsonb not null,
@@ -154,39 +160,29 @@ export class PostgresStore implements Store {
 
   async readBook(key: string): Promise<BookRecord | null> {
     await this.init();
-    const { rows } = await this.pool.query<{
-      key: string;
-      host: string;
-      slug: string;
-      title: string;
-      chapters_translated: number;
-      first_seen: Date;
-      last_seen: Date;
-    }>("select * from books where key = $1", [key]);
+    const { rows } = await this.pool.query<BookRow>(
+      "select * from books where key = $1",
+      [key],
+    );
     const row = rows[0];
-    if (!row) return null;
-    return {
-      key: row.key,
-      host: row.host,
-      slug: row.slug,
-      title: row.title,
-      chaptersTranslated: row.chapters_translated,
-      firstSeen: row.first_seen.toISOString(),
-      lastSeen: row.last_seen.toISOString(),
-    };
+    return row ? asBook(row) : null;
   }
 
   async writeBook(record: BookRecord): Promise<void> {
     await this.init();
     await this.pool.query(
-      `insert into books (key, host, slug, title, chapters_translated, first_seen, last_seen)
-       values ($1, $2, $3, $4, $5, $6, $7)
+      `insert into books (key, host, slug, title, chapters_translated, first_seen, last_seen, cover_url, source_title)
+       values ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        on conflict (key) do update set
          host = excluded.host,
          slug = excluded.slug,
          title = excluded.title,
          chapters_translated = excluded.chapters_translated,
-         last_seen = excluded.last_seen`,
+         last_seen = excluded.last_seen,
+         cover_url = excluded.cover_url,
+         -- Имя у первоисточника пишется один раз: оно про источник, а не про
+         -- то, как книгу решил называть читатель.
+         source_title = coalesce(books.source_title, excluded.source_title)`,
       [
         record.key,
         record.host,
@@ -195,30 +191,18 @@ export class PostgresStore implements Store {
         record.chaptersTranslated,
         record.firstSeen,
         record.lastSeen,
+        record.coverUrl ?? null,
+        record.sourceTitle ?? null,
       ],
     );
   }
 
   async listBooks(): Promise<BookRecord[]> {
     await this.init();
-    const { rows } = await this.pool.query<{
-      key: string;
-      host: string;
-      slug: string;
-      title: string;
-      chapters_translated: number;
-      first_seen: Date;
-      last_seen: Date;
-    }>("select * from books order by last_seen desc limit 200");
-    return rows.map((row) => ({
-      key: row.key,
-      host: row.host,
-      slug: row.slug,
-      title: row.title,
-      chaptersTranslated: row.chapters_translated,
-      firstSeen: row.first_seen.toISOString(),
-      lastSeen: row.last_seen.toISOString(),
-    }));
+    const { rows } = await this.pool.query<BookRow>(
+      "select * from books order by last_seen desc limit 200",
+    );
+    return rows.map(asBook);
   }
 
   async readGlossary(key: string): Promise<Glossary | null> {
@@ -406,5 +390,31 @@ function listed(row: ListedRow): Omit<TranslationRecord, "text"> {
     nextUrl: row.next_url,
     createdAt: row.created_at.toISOString(),
     lastReadAt: row.last_read_at.toISOString(),
+  };
+}
+
+interface BookRow {
+  key: string;
+  host: string;
+  slug: string;
+  title: string;
+  chapters_translated: number;
+  first_seen: Date;
+  last_seen: Date;
+  cover_url: string | null;
+  source_title: string | null;
+}
+
+function asBook(row: BookRow): BookRecord {
+  return {
+    key: row.key,
+    host: row.host,
+    slug: row.slug,
+    title: row.title,
+    chaptersTranslated: row.chapters_translated,
+    firstSeen: row.first_seen.toISOString(),
+    lastSeen: row.last_seen.toISOString(),
+    coverUrl: row.cover_url,
+    sourceTitle: row.source_title,
   };
 }

@@ -30,7 +30,7 @@ export {
   type Tier,
 } from "./config.js";
 
-export { bookRef, storageKey, type BookRef } from "./book.js";
+export { bookRef, chapterName, chapterNumber, storageKey, type BookRef } from "./book.js";
 
 export { connectionString, PostgresStore } from "./store-pg.js";
 
@@ -59,6 +59,7 @@ export {
 export {
   attempts,
   chapterFromHtml,
+  coverFromHtml,
   decodeMhtml,
   fetchPage,
   findNextLink,

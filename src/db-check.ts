@@ -75,12 +75,23 @@ async function main(): Promise<void> {
     });
     const book = await store.readBook(KEY);
     check("книга читается обратно", book?.chaptersTranslated === 1);
+    check("обложки у новой книги нет", (book?.coverUrl ?? null) === null);
 
     // Вторая глава той же книги: обновление, а не второй ряд.
     await store.writeBook({ ...book!, chaptersTranslated: 2 });
     const again = await store.readBook(KEY);
     check("вторая глава обновляет, а не задваивает", again?.chaptersTranslated === 2);
     check("дата первой встречи цела", again?.firstSeen === book?.firstSeen);
+
+    // Обложка: храним адрес, а не картинку.
+    const withCover = { ...(again as NonNullable<typeof again>), coverUrl: "https://проверка.invalid/cover.jpg" };
+    await store.writeBook(withCover);
+    check(
+      "адрес обложки сохраняется",
+      (await store.readBook(KEY))?.coverUrl === "https://проверка.invalid/cover.jpg",
+    );
+    await store.writeBook({ ...withCover, coverUrl: null });
+    check("обложку можно убрать", ((await store.readBook(KEY))?.coverUrl ?? null) === null);
 
     await store.writeGlossary(KEY, {
       novel: "Проверка",
